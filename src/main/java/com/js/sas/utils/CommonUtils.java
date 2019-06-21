@@ -10,11 +10,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-<<<<<<< Updated upstream
-=======
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
->>>>>>> Stashed changes
 import java.util.*;
 
 /**
@@ -25,19 +22,19 @@ import java.util.*;
  **/
 public class CommonUtils {
 
-    public static BigDecimal getBigDecimal(Object value ) {
+    public static BigDecimal getBigDecimal(Object value) {
         BigDecimal ret = null;
-        if( value != null ) {
-            if( value instanceof BigDecimal ) {
+        if (value != null) {
+            if (value instanceof BigDecimal) {
                 ret = (BigDecimal) value;
-            } else if( value instanceof String ) {
-                ret = new BigDecimal( (String) value );
-            } else if( value instanceof BigInteger) {
-                ret = new BigDecimal( (BigInteger) value );
-            } else if( value instanceof Number ) {
-                ret = new BigDecimal( ((Number)value).doubleValue() );
+            } else if (value instanceof String) {
+                ret = new BigDecimal((String) value);
+            } else if (value instanceof BigInteger) {
+                ret = new BigDecimal((BigInteger) value);
+            } else if (value instanceof Number) {
+                ret = new BigDecimal(((Number) value).doubleValue());
             } else {
-                throw new ClassCastException("Not possible to coerce ["+value+"] from class "+value.getClass()+" into a BigDecimal.");
+                throw new ClassCastException("Not possible to coerce [" + value + "] from class " + value.getClass() + " into a BigDecimal.");
             }
         }
         return ret;
@@ -49,19 +46,15 @@ public class CommonUtils {
      * @param response HttpServletResponse
      * @param dataList 导出类List
      * @param fileName 导出文件名，目前sheet页是相同名称
-     * @param clazz 对应导出Entity，需要继承BaseRowModel
+     * @param clazz    对应导出Entity，需要继承BaseRowModel
      * @throws IOException @Description
      */
     public static void export(HttpServletResponse response, List<? extends BaseRowModel> dataList, String fileName, BaseRowModel clazz) throws IOException {
-<<<<<<< Updated upstream
-        fileName = new String((fileName + new Date().getTime()).getBytes(), "ISO8859-1");
-=======
         fileName = new String((fileName + new Date().getTime()).getBytes(), StandardCharsets.UTF_8);
->>>>>>> Stashed changes
         ServletOutputStream out = response.getOutputStream();
         response.setContentType("multipart/form-data");
         response.setCharacterEncoding("utf-8");
-        response.setHeader("Content-Disposition", "attachment;filename*= UTF-8''"+ URLEncoder.encode(fileName, StandardCharsets.UTF_8)+ ".xlsx");
+        response.setHeader("Content-Disposition", "attachment;filename*= UTF-8''" + URLEncoder.encode(fileName, StandardCharsets.UTF_8) + ".xlsx");
         ExcelWriter writer = new ExcelWriter(out, ExcelTypeEnum.XLSX, true);
         Sheet sheet1 = new Sheet(1, 0, clazz.getClass());
         sheet1.setSheetName(fileName);
