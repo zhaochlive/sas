@@ -292,106 +292,121 @@
 	</script>
 	
 	<script>
-  var salesOption = {
-    tooltip: {
-        trigger: 'axis',
-        axisPointer: {
-            type: 'cross',
-            label: {
-                backgroundColor: '#283b56'
+        /**
+         * 销售额周期统计（天、月、年）
+         */
+        // 销售额
+        var amount = [];
+        // 订单数
+        var orders = [];
+        // 日期
+        var lastDay = new Date().getDate()-1;
+
+        // 获取日销售额
+        $.ajax({
+            type: 'POST',
+            url: "/sales/getSaleAmountByDay",
+            data: {
+                limit: "30"
+            },
+            dataType: "json",
+            async: false,
+            success: function (result) {
+                lastDay = result.data[0].days;
+                var len = 30;
+                while (len--) {
+                    amount.push((result.data[len].amount/10000).toFixed(4));
+                    orders.push(result.data[len].counts);
+                }
+            }, error: function (error) {
+                console.log(error);
             }
-        }
-    },
-    legend: {
-        data:['订单数', '销售额(万元)']
-    },
-    toolbox: {
-        show: true,
-        feature: {
-            saveAsImage: {}
-        }
-    },
-    dataZoom: {
-        show: false,
-        start: 0,
-        end: 100
-    },
-    xAxis: [
-        {
-            type: 'category',
-            boundaryGap: true,
-            data: (function (){
-                var now = new Date();
-                var res = [];
-                var len = 30;
-                while (len--) {
-                    res.unshift(now.toLocaleDateString().replace(/^\D*/,''));
-					now.setDate(now.getDate()-1);
+        });
+
+        // 日销售额图表
+        var salesOption = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross',
+                    label: {
+                        backgroundColor: '#283b56'
+                    }
                 }
-                return res;
-            })()
-        },
-        {
-            type: 'category',
-            boundaryGap: true,
-            data: (function (){
-                var res = [];
-                var len = 30;
-                while (len--) {
-                    res.push('');
+            },
+            legend: {
+                data:['订单数', '销售额']
+            },
+            toolbox: {
+                show: true,
+                feature: {
+                    saveAsImage: {}
                 }
-                return res;
-            })()
-        }
-    ],
-    yAxis: [
-        {
-            type: 'value',
-            scale: true,
-            name: '订单数',
-            max: 500,
-            min: 0,
-            boundaryGap: [0.2, 0.2]
-        },
-        {
-            type: 'value',
-            scale: true,
-            name: '销售额(万元)',
-            max: 500,
-            min: 0,
-            boundaryGap: [0.2, 0.2]
-        }
-    ],
-    series: [
-        {
-            name:'销售额(万元)',
-            type:'bar',
-            xAxisIndex: 1,
-            yAxisIndex: 1,
-            data:(function (){
-                var res = [];
-                var len = 30;
-                while (len--) {
-                    res.push(Math.round(Math.random() * 500));
+            },
+            dataZoom: {
+                show: false,
+                start: 0,
+                end: 100
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    boundaryGap: true,
+                    data: (function (){
+                        var now = new Date(lastDay);
+                        var res = [];
+                        var len = 30;
+                        while (len--) {
+                            res.unshift(now.toLocaleDateString().replace(/^\D*/,''));
+                            now.setDate(now.getDate()-1);
+                        }
+                        return res;
+                    })()
+                }, {
+                    type: 'category',
+                    boundaryGap: true,
+                    data: (function (){
+                        var res = [];
+                        var len = 30;
+                        while (len--) {
+                            res.push('');
+                        }
+                        return res;
+                    })()
                 }
-                return res;
-            })()
-        },
-        {
-            name:'订单数',
-            type:'line',
-            data:(function (){
-                var res = [];
-                var len = 0;
-                while (len < 30) {
-                    res.push((Math.random()*200).toFixed(1) - 0);
-                    len++;
+            ],
+            yAxis: [
+                {
+                    type: 'value',
+                    scale: true,
+                    name: '订单数（个）',
+                    max: 600,
+                    min: 0,
+                    boundaryGap: [0.2, 0.2]
+                },
+                {
+                    type: 'value',
+                    scale: true,
+                    name: '销售额(万元)',
+                    max: 300,
+                    min: 0,
+                    boundaryGap: [0.2, 0.2]
                 }
-                return res;
-            })()
-        }
-    ]
-};
+            ],
+            series: [
+                {
+                    name:'销售额',
+                    type:'bar',
+                    xAxisIndex: 1,
+                    yAxisIndex: 1,
+                    data: amount
+                }, {
+                    name:'订单数',
+                    type:'line',
+                    data:orders
+                }
+            ]
+        };
 
 
   var salesOption2 = {
@@ -706,55 +721,6 @@ var optionMap = {
 </script>
 
 
-<script>
-var weatherIcons = {
-    'Sunny': './data/asset/img/weather/sunny_128.png',
-    'Cloudy': './data/asset/img/weather/cloudy_128.png',
-    'Showers': './data/asset/img/weather/showers_128.png'
-};
 
-option = {
-    tooltip : {
-        trigger: 'item',
-        formatter: "{a} <br/>{b} : {c} ({d}%)"
-    },
-    legend: {
-        // orient: 'vertical',
-        // top: 'middle',
-        bottom: 10,
-        left: 'center',
-        data: ['紧固件', '钢材','服装','酒','茶叶']
-    },
-    series : [
-        {
-            type: 'pie',
-            radius : '65%',
-            center: ['50%', '50%'],
-            selectedMode: 'single',
-            data:[
-                {value:535, name: '紧固件'},
-                {value:535, name: '钢材'},
-                {value:510, name: '服装'},
-                {value:634, name: '酒'},
-                {value:735, name: '茶叶'}
-            ],
-            itemStyle: {
-                emphasis: {
-                    shadowBlur: 10,
-                    shadowOffsetX: 0,
-                    shadowColor: 'rgba(0, 0, 0, 0.5)'
-                }
-            }
-        }
-    ]
-};
-
-        var myChart1 = echarts.init(document.getElementById('salesType'), 'light');
-
-        myChart1.setOption(option);
-
-
-
-</script>
   </body>
 </html>
