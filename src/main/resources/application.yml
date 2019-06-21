@@ -1,0 +1,30 @@
+server:
+  port: 8080
+spring:
+  profiles:
+    active: dev
+  datasource:
+    url: jdbc:mysql://192.168.80.129:3306/sas?useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    show-sql: true
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+---
+server:
+  port: 8000
+spring:
+  profiles: prod
+  datasource:
+    url:
+    username:
+    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    jpa:
+      show-sql: true
+      hibernate:
+        naming:
+          physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl

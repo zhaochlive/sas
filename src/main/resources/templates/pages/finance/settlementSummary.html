@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="../../css/bootstrap-4.3.1.min.css">
+    <link rel="stylesheet" href="../../css/bootstrap-table.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" type="text/css" href="../../css/daterangepicker.css"/>
+
+    <title>统计分析系统 - 财务 - 结算客户汇总统计</title>
+</head>
+<body>
+<div id="wrapper">
+    <nav class="navbar-default navbar-static-side" role="navigation">
+        <div class="sidebar-collapse">
+            <ul class="nav metismenu" id="side-menu">
+                <li class="nav-header">
+                    <div class="dropdown profile-element">
+                        <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                            <span class="block m-t-xs font-bold">管理员</span>
+                            <span class="text-muted text-xs block">紧商科技 <b class="caret"></b></span>
+                        </a>
+                        <ul class="dropdown-menu animated fadeInRight m-t-xs">
+                            <li><a class="dropdown-item" href="profile.html">修改密码</a></li>
+                            <li class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="login.html">注销</a></li>
+                        </ul>
+                    </div>
+                    <div class="logo-element">
+                        SAS
+                    </div>
+                </li>
+
+                <li>
+                    <a href="#"><i class="fa fa-home"></i> <span class="nav-label">首页</span></a>
+                </li>
+                <li class="active">
+                    <a href="#"><i class="fa fa-calculator"></i> <span class="nav-label">财务</span> <span
+                            class="fa arrow"></span></a>
+                    <ul class="nav nav-second-level">
+                        <li class="active"><a href="/settlementCustomerSummary">结算客户（线上、线下）</a></li>
+                        <li><a href="/customerStatement">结算客户对账单</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#"><i class="fa fa-yen-sign"></i> <span class="nav-label">销售</span><span
+                            class="fa arrow"></span></a>
+                    <ul class="nav nav-second-level collapse">
+                        <li><a href="#">客户月采购额</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div id="page-wrapper" class="gray-bg dashbard-1">
+        <div class="row border-bottom">
+            <nav class="navbar navbar-static-top" role="navigation" style="margin-bottom: 0">
+                <div class="navbar-header">
+                    <a class="navbar-minimalize minimalize-styl-2 btn btn-primary " href="#"><i class="fa fa-bars"></i>
+                    </a>
+                </div>
+                <ul class="nav navbar-top-links navbar-right">
+                    <li>
+                        <a href="login.html">
+                            <i class="fa fa-sign-out"></i> 注销
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <div class="wrapper wrapper-content">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="ibox">
+                        <div class="ibox-title">
+                            <h5>结算客户（线上、线下）</h5>
+                            <div class="ibox-tools">
+                                <a class="collapse-link">
+                                    <i class="fa fa-chevron-up"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="ibox-content">
+                            <form id="form1" class="form-horizontal">
+                                <div class="box-body">
+                                    <div class="row">
+                                        <div class="form-group row col-sm-4">
+                                            <label class="col-sm-3 col-form-label">客户名称：</label>
+                                            <div class="col-sm-9">
+                                                <input id="name" name="name" type="text" placeholder="结算客户名称"
+                                                       class="settlementName form-control"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row col-sm-4">
+                                            <label class="col-sm-3 col-form-label">时间周期：</label>
+                                            <div class="col-sm-9">
+                                                <input id="dateRange" name="dateRange" placeholder="时间周期"
+                                                       class="form-control"
+                                                       type="text"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row col-sm-4">
+                                            <label class="col-sm-3 col-form-label">来源：</label>
+                                            <div class="col-sm-9">
+                                                <select id="channel" name="channel" class="form-control"
+                                                        style="width: 100%;">
+                                                    <option selected="selected" value="">全部</option>
+                                                    <option value="线上">线上</option>
+                                                    <option value="线下">线下</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box-footer">
+                                    <input type="hidden" id="startDate" name="startDate" value=""/>
+                                    <input type="hidden" id="endDate" name="endDate" value=""/>
+                                    <input type="hidden" id="limit" name="limit" value=""/>
+                                    <button type="button" class="btn btn-primary pull-right" id="search"
+                                            style="margin-left:20px;">搜
+                                        索
+                                    </button>
+                                    <button type="button" class="btn btn-default pull-right" id="refresh"
+                                            style="margin-left:20px;">清 空
+                                    </button>
+                                    <button type="button" class="btn btn-default pull-right" id="export"
+                                            style="margin-left:20px;">
+                                        导出Excel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="ibox">
+                        <div class="ibox-content">
+                            <div class="row">
+                                <div class="tableDisplay" id="dataTable" style="width:98%; margin: auto;">
+                                    <table class="table table-bordered" style="margin-bottom:0px;">
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="float-right">
+                <strong>紧商科技</strong>
+            </div>
+            <div>
+                <strong>Copyright</strong> 统计分析系统 0.0.1 &copy; 2019
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+
+
+<script src="../../js/jquery-3.3.1.min.js"></script>
+<script src="../../js/popper.min.js"></script>
+<script src="../../js/bootstrap-4.3.1.min.js"></script>
+<script src="../../plugins/slimscroll/jquery.slimscroll.min.js"></script>
+<script src="../../js/inspinia.js"></script>
+<script src="../../plugins/metisMenu/jquery.metisMenu.js"></script>
+
+<script src="https://unpkg.com/tableexport.jquery.plugin/tableExport.min.js"></script>
+<script src="https://unpkg.com/bootstrap-table@1.14.2/dist/bootstrap-table.min.js"></script>
+<script src="https://unpkg.com/bootstrap-table@1.14.2/dist/extensions/export/bootstrap-table-export.min.js"></script>
+<script src="https://unpkg.com/bootstrap-table@1.14.2/dist/locale/bootstrap-table-zh-CN.min.js"></script>
+
+<script type="text/javascript" src="../../js/moment.min.js"></script>
+<script type="text/javascript" src="../../js/daterangepicker.min.js"></script>
+<script type="text/javascript" src="../../js/typeahead.min.js"></script>
+
+<script>
+    var startDate = "";
+    var endDate = "";
+
+    $('input[name="dateRange"]').daterangepicker({
+        timePicker: false,
+        autoUpdateInput: false,
+        showDropdowns: true,
+        autoApply: true,
+        locale: {
+            format: 'YYYY-MM-DD',
+            applyLabel: '确定',
+            cancelLabel: '取消',
+            fromLabel: '从',
+            toLabel: '到',
+            weekLabel: 'W',
+            customRangeLabel: 'Custom Range',
+            daysOfWeek: ['日', '一', '二', '三', '四', '五', '六'],
+            monthNames: ['一月', '二月', '三月', '四月', '五月', '六月',
+                '七月', '八月', '九月', '十月', '十一月', '十二月'],
+            firstDay: moment.localeData()._week.dow
+        }
+    }, function (start, end, label) {
+        startDate = start.format(this.locale.format);
+        endDate = end.format(this.locale.format);
+        if (!start) {
+            this.element.val('');
+        } else {
+            $("#startDate").val(startDate);
+            $("#endDate").val(endDate);
+            this.element.val(startDate + this.locale.separator + endDate);
+        }
+    });
+
+    $(document).ready(function () {
+        var queryParams = "";
+
+        var dataTable = $("#dataTable table").bootstrapTable({
+            method: "POST",
+            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+            cache: false,
+            clickToSelect: true,
+            pagination: true,
+            sortable: true,
+            pageNumber: 1,
+            pageSize: 10,
+            pageList: [10, 20, 50, 100],
+            clickToSelect: true,
+            locale: "zh-CN",
+            striped: true,
+            toggle: true,
+            silent: true,
+            sidePagination: "server",
+            sortName: "name",
+            sortOrder: "asc",
+            url: "/finance/settlementSummary",
+            queryParams: function (params) {
+                var temp = {
+                    name: $("input[name='name']").val(),
+                    channel: $("select[name='channel']").val(),
+                    startDate: function () {
+                        if (startDate == "") {
+                            return "2018-12-28";
+                        } else {
+                            return startDate;
+                        }
+                    },
+                    endDate: function () {
+                        if (startDate == "") {
+                            return moment().format("YYYY-MM-DD");
+                        } else {
+                            return startDate;
+                        }
+                    },
+                    limit: params.limit,
+                    offset: params.offset,
+                    sort: params.sort,
+                    sortOrder: params.order
+                };
+                // 设置开始时间
+                $("#startDate").val(temp.startDate);
+                // 设置结束时间
+                $("#endDate").val(temp.endDate);
+                return temp;
+            },
+            columns: [{
+                field: 'rowNum',
+                title: '序号',
+                align: 'center',
+                valign: 'middle'
+            }, {
+                field: 'code',
+                title: '编码',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: 'name',
+                title: '结算客户',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: 'channel',
+                title: '来源',
+                align: 'center',
+                valign: 'middle'
+            }, {
+                field: 'deliveryAmount',
+                title: '发货金额',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: 'receivedAmount',
+                title: '收款金额',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: 'receivables',
+                title: '应收款',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: 'invoiceAmount',
+                title: '开票金额',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: 'invoiceBalance',
+                title: '发票结余',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            }],
+            onLoadSuccess: function (result) {
+                if (result.code) {
+                    console.log("result:" + result.code);
+                    console.log("result:" + result.message);
+                } else if (result.total) {
+                    $("#limit").val(result.total);
+                }
+
+            },
+            onLoadError: function (error) {
+                console.log(error);
+            },
+            onDblClickRow: function (row, $element) {
+
+            }
+
+        });
+
+        $("button[id='search']").click(function () {
+            $("#dataTable table").bootstrapTable('refresh');
+        });
+
+        $("button[id='refresh']").click(function () {
+            $("input[name='name']").val("");
+            $("input[name='dateRange']").val("");
+            $("select[name='channel']").find("option:selected").prop("selected", "");
+            $("select[name='channel']").find("option[text='全部']").prop("selected", "selected");
+        });
+
+        $("button[id='export']").click(function () {
+            $("#form1").attr('action', "/finance/settlementSummary/download/excel");
+            $("#form1").attr('method', "POST");
+            $("#form1").submit();
+        });
+
+        $('.settlementName').typeahead({
+            source: function (query, process) {
+                $.ajax({
+                    type: 'POST',
+                    url: "/partner/getPartnerByNameLikeLimit",
+                    data: {
+                        name: query,
+                        limit: "8"
+                    },
+                    dataType: "json",
+                    success: function (result) {
+                        // return process(JSON.parse(result.data));
+                        return process(result.data);
+                    }, error: function (error) {
+                        console.log(error);
+                    }
+                });
+            }
+        });
+
+    });
+
+
+</script>
+
+</html>
