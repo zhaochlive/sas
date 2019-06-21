@@ -4,12 +4,15 @@ import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.metadata.BaseRowModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import javax.persistence.Id;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
 public class AccountsPayable extends BaseRowModel implements Serializable {
 
+    @Id
+    private Integer id;
     @ApiModelProperty(notes = "日期")
     @ExcelProperty(value = "日期", index = 0)
     private Date tradetime;
@@ -55,6 +58,14 @@ public class AccountsPayable extends BaseRowModel implements Serializable {
     private int rechargestate;
     @ApiModelProperty(notes = "充值平台")
     private int rechargeperform;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
     public int getRechargeperform() {
         return rechargeperform;

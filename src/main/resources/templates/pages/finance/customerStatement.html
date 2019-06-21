@@ -94,25 +94,20 @@
                                         <div class="form-group row col-sm-4">
                                             <label class="col-sm-3 col-form-label">开票名称：</label>
                                             <div class="col-sm-9">
-                                                <input type="text" placeholder="开票名称" name="invoiceName"
-                                                       id="invoiceName"
-                                                       class="settlementName form-control"/>
+                                                <input type="text" placeholder="开票名称" name="invoiceName" id="invoiceName" class="form-control"/>
                                             </div>
                                         </div>
                                         <div class="form-group row col-sm-4">
                                             <label class="col-sm-3 col-form-label">日期范围：</label>
                                             <div class="col-sm-9">
-                                                <input class="form-control" type="text" placeholder="日期范围"
-                                                       name="dateRange"
-                                                       value=""/>
+                                                <input class="form-control" type="text" placeholder="日期范围" name="dateRange" value=""/>
                                             </div>
                                         </div>
                                         <div class="form-group row col-sm-4">
                                             <label class="col-sm-3 col-form-label">会员编号：</label>
                                             <div class="col-sm-9">
                                                 <div class="col-sm-9">
-                                                    <input type="text" placeholder="会员编号" name="userNo" id="userNo"
-                                                           class="settlementName form-control"/>
+                                                    <input type="text" placeholder="会员编号" name="userNo" id="userNo" class=" form-control"/>
                                                 </div>
                                             </div>
                                         </div>
@@ -122,21 +117,21 @@
                                         <div class="form-group row col-sm-4">
                                             <label class="col-sm-3 col-form-label">会员全称：</label>
                                             <div class="col-sm-9">
-                                                <input type="text" placeholder="会员全称" name="userName" id="userName"
-                                                       class="settlementName form-control"/>
+                                                <input type="text" placeholder="会员全称" name="userName" id="userName" class="settlementName form-control"/>
                                             </div>
                                         </div>
                                         <div class="form-group row col-sm-4">
                                             <label class="col-sm-3 col-form-label">公司名称：</label>
                                             <div class="col-sm-9">
-                                                <input type="text" placeholder="公司名称" name="companyname"
-                                                       id="companyname"
-                                                       class="settlementName form-control"/>
+                                                <input type="text" placeholder="公司名称" name="companyname" id="companyname" class="settlementName form-control"/>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="box-footer">
+                                    <input type="hidden" id="startDate" name="startDate" value=""/>
+                                    <input type="hidden" id="endDate" name="endDate" value=""/>
+                                    <input type="hidden" id="limit" name="limit" value=""/>
                                     <button type="button" class="btn btn-primary pull-right" id="search"
                                             style="margin-left:20px;">搜
                                         索
@@ -202,11 +197,11 @@
     var endDate = "";
 
     $('input[name="dateRange"]').daterangepicker({
-        "timePicker": false,
-        "autoUpdateInput": false,
-        "showDropdowns": true,
-        "autoApply": true,
-        "locale": {
+        timePicker: false,
+        autoUpdateInput: false,
+        showDropdowns: true,
+        autoApply: true,
+        locale: {
             format: 'YYYY-MM-DD',
             applyLabel: '确定',
             cancelLabel: '取消',
@@ -220,15 +215,16 @@
             firstDay: moment.localeData()._week.dow
         }
     }, function (start, end, label) {
-        startDate = this.startDate.format(this.locale.format);
-        endDate = this.endDate.format(this.locale.format);
-        if (!this.startDate) {
+        startDate = start.format(this.locale.format);
+        endDate = end.format(this.locale.format);
+        if (!start) {
             this.element.val('');
         } else {
+            $("#startDate").val(startDate);
+            $("#endDate").val(endDate);
             this.element.val(startDate + this.locale.separator + endDate);
         }
     });
-
 
     function add0(m) {
         return m < 10 ? '0' + m : m
@@ -240,7 +236,7 @@
             var time = new Date(value);
             var y = time.getFullYear();
             var m = time.getMonth() + 1;
-            var d = time.getDate() - 1;
+            var d = time.getDate();
             var h = time.getHours();
             var mm = time.getMinutes();
             var s = time.getSeconds();
@@ -249,24 +245,26 @@
         // return value;
     }
 
-/*    function phoneOrPc() {
-        var sUserAgent = navigator.userAgent.toLowerCase();
-        var bIsIpad = sUserAgent.match(/ipad/i) == "ipad";
-        var bIsIphoneOs = sUserAgent.match(/iphone os/i) == "iphone os";
-        var bIsMidp = sUserAgent.match(/midp/i) == "midp";
-        var bIsUc7 = sUserAgent.match(/rv:1.2.3.4/i) == "rv:1.2.3.4";
-        var bIsUc = sUserAgent.match(/ucweb/i) == "ucweb";
-        var bIsAndroid = sUserAgent.match(/android/i) == "android";
-        var bIsCE = sUserAgent.match(/windows ce/i) == "windows ce";
-        var bIsWM = sUserAgent.match(/windows mobile/i) == "windows mobile";
-        if (bIsIpad || bIsIphoneOs || bIsMidp || bIsUc7 || bIsUc || bIsAndroid || bIsCE || bIsWM) {
-            return false;
-        } else {
-            return true;
+    $('.settlementName').typeahead({
+        source: function (query, process) {
+            $.ajax({
+                type: 'POST',
+                url: "/partner/getPartnerByNameLikeLimit",
+                data: {
+                    name: query,
+                    limit: "8"
+                },
+                dataType: "json",
+                success: function (result) {
+                    // return process(JSON.parse(result.data));
+                    return process(result.data);
+                }, error: function (error) {
+                    console.log(error);
+                }
+            });
         }
-    }*/
-
-    $(document).ready(function () {
+    });
+function strike() {
 
         var $dataTable = $("#dataTable table").bootstrapTable({
             method: "POST",
@@ -275,7 +273,7 @@
             pagination: true,
             sortable: true,
             pageNumber: 1,
-            pageSize: 50,
+            pageSize: 20,
             pageList: [10, 20, 50, 100],
             clickToSelect: true,
             locale: "zh-CN",
@@ -306,7 +304,8 @@
                 align: 'center',
                 valign: 'middle',
                 formatter: function (value, row, index) {
-                    return changeDateFormat(row.tradetime)
+                    // console.info(row.tradetime);
+                    return changeDateFormat(row.tradetime);
                 }
             }, {
                 field: 'orderno',
@@ -359,7 +358,10 @@
                 align: 'center',
                 valign: 'middle'
             }], onLoadSuccess: function (data) {
-                console.info(data)
+                if(data.total==0){
+                    $("#dataTable table").bootstrapTable('removeAll');
+                    // alert("未查询到数据");
+                }
             },
             onLoadError: function () {
                 console.log("数据加载失败！");
@@ -367,48 +369,32 @@
             onDblClickRow: function (row, $element) {
             }
         });
-
-        //搜索按钮
-        $("button[id='search']").click(function () {
-            $("#dataTable table").bootstrapTable('refresh');
-        });
+}
+    //搜索按钮
+    $("button[id='search']").click(function () {
+        // $("#dataTable table").bootstrapTable('refresh');
+        strike();
+    });
+    //清空按钮
+    $("button[id='refresh']").click(function () {
+        $("input[name='userName']").val("");
+        $("input[name='companyname']").val("");
+        $("input[name='userNo']").val("");
+        $("input[name='invoiceName']").val("");
+        $("input[name='dateRange']").val("");
 
     });
 
     //导出excel功能按钮
     $("button[id='export']").click(function () {
-        // var params = {
-            var userName = $("#userName").val(),
-            userNo= $("#userNo").val(),
-            invoiceName = $("#invoiceName").val(),
-            companyname = $("#companyname").val(),
-            startDate=startDate,
-            endDate=endDate;
-        // };
+        var userName = $("#userName").val(),
+        userNo= $("#userNo").val(),
+        invoiceName = $("#invoiceName").val(),
+        companyname = $("#companyname").val(),
+        startDate=$("#startDate").val(),
+        endDate=$("#endDate").val();
         var url = "/buyerCapital/download/excel";
-        // $("#form1").attr('action', url);
-        // $("#form1").attr('method', "POST");
-        // $("#form1").attr('Content-Type', "application/json; charset=utf-8");
-        // $("#form1").attr('params', JSON.stringify(params));
-        // $("#form1").submit();
-        window.location.href=url+"?userName="+userName+"&userNo"+userNo+"&invoiceName"+invoiceName+"&companyname"+companyname+"&startDate"+startDate+"&endDate"+endDate;
-
-        // $.ajax({
-        //     type: 'POST',
-        //     url: url,
-        //     data: JSON.stringify(params),
-        //     contentType: "application/json; charset=utf-8",
-        //     dataType: "json",
-        //     success: function (data) {
-        //         var $a = $("<a>");
-        //         $a.attr("href", redata.data.file);
-        //         $a.attr("download", redata.data.filename);
-        //         $("body").append($a);
-        //         $a[0].click();
-        //         $a.remove();
-        //     }
-        //
-        // });
+        window.location.href=url+"?userName="+userName+"&userNo="+userNo+"&invoiceName="+invoiceName+"&companyname="+companyname+"&startDate="+startDate+"&endDate="+endDate;
     });
 
 </script>

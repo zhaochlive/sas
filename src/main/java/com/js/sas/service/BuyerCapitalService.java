@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -259,6 +260,8 @@ public class BuyerCapitalService {
 
                 }
 
+            }else {
+                accountsPayables = null;
             }
         }
         result.put("total",count);
@@ -274,9 +277,10 @@ public class BuyerCapitalService {
         List<BuyerCapital> buyerCapitals = jdbcTemplate.query(getResultSql(params), new RowMapper() {
                     @Override
                     public BuyerCapital mapRow(ResultSet rs, int rowNum) throws SQLException {
+//                        log.info("orderno:{},Timestamp:{},Date:{},String{}",rs.getString("tradeno"),rs.getTimestamp("tradeTime").toString(),rs.getDate("tradeTime").toString(),rs.getString("tradeTime"));
                         BuyerCapital buyerCapital = new BuyerCapital();
                         buyerCapital.setId(rs.getInt("id"));
-                        buyerCapital.setTradeTime(rs.getTimestamp("tradeTime"));
+                        buyerCapital.setTradeTime(Timestamp.valueOf(rs.getString("tradeTime")));
                         buyerCapital.setTradeNo(rs.getString("tradeno"));
                         buyerCapital.setOrderNo(rs.getString("orderno"));
                         buyerCapital.setPayType(rs.getInt("paytype"));
@@ -326,41 +330,39 @@ public class BuyerCapitalService {
                 " FROM buyer_capital ca WHERE 1 = 1 AND ca.capitaltype in (0,1,2,3,6,10) ");
 
         if(params!=null){
-            if (params.get("invoiceName")!=null&& StringUtils.isNotBlank(params.get("invoiceName"))){
-                sb.append(" and ca.invoiceheadup like concat('%','"+params.get("invoiceName")+"','%')");
+            if (params.containsKey("invoiceName")&& StringUtils.isNotBlank(params.get("invoiceName"))){
+                sb.append(" and ca.invoiceheadup ='"+params.get("invoiceName")+"'");
             }
-            if (params.get("userNo")!=null&&StringUtils.isNotBlank(params.get("userNo"))){
+            if (params.containsKey("userNo")&&StringUtils.isNotBlank(params.get("userNo"))){
                 sb.append(" and ca.memberid ='"+params.get("userNo")+"' ");
             }
-            if (params.get("companyname")!=null&&StringUtils.isNotBlank(params.get("companyname"))){
-                sb.append(" and ca.companyname like concat('%','"+params.get("companyname")+"','%')");
+            if (params.containsKey("companyname")&&StringUtils.isNotBlank(params.get("companyname"))){
+                sb.append(" and ca.companyname =‘"+params.get("companyname")+"'");
             }
-            if (params.get("userName")!=null&&StringUtils.isNotBlank(params.get("userName"))){
+            if (params.containsKey("userName")&&StringUtils.isNotBlank(params.get("userName"))){
                 sb.append(" and ca.member_username ='"+params.get("userName")+"' ");
             }
 //            if (params.get("seller")!=null&&StringUtils.isNotBlank(params.get("seller"))){
 //                sb.append(" and ca.sellerid ='"+params.get("seller")+"' ");
 //            }
-            if (params.get("startDate")!=null&&StringUtils.isNotBlank(params.get("startDate"))){
+            if (params.containsKey("startDate")&&StringUtils.isNotBlank(params.get("startDate"))){
                 sb.append(" and ca.tradetime >='"+params.get("startDate")+"' ");
             }
-            if (params.get("endDate")!=null&&StringUtils.isNotBlank(params.get("endDate"))){
+            if (params.containsKey("endDate")&&StringUtils.isNotBlank(params.get("endDate"))){
                 sb.append(" and ca.tradetime <='"+params.get("endDate")+"' ");
             }
-            int offset = 0;//页码
+            int offset = 0;//起始位置
 
-            if (params.get("offset")!=null&&StringUtils.isNotBlank(params.get("offset"))){
+            if (params.containsKey("offset")&&StringUtils.isNotBlank(params.get("offset"))){
                 offset = Integer.parseInt(params.get("offset"));
             }
 
-            if(offset==0){
-                sb.append(" Order By ca.tradetime limit 0,50 ) bc  " );
-            }else{
+            if(offset!=0){
                 sb.append(" Order By ca.tradetime limit 0,"+ offset +") bc ");
             }
 
         }else{
-            sb.append(" Order By ca.tradetime limit 0,50 ) bc " );
+            sb.append(" Order By ca.tradetime limit 0,20 ) bc " );
         }
         log.info("returnCapitalAccount.getAfterSql :{}",sb.toString());
         return sb.toString();
@@ -405,7 +407,7 @@ public class BuyerCapitalService {
         sb.append(" from buyer_capital bc where  bc.capitaltype in (0,1,2,3,6,10)");
         if(params!=null){
             if (params.containsKey("invoiceName")&& StringUtils.isNotBlank(params.get("invoiceName"))){
-                sb.append(" and bc.invoiceheadup like concat('%','"+params.get("invoiceName")+"','%')");
+                sb.append(" and bc.invoiceheadup ='"+params.get("invoiceName")+"'");
             }
             if (params.containsKey("userNo")&&StringUtils.isNotBlank(params.get("userNo"))){
                 sb.append(" and bc.memberid ='"+params.get("userNo")+"' ");
@@ -414,7 +416,7 @@ public class BuyerCapitalService {
                 sb.append(" and bc.member_username ='"+params.get("userName")+"' ");
             }
             if (params.containsKey("companyname")&&StringUtils.isNotBlank(params.get("companyname"))){
-                sb.append(" and bc.companyname like concat('%','"+params.get("companyname")+"','%')");
+                sb.append(" and bc.companyname ='"+params.get("companyname")+"'");
             }
 //            if (params.containsKey("seller")&&StringUtils.isNotBlank(params.get("seller"))){
 //                sb.append(" and bc.sellerid ='"+params.get("seller")+"' ");
@@ -426,18 +428,18 @@ public class BuyerCapitalService {
                 sb.append(" and bc.tradetime <='"+params.get("endDate")+" 23:59:59' ");
             }
 
-            int pageSize = 50;
-            int offset = 0;
+            Integer pageSize = 20;
+            Integer offset = 0;
             if (params.containsKey("limit")||StringUtils.isNotBlank(params.get("limit"))){
                 pageSize = Integer.parseInt(params.get("limit"));
             }
             if (params.containsKey("offset")||StringUtils.isNotBlank(params.get("offset"))){
                 offset = Integer.parseInt(params.get("offset"));
             }
-            sb.append(" Order By bc.tradetime  limit "+offset+","+ offset+pageSize +";");
+            sb.append(" Order By bc.tradetime  limit "+offset+","+ pageSize  +";");
 
         }else{
-            sb.append(" Order By bc.tradetime limit 0,50" );
+            sb.append(" Order By bc.tradetime limit 0,20" );
         }
         log.info("returnCapitalAccount.getResultSql :{}",sb.toString());
         return sb.toString();

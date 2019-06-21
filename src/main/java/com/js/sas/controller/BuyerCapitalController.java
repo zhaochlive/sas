@@ -46,7 +46,7 @@ public class BuyerCapitalController {
     @ResponseBody
     public Object listForAccount(@ApiParam @RequestBody Map<String, String> params) {
         for (String str : params.keySet()) {
-            log.info("参数key : {} ,value {}", str, params.get("str"));
+            log.info("参数key : {} ,value {}", str, params.get(str));
         }
         return buyerCapitalService.getAccountsPayable(params);
     }
@@ -65,11 +65,11 @@ public class BuyerCapitalController {
         if(StringUtils.isNotBlank(userNo)){params.put("userNo",userNo);}
         if(StringUtils.isNotBlank(invoiceName)){params.put("invoiceName",invoiceName);}
         if(StringUtils.isNotBlank(companyname)){params.put("companyname",companyname);}
-        if(StringUtils.isNotBlank(companyname)){params.put("startDate",startDate);}
-        if(StringUtils.isNotBlank(companyname)){params.put("endDate",endDate);}
+        if(StringUtils.isNotBlank(startDate)){params.put("startDate",startDate);}
+        if(StringUtils.isNotBlank(endDate)){params.put("endDate",endDate);}
             params.put("offset","0");
             params.put("limit","10000000");
-        log.info("参数userName:{},userNo:{},invoiceName:{},companyname:{}", userName,userNo,invoiceName,companyname);
+        log.info("参数userName:{},userNo:{},invoiceName:{},companyname:{},startDate:{},endDate{}:", userName,userNo,invoiceName,companyname,startDate,endDate);
         try {
             Map<String, Object> map = buyerCapitalService.getAccountsPayable(params);
             List<AccountsPayable> accountsPayables = (List<AccountsPayable>) map.get("rows");
