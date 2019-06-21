@@ -144,10 +144,10 @@
                                     <button type="button" class="btn btn-default pull-right" id="refresh"
                                             style="margin-left:20px;">清 空
                                     </button>
-                                    <!--                            <button type="button" class="btn btn-default pull-right" id="export"-->
-                                    <!--                                    style="margin-left:20px;">-->
-                                    <!--                                导出Excel-->
-                                    <!--                            </button>-->
+                                    <button type="button" class="btn btn-default pull-right" id="export"
+                                            style="margin-left:20px;">
+                                        导出Excel
+                                    </button>
                                 </div>
                             </form>
                         </div>
@@ -249,7 +249,7 @@
         // return value;
     }
 
-    function phoneOrPc() {
+/*    function phoneOrPc() {
         var sUserAgent = navigator.userAgent.toLowerCase();
         var bIsIpad = sUserAgent.match(/ipad/i) == "ipad";
         var bIsIphoneOs = sUserAgent.match(/iphone os/i) == "iphone os";
@@ -264,7 +264,7 @@
         } else {
             return true;
         }
-    }
+    }*/
 
     $(document).ready(function () {
 
@@ -354,7 +354,7 @@
                 align: 'center',
                 valign: 'middle'
             }, {
-                field: '.remark',
+                field: 'remark',
                 title: '备注',
                 align: 'center',
                 valign: 'middle'
@@ -372,36 +372,44 @@
         $("button[id='search']").click(function () {
             $("#dataTable table").bootstrapTable('refresh');
         });
-        //导出excel功能按钮
-        $("button[id='export']").click(function () {
-            var params = {
-                userName: $("#userName").val(),
-                userNo: $("#userNo").val(),
-                invoiceName: $("#invoiceName").val(),
-                sellerid: $("#seller").val(),
-            };
-            // var url = "/buyerCapital/download/excel";
-            // $("#form1").attr('action', url);
-            // $("#form1").attr('method', "POST");
-            // $("#form1").attr('contentType', "application/json; charset=utf-8");
-            // // $("#form1").attr('params', JSON.stringify(params));
-            // $("#form1").submit();
-
-            // $.ajax({
-            //     type: 'POST',
-            //     url: url,
-            //     data: JSON.stringify(params),
-            //     contentType: "application/json; charset=utf-8",
-            //     // dataType: "json",
-            //     success: function (data) {
-            //
-            //     }
-            //
-            // });
-        });
 
     });
 
+    //导出excel功能按钮
+    $("button[id='export']").click(function () {
+        // var params = {
+            var userName = $("#userName").val(),
+            userNo= $("#userNo").val(),
+            invoiceName = $("#invoiceName").val(),
+            companyname = $("#companyname").val(),
+            startDate=startDate,
+            endDate=endDate;
+        // };
+        var url = "/buyerCapital/download/excel";
+        // $("#form1").attr('action', url);
+        // $("#form1").attr('method', "POST");
+        // $("#form1").attr('Content-Type', "application/json; charset=utf-8");
+        // $("#form1").attr('params', JSON.stringify(params));
+        // $("#form1").submit();
+        window.location.href=url+"?userName="+userName+"&userNo"+userNo+"&invoiceName"+invoiceName+"&companyname"+companyname+"&startDate"+startDate+"&endDate"+endDate;
+
+        // $.ajax({
+        //     type: 'POST',
+        //     url: url,
+        //     data: JSON.stringify(params),
+        //     contentType: "application/json; charset=utf-8",
+        //     dataType: "json",
+        //     success: function (data) {
+        //         var $a = $("<a>");
+        //         $a.attr("href", redata.data.file);
+        //         $a.attr("download", redata.data.filename);
+        //         $("body").append($a);
+        //         $a[0].click();
+        //         $a.remove();
+        //     }
+        //
+        // });
+    });
 
 </script>
 

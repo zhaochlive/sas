@@ -98,7 +98,7 @@ public class BuyerCapitalService {
                                 accountsPayable.setReceivableAccount(Receivableaccount);
                                 accountsPayable.setInvoicebalance(InvoiceBalance);
                                 accountsPayable.setRemark(buyerCapital.getInvoiceHeadUp() == null ? "" : buyerCapital.getInvoiceHeadUp()
-                                        + "$" + buyerCapital.getMemberId() + "&" + buyerCapital.getMemberUserName());
+                                        + "\r\n" + buyerCapital.getMemberId() + "\r\n" + buyerCapital.getMemberUserName());
                                 accountsPayables.add(accountsPayable);
                                 //然后再添加一条发货记录，【应收账款】加钱
                                 accountsPayable = transitionToAccountsPayable(buyerCapital);
@@ -110,7 +110,7 @@ public class BuyerCapitalService {
                                 InvoiceBalance = InvoiceBalance.add(buyerCapital.getCapital());
                                 accountsPayable.setInvoicebalance(InvoiceBalance);
                                 accountsPayable.setRemark(buyerCapital.getInvoiceHeadUp() == null ? "" : buyerCapital.getInvoiceHeadUp()
-                                        + "$" + buyerCapital.getMemberId() + "&" + buyerCapital.getMemberUserName());
+                                        + "\r\n" + buyerCapital.getMemberId() + "\r\n" + buyerCapital.getMemberUserName());
                                 accountsPayables.add(accountsPayable);
                             } else if (buyerCapital.getPayType() == BuyerCapitalConst.PAYMETHOD_BALANCE
                                     || buyerCapital.getPayType() == BuyerCapitalConst.PAYMETHOD_CREDIT) {
@@ -123,7 +123,7 @@ public class BuyerCapitalService {
                                 InvoiceBalance = InvoiceBalance.add(buyerCapital.getCapital());
                                 accountsPayable.setInvoicebalance(InvoiceBalance);
                                 accountsPayable.setRemark(buyerCapital.getInvoiceHeadUp() == null ? "" : buyerCapital.getInvoiceHeadUp()
-                                        + "$" + buyerCapital.getMemberId() + "&" + buyerCapital.getMemberUserName());
+                                        + "\r\n" + buyerCapital.getMemberId() + "\r\n" + buyerCapital.getMemberUserName());
                                 accountsPayables.add(accountsPayable);
                             }
                             break;
@@ -171,7 +171,7 @@ public class BuyerCapitalService {
                                 accountsPayable.setInvoicebalance(InvoiceBalance);
                                 accountsPayable.setPaytype(5);
                                 accountsPayable.setRemark(buyerCapital.getInvoiceHeadUp() == null ? "" : buyerCapital.getInvoiceHeadUp()
-                                        + "$" + buyerCapital.getMemberId() + "&" + buyerCapital.getMemberUserName());
+                                        + "\r\n" + buyerCapital.getMemberId() + "\r\n" + buyerCapital.getMemberUserName());
                                 accountsPayables.add(accountsPayable);
                             }
                             break;
@@ -208,7 +208,7 @@ public class BuyerCapitalService {
                                 accountsPayable.setInvoicebalance(InvoiceBalance);
                                 accountsPayable.setPaytype(5);
                                 accountsPayable.setRemark(buyerCapital.getInvoiceHeadUp() != null ? "" : buyerCapital.getInvoiceHeadUp()
-                                        + "$" + buyerCapital.getMemberId() + "&" + buyerCapital.getMemberUserName());
+                                        + "\r\n" + buyerCapital.getMemberId() + "\r\n" + buyerCapital.getMemberUserName());
                                 accountsPayables.add(accountsPayable);
                                 //再添加一条记录
                                 accountsPayable = transitionToAccountsPayable(buyerCapital);
@@ -220,7 +220,7 @@ public class BuyerCapitalService {
                                 accountsPayable.setReceivableAccount(Receivableaccount);
                                 accountsPayable.setInvoicebalance(InvoiceBalance);
                                 accountsPayable.setRemark(buyerCapital.getInvoiceHeadUp() == null ? "" : buyerCapital.getInvoiceHeadUp()
-                                        + "$" + buyerCapital.getMemberId() + "&" + buyerCapital.getMemberUserName());
+                                        + "\r\n" + buyerCapital.getMemberId() + "\r\n" + buyerCapital.getMemberUserName());
                                 accountsPayables.add(accountsPayable);
 
                             } else {
@@ -234,7 +234,7 @@ public class BuyerCapitalService {
                                 InvoiceBalance = InvoiceBalance.add(accountsPayable.getDeliveryAmount());
                                 accountsPayable.setInvoicebalance(InvoiceBalance);
                                 accountsPayable.setRemark(buyerCapital.getInvoiceHeadUp() == null ? "" : buyerCapital.getInvoiceHeadUp()
-                                        + "$" + buyerCapital.getMemberId() + "&" + buyerCapital.getMemberUserName());
+                                        + "\r\n" + buyerCapital.getMemberId() + "\r\n" + buyerCapital.getMemberUserName());
                                 accountsPayables.add(accountsPayable);
                             }
                             break;
@@ -338,9 +338,9 @@ public class BuyerCapitalService {
             if (params.get("userName")!=null&&StringUtils.isNotBlank(params.get("userName"))){
                 sb.append(" and ca.member_username ='"+params.get("userName")+"' ");
             }
-            if (params.get("seller")!=null&&StringUtils.isNotBlank(params.get("seller"))){
-                sb.append(" and ca.sellerid ='"+params.get("seller")+"' ");
-            }
+//            if (params.get("seller")!=null&&StringUtils.isNotBlank(params.get("seller"))){
+//                sb.append(" and ca.sellerid ='"+params.get("seller")+"' ");
+//            }
             if (params.get("startDate")!=null&&StringUtils.isNotBlank(params.get("startDate"))){
                 sb.append(" and ca.tradetime >='"+params.get("startDate")+"' ");
             }
@@ -388,7 +388,7 @@ public class BuyerCapitalService {
         accountsPayable.setOtherAmount(capital.getCapital());
         accountsPayable.setPaytype(capital.getPayType()==null?0:capital.getPayType());
         accountsPayable.setPayno(capital.getTransactionId());
-        accountsPayable.setRemark("操作人: "+(capital.getOperation()==null?"":capital.getOperation())+"$"+"审核人: "+(capital.getVerify()==null?"":capital.getVerify())+"$"+capital.getMemberId()+"$"+capital.getMemberUserName());
+        accountsPayable.setRemark("操作人: "+(capital.getOperation()==null?"":capital.getOperation())+"\r\n"+"审核人: "+(capital.getVerify()==null?"":capital.getVerify())+"\r\n"+capital.getMemberId()+"\r\n"+capital.getMemberUserName());
         accountsPayable.setRechargestate(capital.getRechargeState());
         accountsPayable.setUsername(capital.getMemberUserName());
         accountsPayable.setRechargeperform(capital.getRechargePerform());
@@ -404,38 +404,37 @@ public class BuyerCapitalService {
     private String getString(Map<String, String> params, StringBuilder sb) {
         sb.append(" from buyer_capital bc where  bc.capitaltype in (0,1,2,3,6,10)");
         if(params!=null){
-            if (params.get("invoiceName")!=null&& StringUtils.isNotBlank(params.get("invoiceName"))){
+            if (params.containsKey("invoiceName")&& StringUtils.isNotBlank(params.get("invoiceName"))){
                 sb.append(" and bc.invoiceheadup like concat('%','"+params.get("invoiceName")+"','%')");
             }
-            if (params.get("userNo")!=null&&StringUtils.isNotBlank(params.get("userNo"))){
+            if (params.containsKey("userNo")&&StringUtils.isNotBlank(params.get("userNo"))){
                 sb.append(" and bc.memberid ='"+params.get("userNo")+"' ");
             }
-            if (params.get("userName")!=null&&StringUtils.isNotBlank(params.get("userName"))){
+            if (params.containsKey("userName")&&StringUtils.isNotBlank(params.get("userName"))){
                 sb.append(" and bc.member_username ='"+params.get("userName")+"' ");
             }
-            if (params.get("companyname")!=null&&StringUtils.isNotBlank(params.get("companyname"))){
+            if (params.containsKey("companyname")&&StringUtils.isNotBlank(params.get("companyname"))){
                 sb.append(" and bc.companyname like concat('%','"+params.get("companyname")+"','%')");
             }
-            if (params.get("seller")!=null&&StringUtils.isNotBlank(params.get("seller"))){
-                sb.append(" and bc.sellerid ='"+params.get("seller")+"' ");
-            }
-            if (params.get("startDate")!=null&&StringUtils.isNotBlank(params.get("startDate"))){
+//            if (params.containsKey("seller")&&StringUtils.isNotBlank(params.get("seller"))){
+//                sb.append(" and bc.sellerid ='"+params.get("seller")+"' ");
+//            }
+            if (params.containsKey("startDate")&&StringUtils.isNotBlank(params.get("startDate"))){
                 sb.append(" and bc.tradetime >='"+params.get("startDate")+" 00:00:00' ");
             }
-            if (params.get("endDate")!=null&&StringUtils.isNotBlank(params.get("endDate"))){
+            if (params.containsKey("endDate")&&StringUtils.isNotBlank(params.get("endDate"))){
                 sb.append(" and bc.tradetime <='"+params.get("endDate")+" 23:59:59' ");
             }
 
             int pageSize = 50;
-            int page = 0;
-            if (params.get("limit")!=null||StringUtils.isNotBlank(params.get("limit"))){
+            int offset = 0;
+            if (params.containsKey("limit")||StringUtils.isNotBlank(params.get("limit"))){
                 pageSize = Integer.parseInt(params.get("limit"));
             }
-            if (params.get("page")!=null||StringUtils.isNotBlank(params.get("page"))){
-                page = Integer.parseInt(params.get("page"));
+            if (params.containsKey("offset")||StringUtils.isNotBlank(params.get("offset"))){
+                offset = Integer.parseInt(params.get("offset"));
             }
-            sb.append(" " );
-            sb.append(" Order By bc.tradetime  limit "+(page-1)*pageSize+","+ page*pageSize +";");
+            sb.append(" Order By bc.tradetime  limit "+offset+","+ offset+pageSize +";");
 
         }else{
             sb.append(" Order By bc.tradetime limit 0,50" );
