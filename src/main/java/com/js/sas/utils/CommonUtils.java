@@ -4,15 +4,12 @@ import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.metadata.BaseRowModel;
 import com.alibaba.excel.metadata.Sheet;
 import com.alibaba.excel.support.ExcelTypeEnum;
-import org.springframework.validation.BindingResult;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -46,10 +43,11 @@ public class CommonUtils {
      *
      * @param response HttpServletResponse
      * @param dataList 导出类List
-     * @param fileName 导出文件名，目前sheet页是相同名称。
-     * @throws IOException
+     * @param fileName 导出文件名，目前sheet页是相同名称
+     * @param clazz 对应导出Entity，需要继承BaseRowModel
+     * @throws IOException @Description
      */
-    public static void export(HttpServletResponse response, List dataList, String fileName, BaseRowModel clazz) throws IOException {
+    public static void export(HttpServletResponse response, List<? extends BaseRowModel> dataList, String fileName, BaseRowModel clazz) throws IOException {
         fileName = new String((fileName + new Date().getTime()).getBytes(), "ISO8859-1");
         ServletOutputStream out = response.getOutputStream();
         response.setContentType("multipart/form-data");

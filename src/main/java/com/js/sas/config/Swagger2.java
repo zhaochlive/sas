@@ -19,7 +19,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  * @Author zc
  * @Date 2019/6/20 17:59
  **/
-@Configuration
+//@Configuration
 @EnableSwagger2
 @Profile("dev")
 public class Swagger2 extends WebMvcConfigurationSupport {
