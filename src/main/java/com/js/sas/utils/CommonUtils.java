@@ -4,15 +4,14 @@ import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.metadata.BaseRowModel;
 import com.alibaba.excel.metadata.Sheet;
 import com.alibaba.excel.support.ExcelTypeEnum;
-import org.springframework.validation.BindingResult;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -47,15 +46,15 @@ public class CommonUtils {
      * @param response HttpServletResponse
      * @param dataList 导出类List
      * @param fileName 导出文件名，目前sheet页是相同名称
-     * @param clazz 对应导出Entity，需要继承BaseRowModel
+     * @param clazz    对应导出Entity，需要继承BaseRowModel
      * @throws IOException @Description
      */
-    public static void export(HttpServletResponse response, List dataList, String fileName, BaseRowModel clazz) throws IOException {
-        fileName = new String((fileName + new Date().getTime()).getBytes(), "UTF-8");
+    public static void export(HttpServletResponse response, List<? extends BaseRowModel> dataList, String fileName, BaseRowModel clazz) throws IOException {
+        fileName = new String((fileName + new Date().getTime()).getBytes(), StandardCharsets.UTF_8);
         ServletOutputStream out = response.getOutputStream();
         response.setContentType("multipart/form-data");
         response.setCharacterEncoding("utf-8");
-        response.setHeader("Content-Disposition", "attachment;filename*= UTF-8''"+ URLEncoder.encode(fileName,"UTF-8")+ ".xlsx");
+        response.setHeader("Content-Disposition", "attachment;filename*= UTF-8''" + URLEncoder.encode(fileName, StandardCharsets.UTF_8) + ".xlsx");
         ExcelWriter writer = new ExcelWriter(out, ExcelTypeEnum.XLSX, true);
         Sheet sheet1 = new Sheet(1, 0, clazz.getClass());
         sheet1.setSheetName(fileName);
