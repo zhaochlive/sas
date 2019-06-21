@@ -7,8 +7,9 @@ package com.js.sas.utils;
  * @Date 2019/6/13 10:47
  **/
 public enum ResultCode {
-    成功("0000"),
+
     参数错误("1001"),
+    成功("0000"),
     系统异常("9999");
 
     //状态码

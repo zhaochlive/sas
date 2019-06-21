@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -47,15 +46,15 @@ public class CommonUtils {
      *
      * @param response HttpServletResponse
      * @param dataList 导出类List
-     * @param fileName 导出文件名，目前sheet页是相同名称。
-     * @throws IOException
+     * @param fileName 导出文件名，目前sheet页是相同名称
+     * @param clazz 对应导出Entity，需要继承BaseRowModel
+     * @throws IOException @Description
      */
     public static void export(HttpServletResponse response, List dataList, String fileName, BaseRowModel clazz) throws IOException {
         fileName = new String((fileName + new Date().getTime()).getBytes(), "UTF-8");
         ServletOutputStream out = response.getOutputStream();
         response.setContentType("multipart/form-data");
         response.setCharacterEncoding("utf-8");
-//        response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xlsx");
         response.setHeader("Content-Disposition", "attachment;filename*= UTF-8''"+ URLEncoder.encode(fileName,"UTF-8")+ ".xlsx");
         ExcelWriter writer = new ExcelWriter(out, ExcelTypeEnum.XLSX, true);
         Sheet sheet1 = new Sheet(1, 0, clazz.getClass());

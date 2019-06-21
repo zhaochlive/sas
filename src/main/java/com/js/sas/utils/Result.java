@@ -22,5 +22,4 @@ public class Result implements Serializable {
     private String message;
     // 数据
     private Object data;
-
 }

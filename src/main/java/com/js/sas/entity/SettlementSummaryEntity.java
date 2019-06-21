@@ -3,6 +3,7 @@ package com.js.sas.entity;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.metadata.BaseRowModel;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -28,6 +29,7 @@ import java.io.Serializable;
                 @StoredProcedureParameter(mode = ParameterMode.OUT, name = "totalNum", type = Integer.class)
         })
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class SettlementSummaryEntity extends BaseRowModel implements Serializable {
 
     private static final long serialVersionUID = 1L;
