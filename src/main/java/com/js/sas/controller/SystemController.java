@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import springfox.documentation.annotations.ApiIgnore;
 
 /**
- * @ClassName SysteController
+ * @ClassName SystemController
  * @Description 系统Controller
  * @Author zc
  * @Date 2019/6/18 15:00

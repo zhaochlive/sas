@@ -1,726 +1,561 @@
 <!doctype html>
 <html lang="zh-CN">
-  <head>
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <link rel="stylesheet" href="css/bootstrap-4.3.1.min.css">
-	<link rel="stylesheet" href="plugins/fontawesome/css/all.min.css">
-	<link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="plugins/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
 
     <title>统计分析系统</title>
-  </head>
-  
-  <body>
-    <div id="wrapper">
-        <nav class="navbar-default navbar-static-side" role="navigation">
-            <div class="sidebar-collapse">
-                <ul class="nav metismenu" id="side-menu">
-                    <li class="nav-header">
-                        <div class="dropdown profile-element">
-                            <a data-toggle="dropdown" class="dropdown-toggle" href="#">
-                                <span class="block m-t-xs font-bold">管理员</span>
-                                <span class="text-muted text-xs block">紧商科技 <b class="caret"></b></span>
-                            </a>
-                            <ul class="dropdown-menu animated fadeInRight m-t-xs">
-                                <li><a class="dropdown-item" href="profile.html">修改密码</a></li>
-                                <li class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="login.html">登出</a></li>
-                            </ul>
-                        </div>
-                        <div class="logo-element">
-                            SAS
-                        </div>
-                    </li>
-					
-					<li class="active">
-                        <a href="#"><i class="fa fa-home"></i> <span class="nav-label">首页</span></a>
-                    </li>
-                    <li>
-                        <a href="#"><i class="fa fa-calculator"></i> <span class="nav-label">财务</span> <span class="fa arrow"></span></a>
-                        <ul class="nav nav-second-level">
-                            <li><a href="/settlementCustomerSummary">结算客户（线上、线下）</a></li>
-                            <li><a href="/customerStatement">结算客户对账单</a></li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a href="#"><i class="fa fa-yen-sign"></i> <span class="nav-label">销售</span><span class="fa arrow"></span></a>
-                        <ul class="nav nav-second-level collapse">
-                            <li><a href="#">客户月采购额</a></li>
-                        </ul>
-                    </li>
-					
-                </ul>
-            </div>
-        </nav>
+</head>
 
-        <div id="page-wrapper" class="gray-bg dashbard-1">
-            <div class="row border-bottom">
-                <nav class="navbar navbar-static-top" role="navigation" style="margin-bottom: 0">
-                    <div class="navbar-header">
-                        <a class="navbar-minimalize minimalize-styl-2 btn btn-primary " href="#"><i class="fa fa-bars"></i> </a>
-                    </div>
-                    <ul class="nav navbar-top-links navbar-right">
-                        <li>
-                            <a href="login.html">
-                                <i class="fa fa-sign-out"></i> 注销
-                            </a>
-                        </li> 
-                    </ul>
-                </nav>
-            </div>
-            
-            <div class="wrapper wrapper-content">
-                <div class="row">
-                    <div class="col-lg-4">
-                        <div class="ibox ">
-                            <div class="ibox-title">
-                                <span class="label label-success float-left">本年度</span>
-                            </div>
-                            <div class="ibox-content">
-                                <h1 class="no-margins">1,589,000.37 元</h1>
-                                <small>销售额</small>
-                            </div>
+<body>
+<div id="wrapper">
+    <!-- 菜单 -->
+    <nav class="navbar-default navbar-static-side" role="navigation">
+        <div class="sidebar-collapse">
+            <ul class="nav metismenu" id="side-menu"></ul>
+        </div>
+    </nav>
+
+    <div id="page-wrapper" class="gray-bg dashbard-1">
+        <!-- 顶部 -->
+        <div class="row border-bottom" id="header"></div>
+        <!-- 内容 -->
+        <div class="wrapper wrapper-content">
+            <!-- 销售总计 -->
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="ibox ">
+                        <div class="ibox-title">
+                            <span class="label label-success float-left">本年度</span>
                         </div>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="ibox ">
-                            <div class="ibox-title">
-                                <span class="label label-info float-left">本月</span>
-                            </div>
-                            <div class="ibox-content">
-                                <h1 class="no-margins">389,000.00 元</h1>
-  
-                                <small>销售额</small>
-                            </div>
-                        </div>
-                    </div>
-					<div class="col-lg-4">
-                        <div class="ibox ">
-                            <div class="ibox-title">
-                                <span class="label label-warning float-left">紧商网入驻商家</span>
-                            </div>
-                            <div class="ibox-content">
-                                <h1 class="no-margins">300 家</h1>
-                                <small>-</small>
-                            </div>
+                        <div class="ibox-content">
+                            <h1 class="no-margins">1,589,000.37 元</h1>
+                            <small>总销售额</small>
                         </div>
                     </div>
                 </div>
-				
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="ibox ">
-                            <div class="ibox-title">
-                                <h5>订单</h5>
-                                <div class="float-right">
-                                    <div class="btn-group">
-                                        <button type="button" class="btn btn-xs btn-white active" id="salesDay">30天</button>
-                                        <button type="button" class="btn btn-xs btn-white" id="salesMonth">12个月</button>
-                                        <button type="button" class="btn btn-xs btn-white" id="salesYear">年度</button>
-                                    </div>
+                <div class="col-lg-4">
+                    <div class="ibox ">
+                        <div class="ibox-title">
+                            <span class="label label-info float-left">本月</span>
+                        </div>
+                        <div class="ibox-content">
+                            <h1 class="no-margins">389,000.00 元</h1>
+                            <small>总销售额</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="ibox ">
+                        <div class="ibox-title">
+                            <span class="label label-warning float-left">紧商网入驻商家</span>
+                        </div>
+                        <div class="ibox-content">
+                            <h1 class="no-margins">300 家</h1>
+                            <small>-</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 销售区间统计 -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="ibox ">
+                        <div class="ibox-title">
+                            <h5>总销售额（线上、线下）</h5>
+                            <div class="float-right">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-xs btn-white active" id="salesDay">30天</button>
+                                    <button type="button" class="btn btn-xs btn-white" id="salesMonth">12个月</button>
+                                    <button type="button" class="btn btn-xs btn-white" id="salesYear">年度</button>
                                 </div>
                             </div>
-                            <div class="ibox-content">
-								   <div id="sales" style="height:300px;"></div>
-                            </div>
-						</div>
-					</div>
-				</div>
-				
-<!--				<div class="row">-->
-<!--					<div class="col-lg-4">-->
-<!--						<div class="ibox ">-->
-<!--							<div class="ibox-title">-->
-<!--								<h5>期货指数</h5>-->
-<!--								<div class="ibox-tools">-->
-<!--									<a class="collapse-link">-->
-<!--										<i class="fa fa-chevron-up"></i>-->
-<!--									</a>-->
-<!--								</div>-->
-<!--							</div>-->
-<!--							<div class="ibox-content">-->
-<!--								<div style="height:450px;">-->
-<!--									<table class="table table-hover margin bottom">-->
-<!--										<tr>-->
-<!--											<td>沪铝连续</td>-->
-<!--											<td class="text-center small">13850.00</td>-->
-<!--											<td class="text-center"><span class="label label-danger">+0.29%</span></td>-->
-<!--										</tr>-->
-<!--										<tr>-->
-<!--											<td>沪锌连续</td>-->
-<!--											<td class="text-center small">22585.00</td>-->
-<!--											<td class="text-center"><span class="label label-primary">-0.68%</span></td>-->
-<!--										</tr>-->
-<!--										<tr>-->
-<!--											<td>沪铜连续</td>-->
-<!--											<td class="text-center small">49490.00</td>-->
-<!--											<td class="text-center"><span class="label label-primary">-0.60%</span></td>-->
-<!--										</tr>-->
-<!--										<tr>-->
-<!--											<td>黄金连续</td>-->
-<!--											<td class="text-center small">285.80</td>-->
-<!--											<td class="text-center"><span class="label label-danger">+0.49%</span></td>-->
-<!--										</tr>-->
-<!--										<tr>-->
-<!--											<td>螺纹钢连续</td>-->
-<!--											<td class="text-center small">3774.00</td>-->
-<!--											<td class="text-center"><span class="label label-danger">+0.45%</span></td>-->
-<!--										</tr>-->
-<!--										<tr>-->
-<!--											<td>线材连续</td>-->
-<!--											<td class="text-center small">4202.00</td>-->
-<!--											<td class="text-center"><span class="label label-danger">+1.30%</span></td>-->
-<!--										</tr>-->
-<!--										<tr>-->
-<!--											<td>沪铅连续</td>-->
-<!--											<td class="text-center small">16685.00</td>-->
-<!--											<td class="text-center"><span class="label label-primary">-1.27%</span></td>-->
-<!--										</tr>-->
-<!--										<tr>-->
-<!--											<td>白银连续</td>-->
-<!--											<td class="text-center small">3586.00</td>-->
-<!--											<td class="text-center"><span class="label label-primary">-0.14%</span></td>-->
-<!--										</tr>-->
-<!--										<tr>-->
-<!--											<td>热轧卷板连续</td>-->
-<!--											<td class="text-center small">3690.00</td>-->
-<!--											<td class="text-center"><span class="label label-danger">+0.24%</span></td>-->
-<!--										</tr>-->
-<!--										<tr>-->
-<!--											<td>沪锡连续</td>-->
-<!--											<td class="text-center small">149890.00</td>-->
-<!--											<td class="text-center"><span class="label label-primary">-0.21%</span></td>-->
-<!--										</tr>-->
-<!--										<tr>-->
-<!--											<td>沪镍连续</td>-->
-<!--											<td class="text-center small">103310.00</td>-->
-<!--											<td class="text-center"><span class="label label-danger">+0.07%</span></td>-->
-<!--										</tr>-->
-<!--										<tr>-->
-<!--											<td>燃油连续</td>-->
-<!--											<td class="text-center small">2836.00</td>-->
-<!--											<td class="text-center"><span class="label label-primary">-1.36%</span></td>-->
-<!--										</tr>-->
-<!--									</table>-->
-<!--								</div>-->
-<!--							</div>-->
-<!--						</div>-->
-<!--					</div>-->
-<!--					-->
-<!--					<div class="col-lg-4">-->
-<!--                        <div class="ibox ">-->
-<!--                            <div class="ibox-title">-->
-<!--                                <h5>商品类型</h5>-->
-<!--                                <div class="ibox-tools">-->
-<!--                                    <a class="collapse-link">-->
-<!--                                        <i class="fa fa-chevron-up"></i>-->
-<!--                                    </a>-->
-<!--                                    <a class="close-link">-->
-<!--                                        <i class="fa fa-times"></i>-->
-<!--                                    </a>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                            -->
-<!--                            <div class="ibox-content">-->
-<!--                                <div id="salesType" style="height:450px;"></div>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--				</div>-->
-				
-				
-				<div class="row">
-                    <div class="col-lg-12">
-                        <div class="ibox ">
-                            <div class="ibox-title">
-                                <h5>销售区域</h5>
-                            </div>
-                            <div class="ibox-content" style="height:800px;">
-                                <div id="china" style="height:600px;"></div>
-                            </div>
-						</div>
-					</div>
-				</div>
-            </div>
-
-            <div class="footer">
-                <div class="float-right">
-                    <strong>紧商科技</strong>
+                        </div>
+                        <div class="ibox-content">
+                            <div id="sales" style="height:300px;"></div>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <strong>Copyright</strong> 统计分析系统 0.0.1 &copy; 2019
+            </div>
+            <!-- 销售区域 -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="ibox ">
+                        <div class="ibox-title">
+                            <h5>销售区域</h5>
+                        </div>
+                        <div class="ibox-content" style="height:800px;">
+                            <div id="china" style="height:600px;"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+        <!-- 底部 -->
+        <div class="footer" id="footer"></div>
     </div>
+</div>
+</body>
 
-    <script src="js/jquery-3.3.1.min.js"></script>
-    <script src="js/popper.min.js"></script>
-    <script src="js/bootstrap-4.3.1.min.js"></script>
-	<script src="plugins/slimscroll/jquery.slimscroll.min.js"></script>
+<script src="js/jquery-3.3.1.min.js"></script>
+<script src="js/popper.min.js"></script>
+<script src="js/bootstrap-4.3.1.min.js"></script>
+<script src="plugins/slimscroll/jquery.slimscroll.min.js"></script>
+<script src="js/echarts.min.js"></script>
+<script src="js/china.js"></script>
+<script src="plugins/metisMenu/jquery.metisMenu.js"></script>
+<script src="js/inspinia.js"></script>
 
-	<script src="js/echarts.min.js"></script>
-	<script src="js/china.js"></script>
-	<script src="plugins/metisMenu/jquery.metisMenu.js"></script>
-    <script src="js/inspinia.js"></script>
+<script>
+    // 菜单
+    $('#side-menu').load('left.html');
+    $('#header').load('header.html');
+    $('#footer').load('footer.html');
 
-	<script>
-		$("body").addClass('fixed-sidebar');
-		$('.sidebar-collapse').slimScroll({
-			height: '100%',
-			railOpacity: 0.9
-		});
-
-		if (localStorageSupport) {
-			localStorage.setItem("fixedsidebar", 'on');
-		}
-		
-		
-		$(".navbar-static-top").removeClass('navbar-static-top').addClass('navbar-fixed-top');
-		$("body").removeClass('boxed-layout');
-		$("body").addClass('fixed-nav').addClass('fixed-nav-basic');
-		$('#boxedlayout').prop('checked', false);
-
-		if (localStorageSupport) {
-			localStorage.setItem("boxedlayout", 'off');
-		}
-
-		if (localStorageSupport) {
-			localStorage.setItem("fixednavbar2", 'on');
-		}
-	</script>
-	
-	<script>
-        /**
-         * 销售额周期统计（天、月、年）
-         */
-        // 销售额
-        var amount = [];
-        // 订单数
-        var orders = [];
-        // 日期
-        var lastDay = new Date().getDate()-1;
-
-        // 获取日销售额
-        $.ajax({
-            type: 'POST',
-            url: "/sales/getSaleAmountByDay",
-            data: {
-                limit: "30"
-            },
-            dataType: "json",
-            async: false,
-            success: function (result) {
-                lastDay = result.data[0].days;
-                var len = 30;
-                while (len--) {
-                    amount.push((result.data[len].amount/10000).toFixed(4));
-                    orders.push(result.data[len].counts);
-                }
-            }, error: function (error) {
-                console.log(error);
+    /**
+     * 销售额周期统计（天、月、年）
+     */
+        // 日销售额
+    var amountDay = [];
+    // 日订单数
+    var ordersDay = [];
+    // 日期
+    var lastDay = new Date().getDate() - 1;
+    // 日销售额
+    $.ajax({
+        type: 'POST',
+        url: "/sales/getSaleAmountByDay",
+        data: {
+            limit: "30"
+        },
+        dataType: "json",
+        async: false,
+        success: function (result) {
+            lastDay = result.data[0].days;
+            var len = 30;
+            while (len--) {
+                amountDay.push((result.data[len].amount / 10000).toFixed(4));
+                ordersDay.push(result.data[len].counts);
             }
-        });
-
-        // 日销售额图表
-        var salesOption = {
-            tooltip: {
-                trigger: 'axis',
-                axisPointer: {
-                    type: 'cross',
-                    label: {
-                        backgroundColor: '#283b56'
+        }, error: function (error) {
+            console.log(error);
+        }
+    });
+    // 日销售额图表
+    var salesOptionDays = {
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'cross',
+                label: {
+                    backgroundColor: '#283b56'
+                }
+            }
+        },
+        legend: {
+            data: ['订单数', '销售额']
+        },
+        toolbox: {
+            show: true,
+            feature: {
+                saveAsImage: {}
+            }
+        },
+        dataZoom: {
+            show: false,
+            start: 0,
+            end: 100
+        },
+        xAxis: [
+            {
+                type: 'category',
+                boundaryGap: true,
+                data: (function () {
+                    var now = new Date(lastDay);
+                    var res = [];
+                    var len = 30;
+                    while (len--) {
+                        res.unshift(now.toLocaleDateString().replace(/^\D*/, ''));
+                        now.setDate(now.getDate() - 1);
                     }
-                }
-            },
-            legend: {
-                data:['订单数', '销售额']
-            },
-            toolbox: {
-                show: true,
-                feature: {
-                    saveAsImage: {}
-                }
-            },
-            dataZoom: {
-                show: false,
-                start: 0,
-                end: 100
-            },
-            xAxis: [
-                {
-                    type: 'category',
-                    boundaryGap: true,
-                    data: (function (){
-                        var now = new Date(lastDay);
-                        var res = [];
-                        var len = 30;
-                        while (len--) {
-                            res.unshift(now.toLocaleDateString().replace(/^\D*/,''));
-                            now.setDate(now.getDate()-1);
-                        }
-                        return res;
-                    })()
-                }, {
-                    type: 'category',
-                    boundaryGap: true,
-                    data: (function (){
-                        var res = [];
-                        var len = 30;
-                        while (len--) {
-                            res.push('');
-                        }
-                        return res;
-                    })()
-                }
-            ],
-            yAxis: [
-                {
-                    type: 'value',
-                    scale: true,
-                    name: '订单数（个）',
-                    max: 600,
-                    min: 0,
-                    boundaryGap: [0.2, 0.2]
-                },
-                {
-                    type: 'value',
-                    scale: true,
-                    name: '销售额(万元)',
-                    max: 300,
-                    min: 0,
-                    boundaryGap: [0.2, 0.2]
-                }
-            ],
-            series: [
-                {
-                    name:'销售额',
-                    type:'bar',
-                    xAxisIndex: 1,
-                    yAxisIndex: 1,
-                    data: amount
-                }, {
-                    name:'订单数',
-                    type:'line',
-                    data:orders
-                }
-            ]
-        };
-
-
-  var salesOption2 = {
-    tooltip: {
-        trigger: 'axis',
-        axisPointer: {
-            type: 'cross',
-            label: {
-                backgroundColor: '#283b56'
+                    return res;
+                })()
+            }, {
+                type: 'category',
+                boundaryGap: true,
+                data: (function () {
+                    var res = [];
+                    var len = 30;
+                    while (len--) {
+                        res.push('');
+                    }
+                    return res;
+                })()
             }
-        }
-    },
-    legend: {
-        data:['订单数', '销售额(万元)']
-    },
-    toolbox: {
-        show: true,
-        feature: {
-            saveAsImage: {}
-        }
-    },
-    dataZoom: {
-        show: false,
-        start: 0,
-        end: 100
-    },
-    xAxis: [
-        {
-            type: 'category',
-            boundaryGap: true,
-            data: (function (){
-                var now = new Date();
-                var res = [];
-                var len = 12;
-                while (len--) {
-                    res.unshift(now.getFullYear() + '年' + (now.getMonth() + 1)+ '月');
-					now.setMonth(now.getMonth()-1);
-                }
-                return res;
-            })()
-        },
-        {
-            type: 'category',
-            boundaryGap: true,
-            data: (function (){
-                var res = [];
-                var len = 12;
-                while (len--) {
-                    res.push('');
-                }
-                return res;
-            })()
-        }
-    ],
-    yAxis: [
-        {
-            type: 'value',
-            scale: true,
-            name: '订单数',
-            max: 10000,
-            min: 0,
-            boundaryGap: [0.2, 0.2]
-        },
-        {
-            type: 'value',
-            scale: true,
-            name: '销售额(万元)',
-            max: 5000,
-            min: 0,
-            boundaryGap: [0.2, 0.2]
-        }
-    ],
-    series: [
-        {
-            name:'销售额(万元)',
-            type:'bar',
-            xAxisIndex: 1,
-            yAxisIndex: 1,
-            data:(function (){
-                var res = [];
-                var len = 12;
-                while (len--) {
-                    res.push(Math.round(Math.random() * 5000));
-                }
-                return res;
-            })()
-        },
-        {
-            name:'订单数',
-            type:'line',
-            data:(function (){
-                var res = [];
-                var len = 0;
-                while (len < 12) {
-                    res.push((Math.random()*3000).toFixed(1) - 0);
-                    len++;
-                }
-                return res;
-            })()
-        }
-    ]
-};
-
-  var salesOption3 = {
-    tooltip: {
-        trigger: 'axis',
-        axisPointer: {
-            type: 'cross',
-            label: {
-                backgroundColor: '#283b56'
+        ],
+        yAxis: [
+            {
+                type: 'value',
+                scale: true,
+                name: '订单数（个）',
+                max: 600,
+                min: 0,
+                boundaryGap: [0.2, 0.2]
+            },
+            {
+                type: 'value',
+                scale: true,
+                name: '销售额(万元)',
+                max: 300,
+                min: 0,
+                boundaryGap: [0.2, 0.2]
             }
-        }
-    },
-    legend: {
-        data:['订单数', '销售额(万元)']
-    },
-    toolbox: {
-        show: true,
-        feature: {
-            saveAsImage: {}
-        }
-    },
-    dataZoom: {
-        show: false,
-        start: 0,
-        end: 100
-    },
-    xAxis: [
-        {
-            type: 'category',
-            boundaryGap: true,
-            data: (function (){
-                var now = new Date();
-                var res = [];
-                var len = 2;
-                while (len--) {
-                    res.unshift(now.getFullYear() + '年');
-					now.setYear(now.getFullYear()-1);
-                }
-                return res;
-            })()
+        ],
+        series: [
+            {
+                name: '销售额',
+                type: 'bar',
+                xAxisIndex: 1,
+                yAxisIndex: 1,
+                data: amountDay
+            }, {
+                name: '订单数',
+                type: 'line',
+                data: ordersDay
+            }
+        ]
+    };
+
+    // 月销售额
+    var amountMonth = [];
+    // 月订单数
+    var ordersMonth = [];
+    // 月销售额
+    $.ajax({
+        type: 'POST',
+        url: "/sales/getSaleAmountByMonth",
+        data: {
+            limit: "12"
         },
-        {
-            type: 'category',
-            boundaryGap: true,
-            data: (function (){
-                var res = [];
-                var len = 2;
-                while (len--) {
-                    res.push('');
-                }
-                return res;
-            })()
+        dataType: "json",
+        async: false,
+        success: function (result) {
+            // 不够12月补充0
+            for (i = 12 - result.data.length; i > 0; i--) {
+                amountMonth.push(0);
+                ordersMonth.push(0);
+            }
+            for (i = result.data.length - 1; i >= 0; i--) {
+                amountMonth.push((result.data[i].amount / 10000).toFixed(4));
+                ordersMonth.push(result.data[i].counts);
+            }
+        }, error: function (error) {
+            console.log(error);
         }
-    ],
-    yAxis: [
-        {
-            type: 'value',
-            scale: true,
-            name: '订单数',
-            max: 100000,
-            min: 0,
-            boundaryGap: [0.2, 0.2]
+    });
+    // 月销售额图表
+    var salesOptionMonths = {
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'cross',
+                label: {
+                    backgroundColor: '#283b56'
+                }
+            }
         },
-        {
-            type: 'value',
-            scale: true,
-            name: '销售额(万元)',
-            max: 50000,
-            min: 0,
-            boundaryGap: [0.2, 0.2]
-        }
-    ],
-    series: [
-        {
-            name:'销售额(万元)',
-            type:'bar',
-            xAxisIndex: 1,
-            yAxisIndex: 1,
-            data:(function (){
-                var res = [];
-                var len = 2;
-                while (len--) {
-                    res.push(Math.round(Math.random() * 50000));
-                }
-                return res;
-            })()
+        legend: {
+            data: ['订单数', '销售额']
         },
-        {
-            name:'订单数',
-            type:'line',
-            data:(function (){
-                var res = [];
-                var len = 0;
-                while (len < 2) {
-                    res.push((Math.random()*50000).toFixed(1) - 0);
-                    len++;
-                }
-                return res;
-            })()
+        toolbox: {
+            show: true,
+            feature: {
+                saveAsImage: {}
+            }
+        },
+        dataZoom: {
+            show: false,
+            start: 0,
+            end: 100
+        },
+        xAxis: [
+            {
+                type: 'category',
+                boundaryGap: true,
+                data: (function () {
+                    var now = new Date();
+                    var res = [];
+                    var len = 12;
+                    while (len--) {
+                        res.unshift(now.getFullYear() + '年' + (now.getMonth() + 1) + '月');
+                        now.setMonth(now.getMonth() - 1);
+                    }
+                    return res;
+                })()
+            },
+            {
+                type: 'category',
+                boundaryGap: true,
+                data: (function () {
+                    var res = [];
+                    var len = 12;
+                    while (len--) {
+                        res.push('');
+                    }
+                    return res;
+                })()
+            }
+        ],
+        yAxis: [
+            {
+                type: 'value',
+                scale: true,
+                name: '订单数（个）',
+                max: 10000,
+                min: 0,
+                boundaryGap: [0.2, 0.2]
+            },
+            {
+                type: 'value',
+                scale: true,
+                name: '销售额(万元)',
+                max: 5000,
+                min: 0,
+                boundaryGap: [0.2, 0.2]
+            }
+        ],
+        series: [
+            {
+                name: '销售额',
+                type: 'bar',
+                xAxisIndex: 1,
+                yAxisIndex: 1,
+                data: amountMonth
+            },
+            {
+                name: '订单数',
+                type: 'line',
+                data: ordersMonth
+            }
+        ]
+    };
+
+    // 年销售额
+    var amountYear = [];
+    // 年订单数
+    var ordersYear = [];
+    // 年销售额
+    $.ajax({
+        type: 'POST',
+        url: "/sales/getSaleAmountByYear",
+        data: {
+            limit: Math.abs(new Date().getFullYear() - 2017)
+        },
+        dataType: "json",
+        async: false,
+        success: function (result) {
+            console.log(result.data);
+
+            for (i = result.data.length - 1; i >= 0; i--) {
+                amountYear.push((result.data[i].amount / 10000).toFixed(4));
+                ordersYear.push(result.data[i].counts);
+            }
+        }, error: function (error) {
+            console.log(error);
         }
-    ]
-};
+    });
+    // 年销售额图表
+    var salesOptionYears = {
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'cross',
+                label: {
+                    backgroundColor: '#283b56'
+                }
+            }
+        },
+        legend: {
+            data: ['订单数', '销售额']
+        },
+        toolbox: {
+            show: true,
+            feature: {
+                saveAsImage: {}
+            }
+        },
+        dataZoom: {
+            show: false,
+            start: 0,
+            end: 100
+        },
+        xAxis: [
+            {
+                type: 'category',
+                boundaryGap: true,
+                data: (function () {
+                    var now = new Date();
+                    var res = [];
+                    var len = 2;
+                    while (len--) {
+                        res.unshift(now.getFullYear() + '年');
+                        now.setYear(now.getFullYear() - 1);
+                    }
+                    return res;
+                })()
+            },
+            {
+                type: 'category',
+                boundaryGap: true,
+                data: (function () {
+                    var res = [];
+                    var len = 2;
+                    while (len--) {
+                        res.push('');
+                    }
+                    return res;
+                })()
+            }
+        ],
+        yAxis: [
+            {
+                type: 'value',
+                scale: true,
+                name: '订单数（个）',
+                max: 100000,
+                min: 0,
+                boundaryGap: [0.2, 0.2]
+            },
+            {
+                type: 'value',
+                scale: true,
+                name: '销售额(万元)',
+                max: 50000,
+                min: 0,
+                boundaryGap: [0.2, 0.2]
+            }
+        ],
+        series: [
+            {
+                name: '销售额',
+                type: 'bar',
+                xAxisIndex: 1,
+                yAxisIndex: 1,
+                data: amountYear
+            },
+            {
+                name: '订单数',
+                type: 'line',
+                data: ordersYear
+            }
+        ]
+    };
+
+    var salesMyChart = echarts.init(document.getElementById('sales'), 'light');
+
+    $('#salesDay').click(function () {
+        $('#salesDay').attr('class', 'btn btn-xs btn-white active');
+        $('#salesMonth').attr('class', 'btn btn-xs btn-white');
+        $('#salesYear').attr('class', 'btn btn-xs btn-white');
+
+        salesMyChart.setOption(salesOptionDays, true);
+    });
+    $('#salesMonth').click(function () {
+        $('#salesDay').attr('class', 'btn btn-xs btn-white');
+        $('#salesMonth').attr('class', 'btn btn-xs btn-white active');
+        $('#salesYear').attr('class', 'btn btn-xs btn-white');
+
+        salesMyChart.setOption(salesOptionMonths, true);
+    });
+    $('#salesYear').click(function () {
+        $('#salesDay').attr('class', 'btn btn-xs btn-white');
+        $('#salesMonth').attr('class', 'btn btn-xs btn-white');
+        $('#salesYear').attr('class', 'btn btn-xs btn-white active');
+
+        salesMyChart.setOption(salesOptionYears, true);
+    });
+
+    salesMyChart.setOption(salesOptionDays, true);
 
 
-	
-	
-	var salesMyChart = echarts.init(document.getElementById('sales'), 'light');
-
-	$('#salesDay').click(function(){
-		$('#salesDay').attr('class','btn btn-xs btn-white active');
-		$('#salesMonth').attr('class','btn btn-xs btn-white');
-		$('#salesYear').attr('class','btn btn-xs btn-white');
-		
-		salesMyChart.setOption(salesOption,true);
-	});
-	$('#salesMonth').click(function(){
-		$('#salesDay').attr('class','btn btn-xs btn-white');
-		$('#salesMonth').attr('class','btn btn-xs btn-white active');
-		$('#salesYear').attr('class','btn btn-xs btn-white');
-		
-		 salesMyChart.setOption(salesOption2,true);
-	});
-	$('#salesYear').click(function(){
-		$('#salesDay').attr('class','btn btn-xs btn-white');
-		$('#salesMonth').attr('class','btn btn-xs btn-white');
-		$('#salesYear').attr('class','btn btn-xs btn-white active');
-		
-		 salesMyChart.setOption(salesOption3,true);
-	});
-	
-	salesMyChart.setOption(salesOption,true);
-	
-   
-	
-	
 </script>
 
 <script>
-function randomData() {  
-     return Math.round(Math.random()*500);  
-}
+    function randomData() {
+        return Math.round(Math.random() * 500);
+    }
 
-var mydata = [  
-                {name: '北京',value: '100' },{name: '天津',value: randomData() },  
-                {name: '上海',value: randomData() },{name: '重庆',value: randomData() },  
-                {name: '河北',value: randomData() },{name: '河南',value: randomData() },  
-                {name: '云南',value: randomData() },{name: '辽宁',value: randomData() },  
-                {name: '黑龙江',value: randomData() },{name: '湖南',value: randomData() },  
-                {name: '安徽',value: randomData() },{name: '山东',value: randomData() },  
-                {name: '新疆',value: randomData() },{name: '江苏',value: randomData() },  
-                {name: '浙江',value: randomData() },{name: '江西',value: randomData() },  
-                {name: '湖北',value: randomData() },{name: '广西',value: randomData() },  
-                {name: '甘肃',value: randomData() },{name: '山西',value: randomData() },  
-                {name: '内蒙古',value: randomData() },{name: '陕西',value: randomData() },  
-                {name: '吉林',value: randomData() },{name: '福建',value: randomData() },  
-                {name: '贵州',value: randomData() },{name: '广东',value: randomData() },  
-                {name: '青海',value: randomData() },{name: '西藏',value: randomData() },  
-                {name: '四川',value: randomData() },{name: '宁夏',value: randomData() },  
-                {name: '海南',value: randomData() },{name: '台湾',value: randomData() },  
-                {name: '香港',value: randomData() },{name: '澳门',value: randomData() }  
-            ];
+    var mydata = [
+        {name: '北京', value: '100'}, {name: '天津', value: randomData()},
+        {name: '上海', value: randomData()}, {name: '重庆', value: randomData()},
+        {name: '河北', value: randomData()}, {name: '河南', value: randomData()},
+        {name: '云南', value: randomData()}, {name: '辽宁', value: randomData()},
+        {name: '黑龙江', value: randomData()}, {name: '湖南', value: randomData()},
+        {name: '安徽', value: randomData()}, {name: '山东', value: randomData()},
+        {name: '新疆', value: randomData()}, {name: '江苏', value: randomData()},
+        {name: '浙江', value: randomData()}, {name: '江西', value: randomData()},
+        {name: '湖北', value: randomData()}, {name: '广西', value: randomData()},
+        {name: '甘肃', value: randomData()}, {name: '山西', value: randomData()},
+        {name: '内蒙古', value: randomData()}, {name: '陕西', value: randomData()},
+        {name: '吉林', value: randomData()}, {name: '福建', value: randomData()},
+        {name: '贵州', value: randomData()}, {name: '广东', value: randomData()},
+        {name: '青海', value: randomData()}, {name: '西藏', value: randomData()},
+        {name: '四川', value: randomData()}, {name: '宁夏', value: randomData()},
+        {name: '海南', value: randomData()}, {name: '台湾', value: randomData()},
+        {name: '香港', value: randomData()}, {name: '澳门', value: randomData()}
+    ];
 
 
-var optionMap = {  
-                backgroundColor: '#FFFFFF',  
-                title: {  
-                    text: '全国地图大数据',  
-                    subtext: '',  
-                    x:'center'  
-                },  
-                tooltip : {  
-                    trigger: 'item'  
-                },  
-                
-                //左侧小导航图标
-                visualMap: {  
-                    show : true,  
-                    x: 'left',  
-                    y: 'center',  
-                    splitList: [   
-                        {start: 500, end:600},{start: 400, end: 500},  
-                        {start: 300, end: 400},{start: 200, end: 300},  
-                        {start: 100, end: 200},{start: 0, end: 100},  
-                    ],  
-                    color: ['#5475f5', '#9feaa5', '#85daef','#74e2ca', '#e6ac53', '#9fb5ea']  
-                },  
-                
-                //配置属性
-                series: [{  
-                    name: '数据',  
-                    type: 'map',  
-                    mapType: 'china',   
-                    roam: true,  
-                    label: {  
-                        normal: {  
-                            show: false  //省份名称  
-                        },  
-                        emphasis: {  
-                            show: false  
-                        }  
-                    },  
-                    data:mydata  //数据
-                }]  
-            };  
-        //初始化echarts实例
-        var myChart = echarts.init(document.getElementById('china'), 'light');
+    var optionMap = {
+        backgroundColor: '#FFFFFF',
+        title: {
+            text: '全国地图大数据',
+            subtext: '',
+            x: 'center'
+        },
+        tooltip: {
+            trigger: 'item'
+        },
 
-        //使用制定的配置项和数据显示图表
-        myChart.setOption(optionMap);
-		
+        //左侧小导航图标
+        visualMap: {
+            show: true,
+            x: 'left',
+            y: 'center',
+            splitList: [
+                {start: 500, end: 600}, {start: 400, end: 500},
+                {start: 300, end: 400}, {start: 200, end: 300},
+                {start: 100, end: 200}, {start: 0, end: 100},
+            ],
+            color: ['#5475f5', '#9feaa5', '#85daef', '#74e2ca', '#e6ac53', '#9fb5ea']
+        },
+
+        //配置属性
+        series: [{
+            name: '数据',
+            type: 'map',
+            mapType: 'china',
+            roam: true,
+            label: {
+                normal: {
+                    show: false  //省份名称
+                },
+                emphasis: {
+                    show: false
+                }
+            },
+            data: mydata  //数据
+        }]
+    };
+    //初始化echarts实例
+    var myChart = echarts.init(document.getElementById('china'), 'light');
+
+    //使用制定的配置项和数据显示图表
+    myChart.setOption(optionMap);
+
 </script>
-
-
-
-  </body>
 </html>

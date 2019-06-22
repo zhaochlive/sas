@@ -24,12 +24,32 @@ public class SalesService {
     }
 
     /**
-     * 获取日销售额列表
+     * 日销售额列表
      *
-     * @param limit 今天之前的天数
-     * @return
+     * @param limit 天数
+     * @return 日销售列表
      */
     public List<SaleAmountEntity> getSaleAmountByDay(int limit) {
        return saleAmountRepository.getSaleAmountByDay(limit);
+    }
+
+    /**
+     * 月销售额列表
+     *
+     * @param limit 月数
+     * @return 月销售列表
+     */
+    public List<SaleAmountEntity> getSaleAmountByMonth(int limit) {
+        return saleAmountRepository.getSaleAmountByMonth(limit);
+    }
+
+    /**
+     * 年销售额列表
+     *
+     * @param limit 年数
+     * @return 年销售列表
+     */
+    public List<SaleAmountEntity> getSaleAmountByYear(int limit) {
+        return saleAmountRepository.getSaleAmountByYear(limit);
     }
 }

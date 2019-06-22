@@ -28,16 +28,41 @@ public class SalesController {
     }
 
     /**
-     * 获取日销售额
+     * 日销售额
      *
      * @param limit 天数
-     * @return
+     * @return Result，日销售额列表
      */
     @ApiOperation(value = "日销售额", notes = "数据来源：用友；数据截止日期：昨天")
     @PostMapping("/getSaleAmountByDay")
     public Result getSaleAmountByDay(int limit) {
         List<SaleAmountEntity> saleDeliveryList = salesService.getSaleAmountByDay(limit);
+        return ResultUtils.getResult(ResultCode.成功, saleDeliveryList);
+    }
 
+    /**
+     * 月销售额
+     *
+     * @param limit 月数
+     * @return Result，月销售额列表
+     */
+    @ApiOperation(value = "月销售额", notes = "数据来源：用友；数据截止日期：昨天")
+    @PostMapping("/getSaleAmountByMonth")
+    public Result getSaleAmountByMonth(int limit) {
+        List<SaleAmountEntity> saleDeliveryList = salesService.getSaleAmountByMonth(limit);
+        return ResultUtils.getResult(ResultCode.成功, saleDeliveryList);
+    }
+
+    /**
+     * 年销售额
+     *
+     * @param limit 年数
+     * @return Result，年销售额列表
+     */
+    @ApiOperation(value = "年销售额", notes = "数据来源：用友；数据截止日期：昨天")
+    @PostMapping("/getSaleAmountByYear")
+    public Result getSaleAmountByYear(int limit) {
+        List<SaleAmountEntity> saleDeliveryList = salesService.getSaleAmountByYear(limit);
         return ResultUtils.getResult(ResultCode.成功, saleDeliveryList);
     }
 
