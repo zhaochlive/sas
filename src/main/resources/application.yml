@@ -4,9 +4,9 @@ spring:
   profiles:
     active: dev
   datasource:
-    url: jdbc:mysql://192.168.80.129:3306/sas?useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://192.168.85.132:3306/sas?useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
     username: root
-    password: root
+    password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     show-sql: true

@@ -1,45 +1,71 @@
 package com.js.sas.entity;
 
+import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.metadata.BaseRowModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import javax.persistence.Id;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
-public class AccountsPayable {
+public class AccountsPayable extends BaseRowModel implements Serializable {
+
+    @Id
+    private Integer id;
     @ApiModelProperty(notes = "日期")
+    @ExcelProperty(value = "日期", index = 0)
     private Date tradetime;
-    @ApiModelProperty(notes = "单号")
+    @ApiModelProperty(notes = "交易编号")
+    @ExcelProperty(value = "交易编号", index = 0)
     private String orderno;
     @ApiModelProperty(notes = "类别{0=消费1=充值2=退款3=提现4=授信5=授信还款6=违约金7=远期定金8=远期余款9=远期全款10=卖家违约金11=授信未出账单还款}")
     private int capitaltype;
     @ApiModelProperty(notes = "类别名称{0=消费1=充值2=退款3=提现4=授信5=授信还款6=违约金7=远期定金8=远期余款9=远期全款10=卖家违约金11=授信未出账单还款}")
+    @ExcelProperty(value = "类别", index = 0)
     private String capitalTypeName;
     @ApiModelProperty(notes = "支付方式{0=支付宝1=微信2=银行卡3=余额4=授信}")
     private int paytype;
     @ApiModelProperty(notes = "支付单号")
     private String transactionid;
     @ApiModelProperty(notes = "发货金额")
+    @ExcelProperty(value = "发货金额", index = 0)
     private BigDecimal deliveryAmount;
     @ApiModelProperty(notes = "收款金额")
+    @ExcelProperty(value = "收款金额", index = 0)
     private BigDecimal receivingAmount;
     @ApiModelProperty(notes = "其他金额")
+    @ExcelProperty(value = "其他金额", index = 0)
     private BigDecimal otherAmount;
     @ApiModelProperty(notes = "应收账款")
+    @ExcelProperty(value = "应收款", index = 0)
     private BigDecimal receivableAccount;
     @ApiModelProperty(notes = "开票金额")
+    @ExcelProperty(value = "开票金额", index = 0)
     private BigDecimal invoiceamount;
     @ApiModelProperty(notes = "发票结余")
+    @ExcelProperty(value = "发票结余", index = 0)
     private BigDecimal invoicebalance;
-    @ApiModelProperty(notes = "备注")
-    private String remark;
     @ApiModelProperty(notes = "支付单号")
+    @ExcelProperty(value = "支付单号", index = 0)
     private String payno;
+    @ApiModelProperty(notes = "备注")
+    @ExcelProperty(value = "备注", index = 0)
+    private String remark;
     @ApiModelProperty(notes = "会员名称")
     private String  username;
     @ApiModelProperty(notes = "状态0=待处理1=成功2=失败3=待审核4=审核通过5=审核不通过")
     private int rechargestate;
     @ApiModelProperty(notes = "充值平台")
     private int rechargeperform;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
     public int getRechargeperform() {
         return rechargeperform;
