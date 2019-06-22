@@ -337,7 +337,7 @@ public class BuyerCapitalService {
                 sb.append(" and ca.memberid ='"+params.get("userNo")+"' ");
             }
             if (params.containsKey("companyname")&&StringUtils.isNotBlank(params.get("companyname"))){
-                sb.append(" and ca.companyname =‘"+params.get("companyname")+"'");
+                sb.append(" and ca.companyname ='"+params.get("companyname")+"'");
             }
             if (params.containsKey("userName")&&StringUtils.isNotBlank(params.get("userName"))){
                 sb.append(" and ca.member_username ='"+params.get("userName")+"' ");
