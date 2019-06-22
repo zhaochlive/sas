@@ -239,6 +239,12 @@
                 align: 'center',
                 valign: 'middle'
             }, {
+                field: 'openingBalance',
+                title: '期初',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
                 field: 'deliveryAmount',
                 title: '发货金额',
                 align: 'center',
@@ -252,7 +258,7 @@
                 sortable: 'true'
             }, {
                 field: 'receivables',
-                title: '应收款',
+                title: '应收款余额',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'true'
@@ -270,7 +276,10 @@
                 sortable: 'true'
             }],
             onLoadSuccess: function (result) {
-                //
+                // 设置导出limit值
+                if (result.total) {
+                    $("#limit").val(result.total);
+                }
             },
             onLoadError: function (error) {
                 console.log(error);
@@ -312,7 +321,6 @@
                     },
                     dataType: "json",
                     success: function (result) {
-                        // return process(JSON.parse(result.data));
                         return process(result.data);
                     }, error: function (error) {
                         console.log(error);

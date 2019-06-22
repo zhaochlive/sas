@@ -45,6 +45,9 @@ public class SettlementSummaryEntity extends BaseRowModel implements Serializabl
     // 来源
     @ExcelProperty(value = "来源", index = 0)
     private String channel;
+    // 期初余额
+    @ExcelProperty(value = "期初", index = 0)
+    private float openingBalance;
     // 发货金额
     @ExcelProperty(value = "发货金额", index = 0)
     private float deliveryAmount;
@@ -52,7 +55,7 @@ public class SettlementSummaryEntity extends BaseRowModel implements Serializabl
     @ExcelProperty(value = "收款金额", index = 0)
     private float receivedAmount;
     // 应收款
-    @ExcelProperty(value = "应收款", index = 0)
+    @ExcelProperty(value = "应收款余额", index = 0)
     private float receivables;
     // 已开票金额
     @ExcelProperty(value = "已开票金额", index = 0)
