@@ -10,70 +10,18 @@
     <link rel="stylesheet" type="text/css" href="../../css/daterangepicker.css"/>
     <link rel="stylesheet" href="../../css/style.css">
 
-    <title>统计分析系统 - 财务 - 结算客户汇总统计</title>
+    <title>统计分析系统 - 财务 - 结算客户对账单</title>
 </head>
 <body>
 <div id="wrapper">
     <nav class="navbar-default navbar-static-side" role="navigation">
         <div class="sidebar-collapse">
-            <ul class="nav metismenu" id="side-menu">
-                <li class="nav-header">
-                    <div class="dropdown profile-element">
-                        <a data-toggle="dropdown" class="dropdown-toggle" href="#">
-                            <span class="block m-t-xs font-bold">管理员</span>
-                            <span class="text-muted text-xs block">紧商科技 <b class="caret"></b></span>
-                        </a>
-                        <ul class="dropdown-menu animated fadeInRight m-t-xs">
-                            <li><a class="dropdown-item" href="profile.html">个人信息</a></li>
-                            <li><a class="dropdown-item" href="contacts.html">好友</a></li>
-                            <li><a class="dropdown-item" href="mailbox.html">信箱</a></li>
-                            <li class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="login.html">登出</a></li>
-                        </ul>
-                    </div>
-                    <div class="logo-element">
-                        SAS
-                    </div>
-                </li>
-
-                <li>
-                    <a href="#"><i class="fa fa-home"></i> <span class="nav-label">首页</span></a>
-                </li>
-                <li class="active">
-                    <a href="#"><i class="fa fa-calculator"></i> <span class="nav-label">财务</span> <span
-                            class="fa arrow"></span></a>
-                    <ul class="nav nav-second-level">
-                        <li><a href="/settlementCustomerSummary">结算客户（线上、线下）</a></li>
-                        <li class="active"><a href="/customerStatement">结算客户对账单</a></li>
-                    </ul>
-                </li>
-                <li>
-                    <a href="#"><i class="fa fa-yen-sign"></i> <span class="nav-label">销售</span><span
-                            class="fa arrow"></span></a>
-                    <ul class="nav nav-second-level collapse">
-                        <li><a href="#">客户月采购额</a></li>
-                    </ul>
-                </li>
-            </ul>
+            <ul class="nav metismenu" id="side-menu"></ul>
         </div>
     </nav>
 
     <div id="page-wrapper" class="gray-bg dashbard-1">
-        <div class="row border-bottom">
-            <nav class="navbar navbar-static-top" role="navigation" style="margin-bottom: 0">
-                <div class="navbar-header">
-                    <a class="navbar-minimalize minimalize-styl-2 btn btn-primary " href="#"><i class="fa fa-bars"></i>
-                    </a>
-                </div>
-                <ul class="nav navbar-top-links navbar-right">
-                    <li>
-                        <a href="login.html">
-                            <i class="fa fa-sign-out"></i> 注销
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
+        <div class="row border-bottom" id="header"></div>
 
         <div class="wrapper wrapper-content">
             <div class="row">
@@ -172,14 +120,7 @@
             </div>
         </div>
 
-        <div class="footer">
-            <div class="float-right">
-                <strong>紧商科技</strong>
-            </div>
-            <div>
-                <strong>Copyright</strong> 统计分析系统 0.0.1 &copy; 2019
-            </div>
-        </div>
+        <div class="footer" id="footer"></div>
     </div>
 </div>
 
@@ -203,6 +144,15 @@
 <script type="text/javascript" src="../../js/typeahead.min.js"></script>
 
 <script>
+    // 设置菜单
+    $('#side-menu').load('left.html', function () {
+        $("li[id='home']").removeClass("active");
+        $("li[id='finance']").addClass("active");
+        $("li[id='customerStatement']").addClass("active");
+    });
+    $('#header').load('header.html');
+    $('#footer').load('footer.html');
+
     var startDate = "";
     var endDate = "";
 

@@ -6,7 +6,6 @@ import com.js.sas.service.FinanceService;
 import com.js.sas.utils.*;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
@@ -28,30 +27,29 @@ import java.util.*;
 @RequestMapping("/finance")
 public class FinanceController {
 
-    @Autowired
-    private FinanceService financeService;
+    private final FinanceService financeService;
+
+    public FinanceController(FinanceService financeService) {
+        this.financeService = financeService;
+    }
 
     /**
      * 目前调用存储过程实现，存储过程很难维护，
      *
-     * @param settlementSummasryDTO
-     * @param result
-     * @return
+     * @param settlementSummasryDTO 结算客户汇总DTO
+     * @param result 校验结果
+     * @return Object
      */
     @ApiOperation(value = "结算客户对账单汇总（线上、线下）", notes = "数据来源：用友；数据截止日期：昨天")
     @PostMapping(value = "/settlementSummary")
     public Object settlementSummary(@Validated SettlementSummaryDTO settlementSummasryDTO, BindingResult result) {
         // 参数格式校验
         if (result.hasErrors()) {
-            Map<String, String> errorMap = new LinkedHashMap();
+            LinkedHashMap<String, String> errorMap = new LinkedHashMap<>();
             for (FieldError fieldError : result.getFieldErrors()) {
                 errorMap.put(fieldError.getCode(), fieldError.getDefaultMessage());
             }
             return ResultUtils.getResult(ResultCode.参数错误, errorMap);
-        }
-
-        if ("desc".equals(settlementSummasryDTO.getSortOrder())) {
-            settlementSummasryDTO.setSortOrder("asc");
         }
 
         return financeService.getSettlementSummary(settlementSummasryDTO.getName(),
