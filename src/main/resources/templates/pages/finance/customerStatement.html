@@ -148,6 +148,16 @@
                         </div>
                     </div>
                     <!--table表格区域 -->
+                    <table class="table table-bordere">
+                        <tr>
+                            <td><b>当期结算：</b></td>
+                            <td id="DeliveryAmount">发货金额：</td>
+                            <td id="ReceiptAmount">收款金额：</td>
+                            <td id="OtherAmount">其他金额：</td>
+                            <td id="Receivable">应收账款：</td>
+                            <td id="Invoice">发票结余：</td>
+                        </tr>
+                    </table>
                     <div class="ibox">
                         <div class="ibox-content">
                             <div class="row">
@@ -264,8 +274,8 @@
             });
         }
     });
-function strike() {
-
+// function strike() {
+    $(document).ready(function () {
         var $dataTable = $("#dataTable table").bootstrapTable({
             method: "POST",
             cache: false,
@@ -334,7 +344,7 @@ function strike() {
                 valign: 'middle'
             }, {
                 field: 'receivableAccount',
-                title: '应收款',
+                title: '应收账款',
                 align: 'center',
                 valign: 'middle'
             }, {
@@ -348,6 +358,27 @@ function strike() {
                 align: 'center',
                 valign: 'middle'
             }, {
+                field: 'paytype',
+                title: '支付类型',
+                align: 'center',
+                valign: 'middle',
+                formatter: function (value, row, index) {
+                    var type = row.paytype;
+                    var v = '';
+                    if (type!=null&&type!=''){
+                        switch (type) {// //支付方式0=支付宝1=微信2=银行卡3=余额4=授信5-返利券
+                            case 0:v= '支付宝';break;
+                            case 1:v= '微信';break;
+                            case 2:v= '银行卡';break;
+                            case 3:v= '余额';break;
+                            case 4:v= '授信';break;
+                            case 5:v= '返利券'; break;
+                        }
+                    }
+                    console.info(type+" "+ v);
+                    return v;
+                }
+            },{
                 field: 'payno',
                 title: '支付单号',
                 align: 'center',
@@ -358,10 +389,16 @@ function strike() {
                 align: 'center',
                 valign: 'middle'
             }], onLoadSuccess: function (data) {
+
+                $("#DeliveryAmount").html("发货金额："+data.DeliveryAmount);
+                $("#ReceiptAmount").html("收款金额："+data.ReceiptAmount);
+                $("#OtherAmount").html("其他金额："+data.OtherAmount);
+                $("#Receivable").html("应收账款："+data.Receivable);
+                $("#Invoice").html("发票结余："+data.Invoice);
                 if(data.total==0){
                     $("#dataTable table").bootstrapTable('removeAll');
-                    // alert("未查询到数据");
                 }
+
             },
             onLoadError: function () {
                 console.log("数据加载失败！");
@@ -369,11 +406,13 @@ function strike() {
             onDblClickRow: function (row, $element) {
             }
         });
-}
+});
     //搜索按钮
     $("button[id='search']").click(function () {
-        // $("#dataTable table").bootstrapTable('refresh');
-        strike();
+        // $("#dataTable table").bootstrapTable('removeAll');
+        alert(111);
+        $("#dataTable table").bootstrapTable('refresh');
+        // strike();
     });
     //清空按钮
     $("button[id='refresh']").click(function () {

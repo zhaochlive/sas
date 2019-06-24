@@ -18,10 +18,7 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -48,15 +45,16 @@ public class BuyerCapitalService {
             BigDecimal Receivableaccount = new BigDecimal(0.00);//应结账单
             BigDecimal InvoiceBalance = new BigDecimal(0.00);//发票结余
 
+
             //查询总数 count
             String countSql = getCountSql(params);
             Map<String, Object> cutmap = jdbcTemplate.queryForMap(countSql.substring(0,countSql.indexOf(" Order By")));
-            if (cutmap!=null && cutmap.containsKey("cut")){
-                count = cutmap.get("cut")==null?0l:Long.parseLong(cutmap.get("cut").toString());
-            }else{
-                result.put("count",count);
-                return result;
+            if (cutmap.containsKey("cut")){
+                count = cutmap.get("cut").equals("0")?0l:Long.parseLong(cutmap.get("cut").toString());
             }
+            //查询当期结算
+            Map<String, Object> settlement = getSettlement(params);
+            result.putAll(settlement);
 
             //第一页不需要查询 '之前页结余'
             if(params.containsKey("page")&&params.get("page")!=null){
@@ -71,6 +69,8 @@ public class BuyerCapitalService {
 
             //查询当前页的数据
             List<BuyerCapital> buycapitals = getBuycapitals(params);
+
+
 
             if (buycapitals != null && buycapitals.size() > 0) {
                 for (BuyerCapital buyerCapital : buycapitals) {
@@ -271,6 +271,7 @@ public class BuyerCapitalService {
 
 
 
+
     public List<BuyerCapital> getBuycapitals(Map<String, String> params){
 
 
@@ -331,16 +332,16 @@ public class BuyerCapitalService {
 
         if(params!=null){
             if (params.containsKey("invoiceName")&& StringUtils.isNotBlank(params.get("invoiceName"))){
-                sb.append(" and ca.invoiceheadup ='"+params.get("invoiceName")+"'");
+                sb.append(" and ca.invoiceheadup ='"+params.get("invoiceName").trim() +"'");
             }
             if (params.containsKey("userNo")&&StringUtils.isNotBlank(params.get("userNo"))){
-                sb.append(" and ca.memberid ='"+params.get("userNo")+"' ");
+                sb.append(" and ca.memberid ='"+params.get("userNo").trim()+"' ");
             }
             if (params.containsKey("companyname")&&StringUtils.isNotBlank(params.get("companyname"))){
-                sb.append(" and ca.companyname ='"+params.get("companyname")+"'");
+                sb.append(" and ca.companyname ='"+params.get("companyname").trim()+"'");
             }
             if (params.containsKey("userName")&&StringUtils.isNotBlank(params.get("userName"))){
-                sb.append(" and ca.member_username ='"+params.get("userName")+"' ");
+                sb.append(" and ca.member_username ='"+params.get("userName").trim()+"' ");
             }
 //            if (params.get("seller")!=null&&StringUtils.isNotBlank(params.get("seller"))){
 //                sb.append(" and ca.sellerid ='"+params.get("seller")+"' ");
@@ -388,7 +389,7 @@ public class BuyerCapitalService {
         accountsPayable.setReceivingAmount(capital.getCapital());
         accountsPayable.setDeliveryAmount(capital.getCapital());
         accountsPayable.setOtherAmount(capital.getCapital());
-        accountsPayable.setPaytype(capital.getPayType()==null?0:capital.getPayType());
+        accountsPayable.setPaytype(capital.getPayType());
         accountsPayable.setPayno(capital.getTransactionId());
         accountsPayable.setRemark("操作人: "+(capital.getOperation()==null?"":capital.getOperation())+"\r\n"+"审核人: "+(capital.getVerify()==null?"":capital.getVerify())+"\r\n"+capital.getMemberId()+"\r\n"+capital.getMemberUserName());
         accountsPayable.setRechargestate(capital.getRechargeState());
@@ -407,16 +408,16 @@ public class BuyerCapitalService {
         sb.append(" from buyer_capital bc where  bc.capitaltype in (0,1,2,3,6,10)");
         if(params!=null){
             if (params.containsKey("invoiceName")&& StringUtils.isNotBlank(params.get("invoiceName"))){
-                sb.append(" and bc.invoiceheadup ='"+params.get("invoiceName")+"'");
+                sb.append(" and bc.invoiceheadup ='"+params.get("invoiceName").trim()+"'");
             }
             if (params.containsKey("userNo")&&StringUtils.isNotBlank(params.get("userNo"))){
-                sb.append(" and bc.memberid ='"+params.get("userNo")+"' ");
+                sb.append(" and bc.memberid ='"+params.get("userNo").trim()+"' ");
             }
             if (params.containsKey("userName")&&StringUtils.isNotBlank(params.get("userName"))){
-                sb.append(" and bc.member_username ='"+params.get("userName")+"' ");
+                sb.append(" and bc.member_username ='"+params.get("userName").trim()+"' ");
             }
             if (params.containsKey("companyname")&&StringUtils.isNotBlank(params.get("companyname"))){
-                sb.append(" and bc.companyname ='"+params.get("companyname")+"'");
+                sb.append(" and bc.companyname ='"+params.get("companyname").trim()+"'");
             }
 //            if (params.containsKey("seller")&&StringUtils.isNotBlank(params.get("seller"))){
 //                sb.append(" and bc.sellerid ='"+params.get("seller")+"' ");
@@ -443,5 +444,98 @@ public class BuyerCapitalService {
         }
         log.info("returnCapitalAccount.getResultSql :{}",sb.toString());
         return sb.toString();
+    }
+
+
+    private String getSettlementSql(Map<String, String> params) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(" SELECT SUM(CASE WHEN bc.capitaltype = 0 AND bc.paytype IN ( 3, 4 ) THEN if (bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital ) ");
+        builder.append(" WHEN bc.capitaltype = 2 AND bc.paytype NOT IN ( 0, 1, 2 ) THEN if (bc.scattered = 1 ,- (bc.capital+bc.scatteredcapital) ,- bc.capital )");
+        builder.append(" WHEN bc.capitaltype = 1 AND bc.rechargestate = 1 THEN if (bc.scattered = 1 ,- (bc.capital+bc.scatteredcapital) ,- bc.capital)");
+        builder.append(" WHEN bc.capitaltype = 3 AND bc.rechargestate = 1 THEN if (bc.scattered = 1 , (bc.capital+bc.scatteredcapital) , bc.capital)");
+        builder.append(" WHEN bc.capitaltype = 6 THEN IF(( SELECT COUNT(1) FROM order_product_back_info WHERE orderno = bc.orderno ) > 0, 0, ");
+        builder.append(" if (bc.scattered = 1 ,bc.capital +bc.scatteredcapital,bc.capital)) ");
+        builder.append(" WHEN bc.capitaltype = 10 THEN if (bc.scattered = 1 , - (bc.capital +bc.scatteredcapital), -bc.capital) ");
+        builder.append(" END ) AS Receivableaccount, SUM(CASE WHEN bc.capitaltype = 0 AND bc.paytype IN (0,1,2,3,4) THEN if(bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital)");
+        builder.append(" WHEN bc.capitaltype = 6 THEN IF(( SELECT COUNT( 1 ) FROM order_product_back_info WHERE orderno = bc.orderno ) > 0, -if(bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital), 0 ) ");
+        builder.append(" WHEN bc.capitaltype = 2 THEN -if(bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital) END) AS InvoiceBalance ,");
+        builder.append(" SUM(case WHEN bc.capitaltype =0 and bc.paytype IN (0,1,2,3,4) THEN if (bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital ) ");
+        builder.append(" WHEN bc.capitaltype = 6 THEN IF(( SELECT COUNT(1) FROM order_product_back_info WHERE orderno = bc.orderno ) > 0, -if(bc.scattered = 1 ,bc.capital +bc.scatteredcapital,bc.capital),0)");
+        builder.append(" WHEN bc.capitaltype = 2 THEN -if(bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital ) end) Deliveryamount,");
+        builder.append(" SUM(CASE WHEN bc.capitaltype = 0 AND bc.paytype IN (0,1,2) THEN if (bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital )");
+        builder.append(" WHEN bc.capitaltype = 1 AND bc.rechargestate = 1 THEN if (bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital )");
+        builder.append(" WHEN bc.capitaltype = 2 AND bc.paytype IN ( 0, 1, 2 ) THEN if (bc.scattered = 1 ,-(bc.capital+bc.scatteredcapital),-bc.capital )");
+        builder.append(" WHEN bc.capitaltype = 3 AND bc.rechargestate = 1 THEN if (bc.scattered = 1 ,-(bc.capital+bc.scatteredcapital),-bc.capital )END) Receiptamount,");
+        builder.append(" SUM(CASE WHEN bc.capitaltype = 10 THEN if (bc.scattered = 1 ,- (bc.capital+bc.scatteredcapital) ,- bc.capital )");
+        builder.append(" WHEN bc.capitaltype = 6 THEN if (bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital ) END) OtherAmount");
+        builder.append(" FROM (SELECT ca.capitaltype,ca.capital,ca.tradetime,ca.paytype,ca.orderno,ca.id,ca.rechargestate,ca.tradeno,ca.scattered,ca.scatteredcapital");
+        builder.append(" FROM buyer_capital ca WHERE 1 = 1 AND ca.capitaltype in (0,1,2,3,6,10) ");
+        if(params!=null){
+            if (params.containsKey("invoiceName")&& StringUtils.isNotBlank(params.get("invoiceName"))){
+                builder.append(" and ca.invoiceheadup ='"+params.get("invoiceName").trim()+"'");
+            }
+            if (params.containsKey("userNo")&&StringUtils.isNotBlank(params.get("userNo"))){
+                builder.append(" and ca.memberid ='"+params.get("userNo").trim()+"' ");
+            }
+            if (params.containsKey("companyname")&&StringUtils.isNotBlank(params.get("companyname"))){
+                builder.append(" and ca.companyname ='"+params.get("companyname").trim()+"'");
+            }
+            if (params.containsKey("userName")&&StringUtils.isNotBlank(params.get("userName"))){
+                builder.append(" and ca.member_username ='"+params.get("userName").trim()+"' ");
+            }
+            if (params.containsKey("startDate")&&StringUtils.isNotBlank(params.get("startDate"))){
+                builder.append(" and ca.tradetime >='"+params.get("startDate")+"' ");
+            }
+            if (params.containsKey("endDate")&&StringUtils.isNotBlank(params.get("endDate"))){
+                builder.append(" and ca.tradetime <='"+params.get("endDate")+"' ");
+            }
+                builder.append(" Order By ca.tradetime  )bc ");
+
+        }else{
+            builder.append(" Order By ca.tradetime  ) bc " );
+        }
+        log.info("returnCapitalAccount.getSettlementSql :{}",builder.toString());
+
+        return  builder.toString();
+    }
+
+    /**
+     * //查询当期结算
+     * @param params
+     * @return
+     */
+    public Map<String,Object> getSettlement(Map<String ,String > params){
+
+        Map<String, Object> map = new HashMap<>();
+        String settlementSql = getSettlementSql(params);
+        BigDecimal Deliveryamount = new BigDecimal(0);
+        BigDecimal Receiptamount = new BigDecimal(0);
+        BigDecimal OtherAmount = new BigDecimal(0);
+        BigDecimal Invoice = new BigDecimal(0);
+        BigDecimal Receivable = new BigDecimal(0);
+
+        Map<String, Object> settlement = jdbcTemplate.queryForMap(settlementSql);//Deliveryamount Receiptamount OtherAmount
+        if (settlement.containsKey("Deliveryamount")){
+            Deliveryamount = CommonUtils.getBigDecimal(settlement.get("Deliveryamount") == null ? 0.00 : settlement.get("Deliveryamount"));
+        }
+        if (settlement.containsKey("Receiptamount")){
+            Receiptamount = CommonUtils.getBigDecimal(settlement.get("Receiptamount") == null ? 0.00 : settlement.get("Receiptamount"));
+        }
+        if (settlement.containsKey("OtherAmount")){
+            OtherAmount = CommonUtils.getBigDecimal(settlement.get("OtherAmount") == null ? 0.00 : settlement.get("OtherAmount"));
+        }
+        if (settlement.containsKey("InvoiceBalance")){
+            Invoice = CommonUtils.getBigDecimal(settlement.get("InvoiceBalance") == null ? 0.00 : settlement.get("InvoiceBalance"));
+        }
+        if (settlement.containsKey("Receivableaccount")){
+            Receivable = CommonUtils.getBigDecimal(settlement.get("Receivableaccount") == null ? 0.00 : settlement.get("Receivableaccount"));
+        }
+        map.put("DeliveryAmount",Deliveryamount);
+        map.put("ReceiptAmount",Receiptamount);
+        map.put("OtherAmount",OtherAmount);
+        map.put("Invoice",Invoice);
+        map.put("Receivable",Receivable);
+
+        return map;
     }
 }

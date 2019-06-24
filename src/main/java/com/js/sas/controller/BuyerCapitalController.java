@@ -7,6 +7,7 @@ import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
@@ -14,6 +15,8 @@ import springfox.documentation.annotations.ApiIgnore;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,9 +49,28 @@ public class BuyerCapitalController {
     @ResponseBody
     public Object listForAccount(@ApiParam @RequestBody Map<String, String> params) {
         for (String str : params.keySet()) {
-            log.info("参数key : {} ,value {}", str, params.get(str));
+            log.info("参数key : {} ,value :{}", str, params.get(str));
         }
-        return buyerCapitalService.getAccountsPayable(params);
+        Boolean b = false;
+        if (params.containsKey("userName")&&StringUtils.isNoneBlank(params.get("userName"))){b=true;}
+        if (params.containsKey("userNo")&&StringUtils.isNoneBlank(params.get("userNo"))){b=true;}
+        if (params.containsKey("invoiceName")&&StringUtils.isNoneBlank(params.get("invoiceName"))){b=true;}
+        if (params.containsKey("companyname")&&StringUtils.isNoneBlank(params.get("companyname"))){b=true;}
+        if (params.containsKey("startDate")&&StringUtils.isNoneBlank(params.get("startDate"))){b=true;}
+        if (params.containsKey("endDate")&&StringUtils.isNoneBlank(params.get("endDate"))){b=true;}
+        if (b) {
+            return buyerCapitalService.getAccountsPayable(params);
+        }else {
+            Map<String, Object> objectHashMap = new HashMap<>();
+            objectHashMap.put("total",0);
+            objectHashMap.put("rows",null);
+            objectHashMap.put("DeliveryAmount",0);
+            objectHashMap.put("ReceiptAmount",0);
+            objectHashMap.put("OtherAmount",0);
+            objectHashMap.put("Invoice",0);
+            objectHashMap.put("Receivable",0);
+            return objectHashMap;
+        }
     }
 
     @ApiIgnore
@@ -73,6 +95,15 @@ public class BuyerCapitalController {
         try {
             Map<String, Object> map = buyerCapitalService.getAccountsPayable(params);
             List<AccountsPayable> accountsPayables = (List<AccountsPayable>) map.get("rows");
+            AccountsPayable first = new AccountsPayable();
+            first.setOrderno("当期结算");
+            first.setReceivingAmount((BigDecimal) map.get("ReceiptAmount"));
+            first.setDeliveryAmount((BigDecimal) map.get("DeliveryAmount"));
+            first.setOtherAmount((BigDecimal) map.get("OtherAmount"));
+            first.setReceivableAccount((BigDecimal) map.get("Receivable"));
+            first.setInvoicebalance((BigDecimal) map.get("Invoice"));
+            accountsPayables.add(0,first);
+
        /* Resource resource = new ClassPathResource("templates/filetemplates/buyer_capital_template.xlsx");
         File file = null;
         Workbook workbook = null;
