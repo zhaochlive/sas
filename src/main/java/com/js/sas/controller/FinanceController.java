@@ -34,13 +34,13 @@ public class FinanceController {
     }
 
     /**
-     * 目前调用存储过程实现，存储过程很难维护，
+     * 目前调用存储过程实现，存储过程很难维护，后期需要修改实现方法。
      *
      * @param settlementSummasryDTO 结算客户汇总DTO
      * @param result 校验结果
      * @return Object
      */
-    @ApiOperation(value = "结算客户对账单汇总（线上、线下）", notes = "数据来源：用友；数据截止日期：昨天")
+    @ApiOperation(value = "结算客户汇总（线上、线下）", notes = "数据来源：用友；数据截止日期：昨天")
     @PostMapping(value = "/settlementSummary")
     public Object settlementSummary(@Validated SettlementSummaryDTO settlementSummasryDTO, BindingResult result) {
         // 参数格式校验

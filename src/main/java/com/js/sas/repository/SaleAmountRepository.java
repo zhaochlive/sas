@@ -20,14 +20,15 @@ public interface SaleAmountRepository extends JpaRepository<SaleAmountEntity, In
      * @param limit 天数
      * @return 日销售列表
      */
-    @Query(nativeQuery = true, value = "SELECT DATE_FORMAT( sasd.createTime, '%Y%m%d' )  AS 'id', 0 AS 'months', 0 AS 'years'," +
-            " DATE_FORMAT( sasd.createTime, '%Y/%m/%d' ) AS 'days'," +
+    @Query(nativeQuery = true, value = "SELECT @rownum \\:= @rownum +1 AS 'id', 0 AS 'months', 0 AS 'years'," +
+            " DATE_FORMAT( sasd.create_time, '%Y/%m/%d' ) AS 'days'," +
             " COUNT( sasd.id ) AS 'counts'," +
             " SUM( sasd.amount ) AS 'amount'" +
             " FROM" +
+            " (SELECT @rownum \\:= 0) r," +
             " YY_SA_SaleDelivery sasd" +
             " GROUP BY" +
-            " days, sasd.createTime" +
+            " days" +
             " ORDER BY" +
             " days DESC" +
             " LIMIT :limit")
@@ -40,7 +41,7 @@ public interface SaleAmountRepository extends JpaRepository<SaleAmountEntity, In
      * @return 月销售列表
      */
     @Query(nativeQuery = true, value = "SELECT @rownum \\:= @rownum +1 AS 'id', 0 AS 'days', 0 AS 'years'," +
-            " DATE_FORMAT( sasd.createTime, '%Y年%m月' ) AS 'months'," +
+            " DATE_FORMAT( sasd.create_time, '%Y年%m月' ) AS 'months'," +
             " COUNT( sasd.id ) AS 'counts'," +
             " SUM( sasd.amount ) AS 'amount'" +
             " FROM" +
@@ -60,7 +61,7 @@ public interface SaleAmountRepository extends JpaRepository<SaleAmountEntity, In
      * @return 年销售列表
      */
     @Query(nativeQuery = true, value = "SELECT @rownum \\:= @rownum +1 AS 'id', 0 AS 'days', 0 AS 'months'," +
-            " DATE_FORMAT( sasd.createTime, '%Y年' ) AS 'years'," +
+            " DATE_FORMAT( sasd.create_time, '%Y年' ) AS 'years'," +
             " COUNT( sasd.id ) AS 'counts'," +
             " SUM( sasd.amount ) AS 'amount'" +
             " FROM" +

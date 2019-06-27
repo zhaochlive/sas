@@ -2,6 +2,7 @@ package com.js.sas.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
 
 /**
@@ -21,11 +22,11 @@ public class SystemController {
 
     @GetMapping("/settlementCustomerSummary")
     public String settlementCustomerSummary() {
-        return "/pages/finance/settlementSummary";
+        return "pages/finance/settlementSummary";
     }
 
     @GetMapping("/customerStatement")
     public String customerStatement() {
-        return "/pages/finance/customerStatement.html";
+        return "pages/finance/customerStatement.html";
     }
 }

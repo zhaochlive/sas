@@ -54,7 +54,7 @@ public class CommonUtils {
         ServletOutputStream out = response.getOutputStream();
         response.setContentType("multipart/form-data");
         response.setCharacterEncoding("utf-8");
-        response.setHeader("Content-Disposition", "attachment;filename*= UTF-8''" + URLEncoder.encode(fileName, StandardCharsets.UTF_8) + ".xlsx");
+        response.setHeader("Content-Disposition", "attachment;filename*= UTF-8''" + URLEncoder.encode(fileName, "UTF-8") + ".xlsx");
         ExcelWriter writer = new ExcelWriter(out, ExcelTypeEnum.XLSX, true);
         Sheet sheet1 = new Sheet(1, 0, clazz.getClass());
         sheet1.setSheetName(fileName);

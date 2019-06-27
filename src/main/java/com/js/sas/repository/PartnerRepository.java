@@ -24,13 +24,13 @@ public interface PartnerRepository extends JpaRepository<PartnerEntity, Integer>
      */
     @Query(nativeQuery = true, value = "SELECT yap.id, " +
             "yap.code, " +
-            "yap.parentCode, " +
+            "yap.parent_code, " +
             "yap.name, " +
             "yap.receivables, " +
             "yap.status, " +
-            "yap.paymentDate, " +
-            "yap.paymentMonth, " +
-            "yap.settlementType " +
+            "yap.payment_date, " +
+            "yap.payment_month, " +
+            "yap.settlement_type " +
             "FROM YY_AA_Partner yap " +
             "WHERE yap.status = 0 " +
             "AND yap.name " +

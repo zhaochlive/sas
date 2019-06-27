@@ -22,30 +22,31 @@ public class PartnerEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
+    @Column(name = "id", nullable = false)
     private int id;
 
-    @Column(nullable = false)
+    @Column(name = "code", nullable = false)
     private String code;
 
-    @Column(nullable = false)
+    @Column(name = "parent_code", nullable = false)
     private String parentCode;
 
-    @Column(nullable = false)
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(name = "receivables", nullable = false)
     private float receivables;
 
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false)
     private char status;
 
-    @Column(nullable = false)
+    @Column(name = "payment_date", nullable = false)
     private int paymentDate;
 
-    @Column(nullable = false)
+    @Column(name = "payment_month", nullable = false)
     private int paymentMonth;
 
-    @Column(nullable = false)
+    @Column(name = "settlement_type", nullable = false)
     private char settlementType;
 
 }
