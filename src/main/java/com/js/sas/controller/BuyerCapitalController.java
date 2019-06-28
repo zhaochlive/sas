@@ -16,10 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Api(value = "查询对账单信息")
 @Controller
@@ -52,30 +49,42 @@ public class BuyerCapitalController {
             log.info("参数key : {} ,value :{}", str, params.get(str));
         }
         Boolean b = false;
-        if (params.containsKey("userName")&&StringUtils.isNoneBlank(params.get("userName"))){b=true;}
-        if (params.containsKey("userNo")&&StringUtils.isNoneBlank(params.get("userNo"))){b=true;}
-        if (params.containsKey("invoiceName")&&StringUtils.isNoneBlank(params.get("invoiceName"))){b=true;}
-        if (params.containsKey("companyname")&&StringUtils.isNoneBlank(params.get("companyname"))){b=true;}
-        if (params.containsKey("startDate")&&StringUtils.isNoneBlank(params.get("startDate"))){b=true;}
-        if (params.containsKey("endDate")&&StringUtils.isNoneBlank(params.get("endDate"))){b=true;}
+        if (params.containsKey("userName") && StringUtils.isNoneBlank(params.get("userName"))) {
+            b = true;
+        }
+        if (params.containsKey("userNo") && StringUtils.isNoneBlank(params.get("userNo"))) {
+            b = true;
+        }
+        if (params.containsKey("invoiceName") && StringUtils.isNoneBlank(params.get("invoiceName"))) {
+            b = true;
+        }
+        if (params.containsKey("companyname") && StringUtils.isNoneBlank(params.get("companyname"))) {
+            b = true;
+        }
+        if (params.containsKey("startDate") && StringUtils.isNoneBlank(params.get("startDate"))) {
+            b = true;
+        }
+        if (params.containsKey("endDate") && StringUtils.isNoneBlank(params.get("endDate"))) {
+            b = true;
+        }
         if (b) {
             return buyerCapitalService.getAccountsPayable(params);
-        }else {
+        } else {
             Map<String, Object> objectHashMap = new HashMap<>();
-            objectHashMap.put("total",0);
-            objectHashMap.put("rows",null);
-            objectHashMap.put("DeliveryAmount",0);
-            objectHashMap.put("ReceiptAmount",0);
-            objectHashMap.put("OtherAmount",0);
-            objectHashMap.put("Invoice",0);
-            objectHashMap.put("Receivable",0);
+            objectHashMap.put("total", 0);
+            objectHashMap.put("rows", null);
+            objectHashMap.put("DeliveryAmount", 0);
+            objectHashMap.put("ReceiptAmount", 0);
+            objectHashMap.put("OtherAmount", 0);
+            objectHashMap.put("Invoice", 0);
+            objectHashMap.put("Receivable", 0);
             return objectHashMap;
         }
     }
 
     @ApiIgnore
     @GetMapping(value = "/download/excel")
-    public void download( HttpServletResponse response, HttpServletRequest request) {
+    public void download(HttpServletResponse response, HttpServletRequest request) {
         String userName = request.getParameter("userName");
         String userNo = request.getParameter("userNo");
         String invoiceName = request.getParameter("invoiceName");
@@ -83,71 +92,54 @@ public class BuyerCapitalController {
         String startDate = request.getParameter("startDate");
         String endDate = request.getParameter("endDate");
         Map<String, String> params = new HashMap<>();
-        if(StringUtils.isNotBlank(userName)){params.put("userName",userName);}
-        if(StringUtils.isNotBlank(userNo)){params.put("userNo",userNo);}
-        if(StringUtils.isNotBlank(invoiceName)){params.put("invoiceName",invoiceName);}
-        if(StringUtils.isNotBlank(companyname)){params.put("companyname",companyname);}
-        if(StringUtils.isNotBlank(startDate)){params.put("startDate",startDate);}
-        if(StringUtils.isNotBlank(endDate)){params.put("endDate",endDate);}
-            params.put("offset","0");
-            params.put("limit","10000000");
-        log.info("参数userName:{},userNo:{},invoiceName:{},companyname:{},startDate:{},endDate{}:", userName,userNo,invoiceName,companyname,startDate,endDate);
+        if (StringUtils.isNotBlank(userName)) {
+            params.put("userName", userName);
+        }
+        if (StringUtils.isNotBlank(userNo)) {
+            params.put("userNo", userNo);
+        }
+        if (StringUtils.isNotBlank(invoiceName)) {
+            params.put("invoiceName", invoiceName);
+        }
+        if (StringUtils.isNotBlank(companyname)) {
+            params.put("companyname", companyname);
+        }
+        if (StringUtils.isNotBlank(startDate)) {
+            params.put("startDate", startDate);
+        }
+        if (StringUtils.isNotBlank(endDate)) {
+            params.put("endDate", endDate);
+        }
+        params.put("offset", "0");
+        params.put("limit", "10000000");
+        log.info("参数userName:{},userNo:{},invoiceName:{},companyname:{},startDate:{},endDate{}:", userName, userNo, invoiceName, companyname, startDate, endDate);
+        List<AccountsPayable> accountsPayables = null;
         try {
             Map<String, Object> map = buyerCapitalService.getAccountsPayable(params);
-            List<AccountsPayable> accountsPayables = (List<AccountsPayable>) map.get("rows");
-            AccountsPayable first = new AccountsPayable();
-            first.setOrderno("当期结算");
-            first.setReceivingAmount((BigDecimal) map.get("ReceiptAmount"));
-            first.setDeliveryAmount((BigDecimal) map.get("DeliveryAmount"));
-            first.setOtherAmount((BigDecimal) map.get("OtherAmount"));
-            first.setReceivableAccount((BigDecimal) map.get("Receivable"));
-            first.setInvoicebalance((BigDecimal) map.get("Invoice"));
-            accountsPayables.add(0,first);
+            if (map.get("rows") != null) {
+                accountsPayables = (List<AccountsPayable>) map.get("rows");
+                AccountsPayable first = new AccountsPayable();
+                first.setOrderno("当期结算");
+                first.setReceivingAmount((BigDecimal) map.get("ReceiptAmount"));
+                first.setDeliveryAmount((BigDecimal) map.get("DeliveryAmount"));
+                first.setOtherAmount((BigDecimal) map.get("OtherAmount"));
+                first.setReceivableAccount((BigDecimal) map.get("Receivable"));
+                first.setInvoicebalance((BigDecimal) map.get("Invoice"));
+                accountsPayables.add(0, first);
 
-       /* Resource resource = new ClassPathResource("templates/filetemplates/buyer_capital_template.xlsx");
-        File file = null;
-        Workbook workbook = null;
-            file = resource.getFile();
-            if (file.getName().endsWith("xls")) {     //Excel&nbsp;2003
-                workbook = new HSSFWorkbook(new FileInputStream(file));
-            } else if (file.getName().endsWith("xlsx")) {    // Excel 2007/2010
-                workbook = new XSSFWorkbook(new FileInputStream(file));
+                CommonUtils.export(response, accountsPayables, "结算客户对账单", new AccountsPayable());
+            } else {
+                accountsPayables = new ArrayList<>();
+                AccountsPayable first = new AccountsPayable();
+                first.setOrderno("当期结算");
+                first.setReceivingAmount((BigDecimal) map.get("ReceiptAmount"));
+                first.setDeliveryAmount((BigDecimal) map.get("DeliveryAmount"));
+                first.setOtherAmount((BigDecimal) map.get("OtherAmount"));
+                first.setReceivableAccount((BigDecimal) map.get("Receivable"));
+                first.setInvoicebalance((BigDecimal) map.get("Invoice"));
+                accountsPayables.add(0, first);
+                CommonUtils.export(response, accountsPayables, "结算客户对账单", new AccountsPayable());
             }
-            Sheet sheet = workbook.getSheetAt(0);
-
-            for (int i = 0; i < accountsPayables.size(); i++) {
-                AccountsPayable accountsPayable = accountsPayables.get(i);
-                Row row = sheet.createRow(i + 1);
-                row.createCell(0).setCellValue(i + 1);
-                row.createCell(1).setCellValue(accountsPayable.getTradetime());
-                row.createCell(2).setCellValue(accountsPayable.getOrderno());
-                row.createCell(3).setCellValue(accountsPayable.getCapitalTypeName());
-                row.createCell(4).setCellValue(accountsPayable.getDeliveryAmount() == null ? 0f : accountsPayable.getDeliveryAmount().floatValue());
-                row.createCell(5).setCellValue(accountsPayable.getReceivingAmount() == null ? 0f : accountsPayable.getReceivingAmount().floatValue());
-                row.createCell(6).setCellValue(accountsPayable.getOtherAmount() == null ? 0f : accountsPayable.getOtherAmount().floatValue());
-                row.createCell(7).setCellValue(accountsPayable.getReceivableAccount() == null ? 0f : accountsPayable.getReceivableAccount().floatValue());
-                row.createCell(8).setCellValue(accountsPayable.getInvoiceamount() == null ? 0f : accountsPayable.getInvoiceamount().floatValue());
-                row.createCell(9).setCellValue(accountsPayable.getInvoicebalance() == null ? 0f : accountsPayable.getInvoicebalance().floatValue());
-                row.createCell(10).setCellValue(accountsPayable.getPayno());
-                row.createCell(11).setCellValue(accountsPayable.getRemark());
-            }
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-            String time = sdf.format(new Date());
-            response.setHeader("Content-Disposition", "attachment;filename=File" + time + "结算用户对账单.xlsx");
-            response.setContentType("application/vnd.ms-excel;charset=UTF-8");
-            response.setHeader("Pragma", "no-cache");
-            response.setHeader("Cache-Control", "no-cache");
-//            response.setDateHeader("Expires", 0);
-
-            OutputStream output;
-
-            output = response.getOutputStream();
-            BufferedOutputStream bufferedOutPut = new BufferedOutputStream(output);
-            bufferedOutPut.flush();
-            workbook.write(bufferedOutPut);
-            bufferedOutPut.close();*/
-            CommonUtils.export(response, accountsPayables, "结算客户对账单", new AccountsPayable());
-
         } catch (IOException e) {
             e.printStackTrace();
         }
