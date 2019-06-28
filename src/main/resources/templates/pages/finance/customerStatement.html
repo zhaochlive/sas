@@ -48,7 +48,7 @@
                                         <div class="form-group row col-sm-4">
                                             <label class="col-sm-3 col-form-label">日期范围：</label>
                                             <div class="col-sm-9">
-                                                <input class="form-control" type="text" placeholder="日期范围" name="dateRange" value=""/>
+                                                <input id="dateRange" class="form-control" type="text" placeholder="日期范围" name="dateRange" value=""/>
                                             </div>
                                         </div>
                                         <div class="form-group row col-sm-4">
@@ -184,6 +184,15 @@
             $("#endDate").val(endDate);
             this.element.val(startDate + this.locale.separator + endDate);
         }
+
+        // 时间输入框置空判断
+        $("#dateRange").on("input",function(e){
+            if($.trim(e.delegateTarget.value) == "") {
+                startDate = "";
+                endDate = "";
+            }
+            // console.log(startDate + new Date());
+        });
     });
 
     function add0(m) {

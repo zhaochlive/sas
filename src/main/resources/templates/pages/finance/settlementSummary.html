@@ -164,6 +164,16 @@
             $("#startDate").val(startDate);
             $("#endDate").val(endDate);
         }
+
+        // 时间输入框置空判断
+        $("#dateRange").on("input",function(e){
+            if($.trim(e.delegateTarget.value) == "") {
+                startDate = "";
+                endDate = "";
+            }
+            // console.log(startDate + new Date());
+        });
+
     });
 
     $(document).ready(function () {
