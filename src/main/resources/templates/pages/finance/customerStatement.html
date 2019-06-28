@@ -348,7 +348,6 @@
                 if(data.total==0){
                     $("#dataTable table").bootstrapTable('removeAll');
                 }
-
             },
             onLoadError: function () {
                 console.log("数据加载失败！");
@@ -370,7 +369,8 @@
         $("input[name='userNo']").val("");
         $("input[name='invoiceName']").val("");
         $("input[name='dateRange']").val("");
-
+        startDate = "";
+        endDate = "";
     });
 
     //导出excel功能按钮
