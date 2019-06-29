@@ -49,7 +49,6 @@
                                             <label class="col-sm-3 col-form-label">日期范围：</label>
                                             <div class="col-sm-9">
                                                 <input class="form-control" type="text" placeholder="日期范围" name="dateRange" value=""/>
-
                                             </div>
                                         </div>
                                         <div class="form-group row col-sm-4">
@@ -185,11 +184,21 @@
             $("#endDate").val(endDate);
             this.element.val(startDate + this.locale.separator + endDate);
         }
+
+        // 时间输入框置空判断
+        $("#dateRange").on("input",function(e){
+            if($.trim(e.delegateTarget.value) == "") {
+                startDate = "";
+                endDate = "";
+            }
+            // console.log(startDate + new Date());
+        });
     });
 
     function add0(m) {
         return m < 10 ? '0' + m : m
     }
+
     function changeDateFormat(value) {
 
         if (value != null) {
@@ -202,6 +211,7 @@
             var s = time.getSeconds();
             return y + '-' + add0(m) + '-' + add0(d) + ' ' + add0(h) + ':' + add0(mm) + ':' + add0(s);
         }
+        // return value;
     }
 
     $('.settlementName').typeahead({
@@ -260,9 +270,6 @@
                     /*sort: params.sort,
                     sortOrder: params.order*/
                 };
-                $("#startDate").val(temp.startDate);
-                // 设置结束时间
-                $("#endDate").val(temp.endDate);
                 return JSON.stringify(temp);
             }, columns: [{
                 field: 'tradetime',
