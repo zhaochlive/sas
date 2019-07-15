@@ -209,10 +209,10 @@
                         }
                     },
                     endDate: function () {
-                        if (startDate == "") {
+                        if (endDate == "") {
                             return moment().format("YYYY-MM-DD");
                         } else {
-                            return startDate;
+                            return endDate;
                         }
                     },
                     limit: params.limit,
@@ -227,7 +227,7 @@
                 return temp;
             },
             columns: [{
-                field: 'rowNum',
+                field: 'id',
                 title: '序号',
                 align: 'center',
                 valign: 'middle'

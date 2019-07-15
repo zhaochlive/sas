@@ -1,30 +1,16 @@
 server:
-  port: 8080
+  port: 58080
 spring:
   profiles:
-    active: dev
+    active: prod
   datasource:
-    url: jdbc:mysql://192.168.85.132:3306/sas?useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
-    username: root
-    password: 123456
+    url: jdbc:mysql://192.168.8.65:3306/sas?useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
+    username: sas
+    password: QM7yfgiFu
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     show-sql: true
     hibernate:
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
----
-server:
-  port: 8000
-spring:
-  profiles: prod
-  datasource:
-    url:
-    username:
-    password:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    jpa:
-      show-sql: true
-      hibernate:
-        naming:
-          physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
