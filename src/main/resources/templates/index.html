@@ -33,7 +33,7 @@
                             <span class="label label-success float-left">本年度</span>
                         </div>
                         <div class="ibox-content">
-                            <h1 class="no-margins">- 元</h1>
+                            <h1 class="no-margins"><label id="yearAmout">-</label> 万元</h1>
                             <small>总销售额</small>
                         </div>
                     </div>
@@ -44,7 +44,7 @@
                             <span class="label label-info float-left">本月</span>
                         </div>
                         <div class="ibox-content">
-                            <h1 class="no-margins">- 元</h1>
+                            <h1 class="no-margins"><label id="monthAmout">-</label> 万元</h1>
                             <small>总销售额</small>
                         </div>
                     </div>
@@ -253,6 +253,9 @@
                 amountMonth.push((result.data[i].amount / 10000).toFixed(4));
                 ordersMonth.push(result.data[i].counts);
             }
+
+            // 设置当月销售额
+            $("#monthAmout").text(result.data[0].amount / 10000);
         }, error: function (error) {
             console.log(error);
         }
@@ -362,6 +365,8 @@
                 amountYear.push((result.data[i].amount / 10000).toFixed(4));
                 ordersYear.push(result.data[i].counts);
             }
+            // 设置当年销售额
+            $("#yearAmout").text(result.data[0].amount / 10000);
         }, error: function (error) {
             console.log(error);
         }
