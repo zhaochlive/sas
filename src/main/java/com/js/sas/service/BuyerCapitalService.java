@@ -10,6 +10,7 @@ import com.js.sas.utils.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ public class BuyerCapitalService {
     private OrderProductBackInfoRepository orderProductBackInfoRepository;
 
     @Autowired
+//    @Qualifier("firstJdbcTemplate")
     private JdbcTemplate jdbcTemplate;
 
     public Map<String, Object> getAccountsPayable(Map<String, String> params){

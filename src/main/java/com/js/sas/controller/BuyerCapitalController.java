@@ -45,9 +45,9 @@ public class BuyerCapitalController {
     @PostMapping("/customerStatement")
     @ResponseBody
     public Object listForAccount(@ApiParam @RequestBody Map<String, String> params) {
-        for (String str : params.keySet()) {
-            log.info("参数key : {} ,value :{}", str, params.get(str));
-        }
+//        for (String str : params.keySet()) {
+//            log.info("参数key : {} ,value :{}", str, params.get(str));
+//        }
         Boolean b = false;
         if (params.containsKey("userName") && StringUtils.isNoneBlank(params.get("userName"))) {
             b = true;
