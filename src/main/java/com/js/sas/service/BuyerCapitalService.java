@@ -10,6 +10,7 @@ import com.js.sas.utils.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ public class BuyerCapitalService {
     private OrderProductBackInfoRepository orderProductBackInfoRepository;
 
     @Autowired
+//    @Qualifier("firstJdbcTemplate")
     private JdbcTemplate jdbcTemplate;
 
     public Map<String, Object> getAccountsPayable(Map<String, String> params){
@@ -85,28 +87,27 @@ public class BuyerCapitalService {
                     AccountsPayable accountsPayable = null;
                     //根据capitalType分组计算
                     switch (buyerCapital.getCapitalType()) {
-                        // 0 消费
-                        case BuyerCapitalConst.CAPITALTYPE_CONSUM: {
+                        case BuyerCapitalConst.CAPITALTYPE_CONSUM: {   // 0 消费
                             if (buyerCapital.getPayType() == BuyerCapitalConst.PAYMETHOD_ALIPAY
                                     || buyerCapital.getPayType() == BuyerCapitalConst.PAYMETHOD_WEIXIN
                                     || buyerCapital.getPayType() == BuyerCapitalConst.PAYMETHOD_BANKCARD) {
                                 //当记录为网络支付时，先添加一条收款记录，【应收账款】减钱
                                 accountsPayable = transitionToAccountsPayable(buyerCapital);
-                                accountsPayable.setDeliveryAmount(null);
-                                accountsPayable.setOtherAmount(null);
+//                                accountsPayable.setDeliveryAmount(null);
+//                                accountsPayable.setOtherAmount(null);
                                 accountsPayable.setCapitalTypeName("收款");
-                                Receivableaccount = Receivableaccount.subtract(buyerCapital.getCapital());
-                                accountsPayable.setReceivableAccount(Receivableaccount);
-                                accountsPayable.setInvoicebalance(InvoiceBalance);
-                                accountsPayable.setRemark(buyerCapital.getInvoiceHeadUp() == null ? "" : buyerCapital.getInvoiceHeadUp()
-                                        + "\r\n" + buyerCapital.getMemberId() + "\r\n" + buyerCapital.getMemberUserName());
-                                accountsPayables.add(accountsPayable);
+//                                Receivableaccount = Receivableaccount.subtract(buyerCapital.getCapital());
+//                                accountsPayable.setReceivableAccount(Receivableaccount);
+//                                accountsPayable.setInvoicebalance(InvoiceBalance);
+//                                accountsPayable.setRemark(buyerCapital.getInvoiceHeadUp() == null ? "" : buyerCapital.getInvoiceHeadUp()
+//                                        + "\r\n" + buyerCapital.getMemberId() + "\r\n" + buyerCapital.getMemberUserName());
+//                                accountsPayables.add(accountsPayable);
                                 //然后再添加一条发货记录，【应收账款】加钱
-                                accountsPayable = transitionToAccountsPayable(buyerCapital);
-                                accountsPayable.setCapitalTypeName("发货");
-                                accountsPayable.setReceivingAmount(null);
+//                                accountsPayable = transitionToAccountsPayable(buyerCapital);
+                                accountsPayable.setCapitalTypeName("收款/发货");
+//                                accountsPayable.setReceivingAmount(null);
                                 accountsPayable.setOtherAmount(null);
-                                Receivableaccount = Receivableaccount.add(buyerCapital.getCapital());
+//                                Receivableaccount = Receivableaccount.add(buyerCapital.getCapital());
                                 accountsPayable.setReceivableAccount(Receivableaccount);
                                 InvoiceBalance = InvoiceBalance.add(buyerCapital.getCapital());
                                 accountsPayable.setInvoicebalance(InvoiceBalance);
@@ -156,25 +157,26 @@ public class BuyerCapitalService {
                             accountsPayable.setInvoicebalance(InvoiceBalance);
                             accountsPayable.setPaytype(5);
                             accountsPayable.setRemark("买家违约");
-                            accountsPayables.add(accountsPayable);
+
 
                             //查询出这笔违约金是否有对应的退货记录存在，有的话，则插入一条退货记录
                             List<OrderProductBackInfo> productBackInfoByOrderno = orderProductBackInfoRepository.findOrderProductBackInfoByOrderno(buyerCapital.getOrderNo());
                             if (productBackInfoByOrderno != null && productBackInfoByOrderno.size() > 0) {
-                                accountsPayable = transitionToAccountsPayable(buyerCapital);
+//                                accountsPayable = transitionToAccountsPayable(buyerCapital);
                                 accountsPayable.setDeliveryAmount(buyerCapital.getCapital().multiply(new BigDecimal(-1)));
-                                accountsPayable.setOtherAmount(null);
-                                accountsPayable.setReceivingAmount(null);
-                                accountsPayable.setCapitalTypeName("退货");
-                                Receivableaccount = Receivableaccount.add(buyerCapital.getCapital());
+//                                accountsPayable.setOtherAmount(null);
+//                                accountsPayable.setReceivingAmount(null);
+                                accountsPayable.setCapitalTypeName("违约金/退货");
+                                Receivableaccount = Receivableaccount.add(accountsPayable.getDeliveryAmount());
                                 accountsPayable.setReceivableAccount(Receivableaccount);
-                                InvoiceBalance = InvoiceBalance.add(buyerCapital.getCapital());
+                                InvoiceBalance = InvoiceBalance.add(accountsPayable.getDeliveryAmount());
                                 accountsPayable.setInvoicebalance(InvoiceBalance);
                                 accountsPayable.setPaytype(5);
                                 accountsPayable.setRemark(buyerCapital.getInvoiceHeadUp() == null ? "" : buyerCapital.getInvoiceHeadUp()
                                         + "\r\n" + buyerCapital.getMemberId() + "\r\n" + buyerCapital.getMemberUserName());
-                                accountsPayables.add(accountsPayable);
+//                                accountsPayables.add(accountsPayable);
                             }
+                            accountsPayables.add(accountsPayable);
                             break;
                         }
                         //10 卖家违约金
@@ -201,21 +203,22 @@ public class BuyerCapitalService {
                                 accountsPayable = transitionToAccountsPayable(buyerCapital);
                                 accountsPayable.setDeliveryAmount(accountsPayable.getDeliveryAmount().multiply(new BigDecimal(-1)));
                                 accountsPayable.setOtherAmount(null);
-                                accountsPayable.setCapitalTypeName("退货");
-                                accountsPayable.setReceivingAmount(null);
+                                accountsPayable.setCapitalTypeName("退货/退款");
+
+//                                accountsPayable.setReceivingAmount(null);
                                 Receivableaccount = Receivableaccount.add(accountsPayable.getDeliveryAmount());
-                                accountsPayable.setReceivableAccount(Receivableaccount);
+//                                accountsPayable.setReceivableAccount(Receivableaccount);
                                 InvoiceBalance = InvoiceBalance.add(accountsPayable.getDeliveryAmount());
-                                accountsPayable.setInvoicebalance(InvoiceBalance);
+//                                accountsPayable.setInvoicebalance(InvoiceBalance);
                                 accountsPayable.setPaytype(5);
-                                accountsPayable.setRemark(buyerCapital.getInvoiceHeadUp() != null ? "" : buyerCapital.getInvoiceHeadUp()
-                                        + "\r\n" + buyerCapital.getMemberId() + "\r\n" + buyerCapital.getMemberUserName());
-                                accountsPayables.add(accountsPayable);
+//                                accountsPayable.setRemark(buyerCapital.getInvoiceHeadUp() != null ? "" : buyerCapital.getInvoiceHeadUp()
+//                                        + "\r\n" + buyerCapital.getMemberId() + "\r\n" + buyerCapital.getMemberUserName());
+//                                accountsPayables.add(accountsPayable);
                                 //再添加一条记录
-                                accountsPayable = transitionToAccountsPayable(buyerCapital);
-                                accountsPayable.setOtherAmount(null);
-                                accountsPayable.setDeliveryAmount(null);
-                                accountsPayable.setCapitalTypeName("退款");
+//                                accountsPayable = transitionToAccountsPayable(buyerCapital);
+//                                accountsPayable.setOtherAmount(null);
+//                                accountsPayable.setDeliveryAmount(null);
+//                                accountsPayable.setCapitalTypeName("退款");
                                 accountsPayable.setReceivingAmount(accountsPayable.getReceivingAmount().multiply(new BigDecimal(-1)));
                                 Receivableaccount = Receivableaccount.subtract(accountsPayable.getReceivingAmount());
                                 accountsPayable.setReceivableAccount(Receivableaccount);
@@ -483,9 +486,9 @@ public class BuyerCapitalService {
             if (params.containsKey("userName")&&StringUtils.isNotBlank(params.get("userName"))){
                 builder.append(" and ca.member_username ='"+params.get("userName").trim()+"' ");
             }
-            if (params.containsKey("startDate")&&StringUtils.isNotBlank(params.get("startDate"))){
-                builder.append(" and ca.tradetime >='"+params.get("startDate")+"' ");
-            }
+//            if (params.containsKey("startDate")&&StringUtils.isNotBlank(params.get("startDate"))){
+//                builder.append(" and ca.tradetime >='"+params.get("startDate")+"' ");
+//            }
             if (params.containsKey("endDate")&&StringUtils.isNotBlank(params.get("endDate"))){
                 builder.append(" and ca.tradetime <='"+params.get("endDate")+"' ");
             }

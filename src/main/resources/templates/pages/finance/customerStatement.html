@@ -48,7 +48,7 @@
                                         <div class="form-group row col-sm-4">
                                             <label class="col-sm-3 col-form-label">日期范围：</label>
                                             <div class="col-sm-9">
-                                                <input id="dateRange" class="form-control" type="text" placeholder="日期范围" name="dateRange" value=""/>
+                                                <input class="form-control" type="text" placeholder="日期范围" name="dateRange" value=""/>
                                             </div>
                                         </div>
                                         <div class="form-group row col-sm-4">
@@ -225,7 +225,6 @@
                 },
                 dataType: "json",
                 success: function (result) {
-                    // return process(JSON.parse(result.data));
                     return process(result.data);
                 }, error: function (error) {
                     console.log(error);
@@ -233,8 +232,12 @@
             });
         }
     });
-// function strike() {
     $(document).ready(function () {
+        var date = $("input[name='dateRange']").val();
+        if(date==null||date==''){
+            startDate=null;
+            endDate=null;
+        }
         var $dataTable = $("#dataTable table").bootstrapTable({
             method: "POST",
             cache: false,
@@ -252,6 +255,7 @@
             //height: $(parent.window).height() - 145,
             sidePagination: "server",//设置后端分页
             url: "/buyerCapital/customerStatement",
+
             queryParams: function (params) {
                 var temp = {
                     userName: $("#userName").val(),
@@ -334,7 +338,7 @@
                             case 5:v= '返利券'; break;
                         }
                     }
-                    console.info(type+" "+ v);
+                    // console.info(type+" "+ v);
                     return v;
                 }
             },{

@@ -8,6 +8,11 @@ spring:
     username: sas
     password: QM7yfgiFu
     driver-class-name: com.mysql.cj.jdbc.Driver
+  second:
+    url: jdbc:postgresql://47.98.46.0:5432/jinshang
+    username: admin_jinshang_dev
+    password: admin04131
+    driver-class-name: org.postgresql.Driver
   jpa:
     show-sql: true
     hibernate:
