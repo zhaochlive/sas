@@ -37,7 +37,6 @@ public class OverdueDTO extends BaseRowModel implements Serializable {
     private String name;
 
     @ApiModelProperty(value = "逾期金额", required = false, example = "0")
-    @ExcelProperty(value = "逾期金额", index = 0)
     private String receivables;
 
     @ApiModelProperty(value = "状态 0-有效 1-无效", required = false, example = "0")
@@ -50,6 +49,11 @@ public class OverdueDTO extends BaseRowModel implements Serializable {
     @ApiModelProperty(value = "结算类型：1-现金客户 2-账期客户", required = false, example = "1")
     @Column(name = "settlement_type", nullable = false)
     private String settlementType;
+
+    @ApiModelProperty(value = "截止昨日逾期金额", required = false, example = "0")
+    @Column(name = "receivables_before_today", nullable = false)
+    @ExcelProperty(value = "逾期金额", index = 0)
+    private float receivablesBeforeToday;
 
     // 分页起始数量（偏移量）
     @Min(value = 0, message = "分页起始数量（偏移量）错误")

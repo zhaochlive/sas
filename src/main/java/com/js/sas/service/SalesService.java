@@ -52,4 +52,6 @@ public class SalesService {
     public List<SaleAmountEntity> getSaleAmountByYear(int limit) {
         return saleAmountRepository.getSaleAmountByYear(limit);
     }
+
+
 }

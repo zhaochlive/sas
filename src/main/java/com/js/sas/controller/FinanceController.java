@@ -132,6 +132,10 @@ public class FinanceController {
         overdueDTO.setLimit(limit);
         overdueDTO.setSort("name");
         overdueDTO.setSortOrder("asc");
+        overdueDTO.setStatus("0");
+        overdueDTO.setSettlementType("1");
+        overdueDTO.setParentCode("0");
+
         List<OverdueDTO> overdueList = financeService.findOverdue(overdueDTO).getContent();
         try {
             CommonUtils.export(httpServletResponse, overdueList, "现金客户逾期统计", new OverdueDTO());
@@ -143,7 +147,7 @@ public class FinanceController {
 
 
     /**
-     * 逾期账期客户导出
+     * 账期逾期客户导出
      * 导出表格内容截止到当前月份，动态表格直接调用存储过程实现。
      *
      * @param httpServletResponse
@@ -183,28 +187,28 @@ public class FinanceController {
 
             while (rs.next()) {
                 ArrayList<Object> dataList = new ArrayList<>();
-                // 总收款金额，目前rs第2列
+                // 总收款金额，目前rs第3列
                 double amount_collected = rs.getDouble(3);
-                // 总发货金额，目前rs第3列
+                // 总发货金额，目前rs第2列
                 double amount_delivery = rs.getDouble(2);
-                // 总应收，目前是rs第9列
-                double overdueAmount = rs.getDouble(9);
-                // 账期月, 目前rs第4列
-                int month = rs.getInt(6);
-                // 账期日，目前rs第5列
-                int day = rs.getInt(7);
+                // 总应收，目前是rs第10列
+                double overdueAmount = rs.getDouble(10);
+                // 账期月, 目前rs第7列
+                int month = rs.getInt(7);
+                // 账期日，目前rs第8列
+                int day = rs.getInt(8);
                 // 应减去的结算周期数
                 int overdueMonths = CommonUtils.overdueMonth(month, day);
                 /**
                  * 设置数据行，移除前3列（关联id列、总发货、总收款）
                  */
                 for (int i = 4; i <= count; i++) {
-                    if (i > 9) {  // 计算每个周期的发货和应收
+                    if (i > 10) {  // 计算每个周期的发货和应收
                         if (i > count - overdueMonths) {  // 只计算逾期账期数据，如果是未逾期账期数据，需要将逾期款减去相应的发货金额
-                            dataList.set(5, Double.valueOf(dataList.get(5).toString()) - rs.getDouble(i));
+                            dataList.set(6, Double.valueOf(dataList.get(6).toString()) - rs.getDouble(i));
                             dataList.add(0);
                         } else {
-                            dataList.add(rs.getString(i));
+                            dataList.add(rs.getDouble(i));
                         }
                     } else {
                         dataList.add(rs.getString(i));
@@ -212,9 +216,9 @@ public class FinanceController {
                 }
 
                 // 当前逾期金额
-                double overdue = Double.parseDouble(dataList.get(5).toString());
+                double overdue = Double.parseDouble(dataList.get(6).toString());
                 // 根据逾期款，设置excel数据。从后向前，到期初为止。
-                for (int index = dataList.size() - 1; index > 5; index--) {
+                for (int index = dataList.size() - 1; index > 6; index--) {
                     if (overdue <= 0) {  // 逾期金额小于等于0，所有账期逾期金额都是0
                         dataList.set(index, 0);
                     } else {  // 逾期金额大于0，从最后一个开始分摊逾期金额
@@ -231,7 +235,7 @@ public class FinanceController {
                 // 导出的Excel显示逾期金额，不是发货金额。需要按照账期周期，向后推迟逾期金额，在期初之后补0实现。
                 for (int overdueIndex = 0; overdueIndex < overdueMonths; overdueIndex++) {
                     // 插入0
-                    dataList.add(7, 0);
+                    dataList.add(8, 0);
                     // 删除最后一位
                     dataList.remove(dataList.size() - 1);
                 }
@@ -248,7 +252,7 @@ public class FinanceController {
                         parentCode = rs.getString("parent_code");
                         // 计算之前应收之和
                         for (int index : totalIndexList) {
-                            rowsList.get(index - 1).set(4, totalReceivables);
+                            rowsList.get(index - 1).set(5, totalReceivables);
                         }
                         // 置零
                         totalReceivables = 0.0;
@@ -264,14 +268,14 @@ public class FinanceController {
                     if (!totalIndexList.isEmpty()) {
                         // 计算之前应收之和
                         for (int index : totalIndexList) {
-                            rowsList.get(index - 1).set(4, totalReceivables);
+                            rowsList.get(index - 1).set(5, totalReceivables);
                         }
                         // 添加至集合
                         totalList.add(totalIndexList);
                         totalIndexList = new ArrayList<>();
                     } else {
                         // 如果没有关联客户，将逾期金额赋值到总逾期金额
-                        rowsList.get(rs.getRow() - 1).set(4, rowsList.get(rs.getRow() - 1).get(5));
+                        rowsList.get(rs.getRow() - 1).set(5, rowsList.get(rs.getRow() - 1).get(6));
                     }
                     // 置零
                     hasParentCode = false;
@@ -282,7 +286,7 @@ public class FinanceController {
                 // 设置应收金额合计
                 if (hasParentCode) {
                     totalIndexList.add(rs.getRow());
-                    totalReceivables += Double.valueOf(dataList.get(5).toString());
+                    totalReceivables += Double.valueOf(dataList.get(6).toString());
                 }
 
             }
@@ -309,7 +313,8 @@ public class FinanceController {
     }
 
     /**
-     * 导出逾期账期客户Excel
+     * 导出账期逾期客户Excel
+     * 牵涉到单元格合并和特殊的表结构，单独一个方法实现。
      *
      * @param response       HttpServletResponse
      * @param columnNameList 导出列名List
@@ -342,7 +347,7 @@ public class FinanceController {
         for (List<Integer> totalIndexList : totalList) {
             if (!totalIndexList.isEmpty()) {
                 if (totalIndexList.get(0) != totalIndexList.get(totalIndexList.size() - 1)) {
-                    writer.merge(totalIndexList.get(0), totalIndexList.get(totalIndexList.size() - 1), 4, 4);
+                    writer.merge(totalIndexList.get(0), totalIndexList.get(totalIndexList.size() - 1), 5, 5);
                 }
             }
         }

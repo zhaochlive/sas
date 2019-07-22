@@ -33,4 +33,9 @@ public class SystemController {
     public String overdue() {
         return "pages/finance/overdue.html";
     }
+
+    @GetMapping("/productValueOfSales")
+    public String productValueOfSales() {
+        return "pages/sales/productValueOfSales.html";
+    }
 }

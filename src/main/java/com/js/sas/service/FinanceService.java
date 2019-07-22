@@ -96,6 +96,7 @@ public class FinanceService {
         // 查询条件
         ExampleMatcher matcher = ExampleMatcher.matching()
                 .withIgnorePaths("id")
+                .withIgnorePaths("receivablesBeforeToday")
                 .withIgnorePaths("offset")
                 .withIgnorePaths("limit")
                 .withIgnorePaths("sort")
