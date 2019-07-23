@@ -43,4 +43,9 @@ public class SystemController {
     public String productValueOfSales() {
         return "pages/sales/productValueOfSales.html";
     }
+
+    @GetMapping("/customerOfNewOrders")
+    public String customerOfNewOrders() {
+        return "pages/finance/customerOfNewOrders.html";
+    }
 }

@@ -65,9 +65,14 @@ public class SalesPerformanceController {
         List<Map<String, Object>> page = null;
         try {
             page = salesPerformanceService.getPage(map);
-
+            Double d = 0D;
+            if(map.containsKey("waysalesman")){
+                d = salesPerformanceService.getPerformanceOfSales(map);
+            }
             resultMap.put("total", salesPerformanceService.getCount(map));
             resultMap.put("rows", page);
+            resultMap.put("performance", d);
+            resultMap.put("waysalesman", request.getParameter("waysalesman"));
         } catch (Exception e) {
             e.printStackTrace();
         }
