@@ -4,7 +4,6 @@ import com.js.sas.dto.OverdueDTO;
 import com.js.sas.repository.PartnerRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
@@ -28,11 +27,7 @@ public class FinanceService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    final
-    PartnerRepository partnerRepository;
-
-    @Autowired
-    PartnerService partnerService;
+    private final PartnerRepository partnerRepository;
 
     public FinanceService(PartnerRepository partnerRepository) {
         this.partnerRepository = partnerRepository;

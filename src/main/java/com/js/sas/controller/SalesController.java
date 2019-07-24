@@ -1,26 +1,28 @@
 package com.js.sas.controller;
 
-import com.js.sas.dto.AreaAmountDTO;
 import com.js.sas.dto.OrderProductDTO;
+import com.js.sas.dto.RegionalSalesDTO;
 import com.js.sas.dto.SaleAmountDTO;
-import com.js.sas.entity.OrderProductEntity;
 import com.js.sas.service.SalesService;
+import com.js.sas.utils.CommonUtils;
 import com.js.sas.utils.Result;
 import com.js.sas.utils.ResultCode;
 import com.js.sas.utils.ResultUtils;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.persistence.EntityManager;
 import javax.persistence.Tuple;
-import javax.persistence.criteria.*;
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * @ClassName SalesController
@@ -35,12 +37,8 @@ public class SalesController {
 
     private final SalesService salesService;
 
-    // @PersistenceContext
-    private final EntityManager entityManager;
-
-    public SalesController(SalesService salesService, EntityManager entityManager) {
+    public SalesController(SalesService salesService) {
         this.salesService = salesService;
-        this.entityManager = entityManager;
     }
 
     /**
@@ -89,86 +87,22 @@ public class SalesController {
      */
     @PostMapping("/getProvinceOfSales")
     public Object getProvinceOfSales() {
-        List<AreaAmountDTO> provinceOfSalesList = salesService.getProvinceOfSales("2019-01-01", "2019-12-31 23:59:59");
+        List<RegionalSalesDTO> provinceOfSalesList = salesService.getRegionalSales("2019-01-01", "2019-12-31 23:59:59");
         return ResultUtils.getResult(ResultCode.成功, provinceOfSalesList);
     }
 
     /**
      * 商品销售额
      *
-     * @param orderProductDTO
+     * @param orderProductDTO 订单商品
      * @return Result，商品销售总额
      */
     @PostMapping("/getProductValueOfSales")
     public Object getProductValueOfSales(OrderProductDTO orderProductDTO) {
-        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Tuple> cq = criteriaBuilder.createTupleQuery();
-        Root<OrderProductEntity> root = cq.from(OrderProductEntity.class);
-
-        Predicate predicate = criteriaBuilder.conjunction();
-        // 开始时间
-        if (StringUtils.isNotBlank(orderProductDTO.getStartCreateTime())) {
-            predicate = criteriaBuilder.and(predicate, criteriaBuilder.greaterThanOrEqualTo(root.get("createTime"), orderProductDTO.getStartCreateTime()));
-        }
-        // 结束时间
-        if (StringUtils.isNotBlank(orderProductDTO.getEndCreateTime())) {
-            predicate = criteriaBuilder.and(predicate, criteriaBuilder.lessThanOrEqualTo(root.get("createTime"), orderProductDTO.getEndCreateTime() +" 23:59:59"));
-        }
-        // 商品名称
-        if (StringUtils.isNotBlank(orderProductDTO.getProductName())) {
-            predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("productName").as(String.class), orderProductDTO.getProductName()));
-        }
-        // 一级分类
-        if (StringUtils.isNotBlank(orderProductDTO.getClassOne())) {
-            predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("classOne").as(String.class), orderProductDTO.getClassOne()));
-        }
-        // 二级分类
-        if (StringUtils.isNotBlank(orderProductDTO.getClassTwo())) {
-            predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("classTwo").as(String.class), orderProductDTO.getClassTwo()));
-        }
-        // 标准（三级分类）
-        if (StringUtils.isNotBlank(orderProductDTO.getStandard())) {
-            predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("standard").as(String.class), orderProductDTO.getStandard()));
-        }
-        // 规格
-        if (StringUtils.isNotBlank(orderProductDTO.getMeasure())) {
-            predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("measure").as(String.class), orderProductDTO.getMeasure()));
-        }
-        // 品牌
-        if (StringUtils.isNotBlank(orderProductDTO.getBrand())) {
-            predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("brand").as(String.class), orderProductDTO.getBrand()));
-        }
-        // 印记
-        if (StringUtils.isNotBlank(orderProductDTO.getMark())) {
-            predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("mark").as(String.class), orderProductDTO.getMark()));
-        }
-        // 材质
-        if (StringUtils.isNotBlank(orderProductDTO.getMaterial())) {
-            predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("material").as(String.class), orderProductDTO.getMaterial()));
-        }
-        // 牌号
-        if (StringUtils.isNotBlank(orderProductDTO.getGrade())) {
-            predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("grade").as(String.class), orderProductDTO.getGrade()));
-        }
-        // 表面处理
-        if (StringUtils.isNotBlank(orderProductDTO.getSurface())) {
-            predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("surface").as(String.class), orderProductDTO.getSurface()));
-        }
-        // 性能等级
-        if (StringUtils.isNotBlank(orderProductDTO.getPerformanceLevel())) {
-            predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("performanceLevel").as(String.class), orderProductDTO.getPerformanceLevel()));
-        }
-
-        Expression<BigDecimal> sum = criteriaBuilder.sum(root.get("amount").as(BigDecimal.class));
-
-        Expression<Long> count = criteriaBuilder.countDistinct(root.get("orderNo"));
-
-        cq.select(criteriaBuilder.tuple(count, sum)).where(predicate);
-
-        List<Tuple> resultList = entityManager.createQuery(cq).getResultList();
+        List<Tuple> resultList = salesService.getProductValueOfSales(orderProductDTO);
 
         HashMap[] rowsArray = new HashMap[1];
-        HashMap data = new HashMap();
+        HashMap<String, Object> data = new HashMap<>();
 
         data.put("count", resultList.get(0).get(0));
         data.put("amount", resultList.get(0).get(1));
@@ -182,4 +116,56 @@ public class SalesController {
         return result;
     }
 
+    /**
+     * 区域销售额
+     *
+     * @return Result，区域销售额
+     */
+    @PostMapping("/getRegionalSales")
+    public Object getRegionalSales(@Validated RegionalSalesDTO regionalSalesDTO, BindingResult result) {
+        // 参数格式校验
+        if (result.hasErrors()) {
+            LinkedHashMap<String, String> errorMap = new LinkedHashMap<>();
+            for (FieldError fieldError : result.getFieldErrors()) {
+                errorMap.put(fieldError.getCode(), fieldError.getDefaultMessage());
+            }
+            return ResultUtils.getResult(ResultCode.参数错误, errorMap);
+        }
+
+        List<RegionalSalesDTO> regionalSales = salesService.getRegionalSales(regionalSalesDTO.getStartCreateTime(), regionalSalesDTO.getEndCreateTime() + " 23:59:59");
+
+        HashMap<String, Object> resultHashMap = new HashMap<>();
+        resultHashMap.put("rows", regionalSales);
+        resultHashMap.put("total", 1);
+
+        return resultHashMap;
+    }
+
+    /**
+     * 区域销售额导出
+     *
+     * @param regionalSalesDTO 区域销售额参数
+     * @param httpServletResponse httpServletResponse
+     */
+    @PostMapping("/exportRegionalSales")
+    public void exportRegionalSales(RegionalSalesDTO regionalSalesDTO, HttpServletResponse httpServletResponse) {
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+        if (StringUtils.isBlank(regionalSalesDTO.getStartCreateTime())) {
+            regionalSalesDTO.setStartCreateTime("2018-01-01");
+        }
+        if (StringUtils.isBlank(regionalSalesDTO.getEndCreateTime())) {
+            regionalSalesDTO.setEndCreateTime(sdf.format(new Date()));
+        }
+
+        List<RegionalSalesDTO> regionalSalesList = salesService.getRegionalSales(regionalSalesDTO.getStartCreateTime(), regionalSalesDTO.getEndCreateTime() + " 23:59:59");
+
+        try {
+            CommonUtils.export(httpServletResponse, regionalSalesList, "区域销售额", new RegionalSalesDTO());
+        } catch (IOException e) {
+            log.error("下载区域销售额异常：{}", e);
+            e.printStackTrace();
+        }
+    }
 }

@@ -48,4 +48,10 @@ public class SystemController {
     public String customerOfNewOrders() {
         return "pages/finance/customerOfNewOrders.html";
     }
+
+    // 区域销售额
+    @GetMapping("/regionalSales")
+    public String regionalSales() {
+        return "pages/operations/regionalSales.html";
+    }
 }

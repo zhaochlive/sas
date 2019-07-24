@@ -139,9 +139,8 @@
 
                                 </div>
                                 <div class="box-footer">
-                                    <input type="hidden" id="startDate" name="startDate" value=""/>
-                                    <input type="hidden" id="endDate" name="endDate" value=""/>
-                                    <input type="hidden" id="limit" name="limit" value=""/>
+                                    <input type="hidden" id="startCreateTime" name="startCreateTime" value=""/>
+                                    <input type="hidden" id="endCreateTime" name="endCreateTime" value=""/>
                                     <button type="button" class="btn btn-primary pull-right" id="search"
                                             style="margin-left:20px;">搜
                                         索
@@ -310,16 +309,11 @@
                 sortable: 'true'
             }],
             onLoadSuccess: function (result) {
-                // 设置导出limit值
-                if (result.total) {
-                    $("#limit").val(result.total);
-                }
             },
             onLoadError: function (error) {
                 console.log(error);
             },
             onDblClickRow: function (row, $element) {
-                //
             }
         });
 
@@ -342,6 +336,12 @@
             $("input[name='grade']").val("");
             $("input[name='surface']").val("");
             $("input[name='performanceLevel']").val("");
+            $("#startCreateTime").val("");
+            $("#endCreateTime").val("");
+            startCreateTime = "";
+            endCreateTime = "";
+
+            $("#dataTable table").bootstrapTable('refresh');
         });
 
     });

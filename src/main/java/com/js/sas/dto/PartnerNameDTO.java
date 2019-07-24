@@ -26,7 +26,7 @@ public class PartnerNameDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @ApiModelProperty(value = "往来单位ID", required = false, example = "1")
+    @ApiModelProperty(value = "往来单位ID", example = "1")
     private int id;
 
     @Size(groups = {GetPartnerListByNameLike.class}, max = 30, message = "名称超长")

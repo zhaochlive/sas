@@ -7,7 +7,6 @@ import com.js.sas.dto.OverdueDTO;
 import com.js.sas.dto.SettlementSummaryDTO;
 import com.js.sas.entity.SettlementSummaryEntity;
 import com.js.sas.service.FinanceService;
-import com.js.sas.service.PartnerService;
 import com.js.sas.utils.*;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -42,12 +41,9 @@ public class FinanceController {
 
     private final DataSource dataSource;
 
-    private final PartnerService partnerService;
-
-    public FinanceController(FinanceService financeService, DataSource dataSource, PartnerService partnerService) {
+    public FinanceController(FinanceService financeService, DataSource dataSource) {
         this.financeService = financeService;
         this.dataSource = dataSource;
-        this.partnerService = partnerService;
     }
 
     /**
@@ -123,7 +119,7 @@ public class FinanceController {
     /**
      * 逾期现金客户导出
      *
-     * @param httpServletResponse
+     * @param httpServletResponse httpServletResponse
      */
     @ApiIgnore
     @PostMapping("/overdueCash/download/excel")
@@ -150,7 +146,7 @@ public class FinanceController {
      * 账期逾期客户导出
      * 导出表格内容截止到当前月份，动态表格直接调用存储过程实现。
      *
-     * @param httpServletResponse
+     * @param httpServletResponse httpServletResponse
      */
     @ApiIgnore
     @PostMapping("/overdueCredit/download/excel")
@@ -188,20 +184,18 @@ public class FinanceController {
             while (rs.next()) {
                 ArrayList<Object> dataList = new ArrayList<>();
                 // 总收款金额，目前rs第3列
-                double amount_collected = rs.getDouble(3);
+                //double amount_collected = rs.getDouble(3);
                 // 总发货金额，目前rs第2列
-                double amount_delivery = rs.getDouble(2);
+                //double amount_delivery = rs.getDouble(2);
                 // 总应收，目前是rs第10列
-                double overdueAmount = rs.getDouble(10);
+                //double overdueAmount = rs.getDouble(10);
                 // 账期月, 目前rs第7列
                 int month = rs.getInt(7);
                 // 账期日，目前rs第8列
                 int day = rs.getInt(8);
                 // 应减去的结算周期数
                 int overdueMonths = CommonUtils.overdueMonth(month, day);
-                /**
-                 * 设置数据行，移除前3列（关联id列、总发货、总收款）
-                 */
+                // 设置数据行，移除前3列（关联id列、总发货、总收款）
                 for (int i = 4; i <= count; i++) {
                     if (i > 10) {  // 计算每个周期的发货和应收
                         if (i > count - overdueMonths) {  // 只计算逾期账期数据，如果是未逾期账期数据，需要将逾期款减去相应的发货金额
@@ -322,7 +316,7 @@ public class FinanceController {
      * @param fileName       导出文件名，目前sheet页是相同名称
      * @throws IOException @Description
      */
-    public void exportOverdue(HttpServletResponse response, List<String> columnNameList, List<List<Object>> dataList, String fileName, List<List<Integer>> totalList) throws IOException {
+    private void exportOverdue(HttpServletResponse response, List<String> columnNameList, List<List<Object>> dataList, String fileName, List<List<Integer>> totalList) throws IOException {
         Sheet sheet1 = new Sheet(1, 0);
         sheet1.setSheetName(fileName);
         sheet1.setAutoWidth(Boolean.TRUE);
@@ -346,7 +340,7 @@ public class FinanceController {
         // 合并单元格
         for (List<Integer> totalIndexList : totalList) {
             if (!totalIndexList.isEmpty()) {
-                if (totalIndexList.get(0) != totalIndexList.get(totalIndexList.size() - 1)) {
+                if (!totalIndexList.get(0).equals(totalIndexList.get(totalIndexList.size() - 1))) {
                     writer.merge(totalIndexList.get(0), totalIndexList.get(totalIndexList.size() - 1), 5, 5);
                 }
             }

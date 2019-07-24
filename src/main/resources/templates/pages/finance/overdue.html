@@ -213,6 +213,8 @@
             $("input[name='dateRange']").val("");
             $("select[name='channel']").find("option:selected").prop("selected", "");
             $("select[name='channel']").find("option[text='全部']").prop("selected", "selected");
+
+            $("#dataTable table").bootstrapTable('refresh');
         });
 
         // 账期导出按钮

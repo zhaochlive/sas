@@ -310,6 +310,12 @@
             $("input[name='dateRange']").val("");
             $("select[name='channel']").find("option:selected").prop("selected", "");
             $("select[name='channel']").find("option[text='全部']").prop("selected", "selected");
+            $("#startDate").val("");
+            $("#endDate").val("");
+            startDate = "";
+            endDate = "";
+
+            $("#dataTable table").bootstrapTable('refresh');
         });
 
         // 导出按钮

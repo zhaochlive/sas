@@ -1,6 +1,5 @@
 package com.js.sas.repository;
 
-import com.js.sas.dto.AreaAmountDTO;
 import com.js.sas.dto.SaleAmountDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

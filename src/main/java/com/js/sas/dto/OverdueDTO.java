@@ -28,29 +28,29 @@ public class OverdueDTO extends BaseRowModel implements Serializable {
     @Id
     private int id;
 
-    @ApiModelProperty(value = "用友往来单位编码", required = false, example = "1")
+    @ApiModelProperty(value = "用友往来单位编码", example = "1")
     @ExcelProperty(value = "用友往来单位编码", index = 0)
     private String code;
 
-    @ApiModelProperty(value = "结算客户名称", required = false, example = "结算客户")
+    @ApiModelProperty(value = "结算客户名称", example = "结算客户")
     @ExcelProperty(value = "往来单位名称", index = 0)
     private String name;
 
-    @ApiModelProperty(value = "逾期金额", required = false, example = "0")
+    @ApiModelProperty(value = "逾期金额", example = "0")
     private String receivables;
 
-    @ApiModelProperty(value = "状态 0-有效 1-无效", required = false, example = "0")
+    @ApiModelProperty(value = "状态 0-有效 1-无效", example = "0")
     private String status;
 
-    @ApiModelProperty(value = "关联编码", required = false, example = "1")
+    @ApiModelProperty(value = "关联编码", example = "1")
     @Column(name = "parent_code", nullable = false)
     private String parentCode;
 
-    @ApiModelProperty(value = "结算类型：1-现金客户 2-账期客户", required = false, example = "1")
+    @ApiModelProperty(value = "结算类型：1-现金客户 2-账期客户", example = "1")
     @Column(name = "settlement_type", nullable = false)
     private String settlementType;
 
-    @ApiModelProperty(value = "截止昨日逾期金额", required = false, example = "0")
+    @ApiModelProperty(value = "截止昨日逾期金额", example = "0")
     @Column(name = "receivables_before_today", nullable = false)
     @ExcelProperty(value = "逾期金额", index = 0)
     private float receivablesBeforeToday;
