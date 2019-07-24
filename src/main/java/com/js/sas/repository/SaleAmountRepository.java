@@ -1,6 +1,7 @@
 package com.js.sas.repository;
 
-import com.js.sas.entity.SaleAmountEntity;
+import com.js.sas.dto.AreaAmountDTO;
+import com.js.sas.dto.SaleAmountDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,7 +14,7 @@ import java.util.List;
  * @Author zc
  * @Date 2019/6/21 12:48
  **/
-public interface SaleAmountRepository extends JpaRepository<SaleAmountEntity, Integer> {
+public interface SaleAmountRepository extends JpaRepository<SaleAmountDTO, Integer> {
     /**
      * 日销售额列表
      *
@@ -32,7 +33,7 @@ public interface SaleAmountRepository extends JpaRepository<SaleAmountEntity, In
             " ORDER BY" +
             " days DESC" +
             " LIMIT :limit")
-    List<SaleAmountEntity> getSaleAmountByDay(@Param(value = "limit") int limit);
+    List<SaleAmountDTO> getSaleAmountByDay(@Param(value = "limit") int limit);
 
     /**
      * 月销售额列表
@@ -52,7 +53,7 @@ public interface SaleAmountRepository extends JpaRepository<SaleAmountEntity, In
             " ORDER BY" +
             " months DESC" +
             " LIMIT :limit")
-    List<SaleAmountEntity> getSaleAmountByMonth(@Param(value = "limit") int limit);
+    List<SaleAmountDTO> getSaleAmountByMonth(@Param(value = "limit") int limit);
 
     /**
      * 年销售额列表
@@ -72,6 +73,6 @@ public interface SaleAmountRepository extends JpaRepository<SaleAmountEntity, In
             " ORDER BY" +
             " years DESC" +
             " LIMIT :limit")
-    List<SaleAmountEntity> getSaleAmountByYear(@Param(value = "limit") int limit);
+    List<SaleAmountDTO> getSaleAmountByYear(@Param(value = "limit") int limit);
 
 }
