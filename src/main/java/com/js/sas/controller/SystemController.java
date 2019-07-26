@@ -53,4 +53,9 @@ public class SystemController {
     public String customerOfNewOrders() {
         return "pages/finance/customerOfNewOrders.html";
     }
+
+    @GetMapping("/customerCountGroup")
+    public String customerCountGroup() {
+        return "pages/oprations/customerCountGroup.html";
+    }
 }

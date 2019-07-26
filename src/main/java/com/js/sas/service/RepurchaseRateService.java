@@ -14,9 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -179,5 +177,10 @@ public class RepurchaseRateService {
             e.printStackTrace();
             return 0L;
         }
+    }
+
+    public  List<Map<String, Object>> countGroup() {
+        String  sql ="select count(1) cot ,cut from ( select count(1) cut ,memberid from orders GROUP BY memberid) ss GROUP BY cut ORDER BY cut desc;";
+        return jdbcTemplate.queryForList(sql);
     }
 }

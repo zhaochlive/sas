@@ -4,6 +4,7 @@ import com.js.sas.service.RepurchaseRateService;
 import com.js.sas.utils.ResultUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.hssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +13,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URLEncoder;
 import java.util.*;
 
 @Controller
@@ -94,4 +99,65 @@ public class RepurchaseRateController {
         resultMap.put("rows", colums);
         return  resultMap;
     }
+
+
+    /**
+     * 查询购买次数与购买次数的人员数量统计表格
+     * @return
+     */
+    @GetMapping("countGroup")
+    @ResponseBody
+    public Object countGroup(){
+        Map<String, Object> hashMap = new HashMap<>();
+        List<Map<String, Object>> mapList = repurchaseRateService.countGroup();
+        List<Integer> cot = new ArrayList<>();
+        List<Integer> cut = new ArrayList<>();
+        if (mapList!=null&&mapList.size()>0){
+            for (Map<String, Object> map : mapList) {
+                Integer cut1 = Integer.parseInt(map.get("cut").toString());
+                Integer cot1 = Integer.parseInt(map.get("cot").toString());
+                cot.add(cot1);
+                cut.add(cut1);
+            }
+        }
+        hashMap.put("cot",cot.toArray());
+        hashMap.put("cut",cut.toArray());
+        return hashMap;
+    }
+
+    @RequestMapping("/download/excel")
+    public void downloadExcel(HttpServletResponse response) {
+        try {
+            List<Map<String, Object>> mapList = repurchaseRateService.countGroup();
+            if (mapList != null && mapList.size() > 0) {
+
+                HSSFWorkbook wb = new HSSFWorkbook();
+                HSSFSheet sheet = wb.createSheet("学生档案表");
+                HSSFRow row0 = sheet.createRow(0);
+                HSSFRow row1 = sheet.createRow(1);
+                row0.createCell(0).setCellValue("下单次数");
+                row1.createCell(0).setCellValue("商家数量");
+
+                for (int i = 0; i < mapList.size(); i++) {
+                    Map<String, Object> map = mapList.get(i);
+                    row0.createCell(i + 1).setCellValue(map.get("cut").toString());
+                    row1.createCell(i + 1).setCellValue(map.get("cot").toString());
+                }
+                response.setContentType("application/vnd.ms-excel");
+                response.setHeader("Content-Disposition", "attachment;filename*= UTF-8''" + URLEncoder.encode("订单次数客户统计", "UTF-8") + ".xlsx");
+                OutputStream ouputStream = response.getOutputStream();
+                wb.write(ouputStream);
+                ouputStream.flush();
+                ouputStream.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+
+
+
+    }
+
 }
