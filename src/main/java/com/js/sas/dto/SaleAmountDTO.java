@@ -1,4 +1,4 @@
-package com.js.sas.entity;
+package com.js.sas.dto;
 
 import lombok.Data;
 
@@ -14,7 +14,7 @@ import java.io.Serializable;
  **/
 @Entity
 @Data
-public class SaleAmountEntity implements Serializable {
+public class SaleAmountDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

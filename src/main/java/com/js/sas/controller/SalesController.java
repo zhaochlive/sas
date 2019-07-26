@@ -1,8 +1,9 @@
 package com.js.sas.controller;
 
+import com.js.sas.dto.AreaAmountDTO;
 import com.js.sas.dto.OrderProductDTO;
+import com.js.sas.dto.SaleAmountDTO;
 import com.js.sas.entity.OrderProductEntity;
-import com.js.sas.entity.SaleAmountEntity;
 import com.js.sas.service.SalesService;
 import com.js.sas.utils.Result;
 import com.js.sas.utils.ResultCode;
@@ -18,7 +19,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.Tuple;
 import javax.persistence.criteria.*;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -52,7 +52,7 @@ public class SalesController {
     @ApiOperation(value = "日销售额", notes = "数据来源：用友；数据截止日期：昨天")
     @PostMapping("/getSaleAmountByDay")
     public Result getSaleAmountByDay(int limit) {
-        List<SaleAmountEntity> saleDeliveryList = salesService.getSaleAmountByDay(limit);
+        List<SaleAmountDTO> saleDeliveryList = salesService.getSaleAmountByDay(limit);
         return ResultUtils.getResult(ResultCode.成功, saleDeliveryList);
     }
 
@@ -65,7 +65,7 @@ public class SalesController {
     @ApiOperation(value = "月销售额", notes = "数据来源：用友；数据截止日期：昨天")
     @PostMapping("/getSaleAmountByMonth")
     public Result getSaleAmountByMonth(int limit) {
-        List<SaleAmountEntity> saleDeliveryList = salesService.getSaleAmountByMonth(limit);
+        List<SaleAmountDTO> saleDeliveryList = salesService.getSaleAmountByMonth(limit);
         return ResultUtils.getResult(ResultCode.成功, saleDeliveryList);
     }
 
@@ -78,8 +78,19 @@ public class SalesController {
     @ApiOperation(value = "年销售额", notes = "数据来源：用友；数据截止日期：昨天")
     @PostMapping("/getSaleAmountByYear")
     public Result getSaleAmountByYear(int limit) {
-        List<SaleAmountEntity> saleDeliveryList = salesService.getSaleAmountByYear(limit);
+        List<SaleAmountDTO> saleDeliveryList = salesService.getSaleAmountByYear(limit);
         return ResultUtils.getResult(ResultCode.成功, saleDeliveryList);
+    }
+
+    /**
+     * 本年度各省销售额
+     *
+     * @return Result，本年度各省销售额
+     */
+    @PostMapping("/getProvinceOfSales")
+    public Object getProvinceOfSales() {
+        List<AreaAmountDTO> provinceOfSalesList = salesService.getProvinceOfSales("2019-01-01", "2019-12-31 23:59:59");
+        return ResultUtils.getResult(ResultCode.成功, provinceOfSalesList);
     }
 
     /**
@@ -90,19 +101,6 @@ public class SalesController {
      */
     @PostMapping("/getProductValueOfSales")
     public Object getProductValueOfSales(OrderProductDTO orderProductDTO) {
-
-
-
-
-
-
-        log.info(orderProductDTO.toString());
-
-
-
-
-
-
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Tuple> cq = criteriaBuilder.createTupleQuery();
         Root<OrderProductEntity> root = cq.from(OrderProductEntity.class);

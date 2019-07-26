@@ -1,8 +1,11 @@
 package com.js.sas.service;
 
-import com.js.sas.entity.SaleAmountEntity;
+import com.js.sas.dto.AreaAmountDTO;
+import com.js.sas.dto.SaleAmountDTO;
+import com.js.sas.repository.JsOrdersRepository;
 import com.js.sas.repository.SaleAmountRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,8 +22,11 @@ public class SalesService {
 
     private final SaleAmountRepository saleAmountRepository;
 
-    public SalesService(SaleAmountRepository saleAmountRepository) {
+    private final JsOrdersRepository jsOrdersRepository;
+
+    public SalesService(SaleAmountRepository saleAmountRepository, JsOrdersRepository jsOrdersRepository) {
         this.saleAmountRepository = saleAmountRepository;
+        this.jsOrdersRepository = jsOrdersRepository;
     }
 
     /**
@@ -29,7 +35,7 @@ public class SalesService {
      * @param limit 天数
      * @return 日销售列表
      */
-    public List<SaleAmountEntity> getSaleAmountByDay(int limit) {
+    public List<SaleAmountDTO> getSaleAmountByDay(int limit) {
        return saleAmountRepository.getSaleAmountByDay(limit);
     }
 
@@ -39,7 +45,7 @@ public class SalesService {
      * @param limit 月数
      * @return 月销售列表
      */
-    public List<SaleAmountEntity> getSaleAmountByMonth(int limit) {
+    public List<SaleAmountDTO> getSaleAmountByMonth(int limit) {
         return saleAmountRepository.getSaleAmountByMonth(limit);
     }
 
@@ -49,8 +55,17 @@ public class SalesService {
      * @param limit 年数
      * @return 年销售列表
      */
-    public List<SaleAmountEntity> getSaleAmountByYear(int limit) {
+    public List<SaleAmountDTO> getSaleAmountByYear(int limit) {
         return saleAmountRepository.getSaleAmountByYear(limit);
+    }
+
+    /**
+     * 各省销售额
+     *
+     * @return 各省销售额
+     */
+    public List<AreaAmountDTO> getProvinceOfSales(String startDate, String endDate) {
+        return jsOrdersRepository.getProvinceOfSales();
     }
 
 

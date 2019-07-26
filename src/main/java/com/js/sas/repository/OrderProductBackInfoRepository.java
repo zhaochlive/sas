@@ -9,7 +9,5 @@ import java.util.List;
 
 @Repository
 public interface OrderProductBackInfoRepository extends JpaRepository<OrderProductBackInfo, Integer> {
-
-
     List<OrderProductBackInfo> findOrderProductBackInfoByOrderno(String orderno);
 }
