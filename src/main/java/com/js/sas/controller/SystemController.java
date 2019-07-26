@@ -44,6 +44,11 @@ public class SystemController {
         return "pages/sales/productValueOfSales.html";
     }
 
+    @GetMapping("/repurchaseRate")
+    public String repurchaseRate() {
+        return "pages/oprations/repurchaseRate.html";
+    }
+
     @GetMapping("/customerOfNewOrders")
     public String customerOfNewOrders() {
         return "pages/finance/customerOfNewOrders.html";
