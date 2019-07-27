@@ -58,4 +58,8 @@ public class SystemController {
     public String customerCountGroup() {
         return "pages/oprations/customerCountGroup.html";
     }
+    @GetMapping("/orderByCustomerService")
+    public String orderByCustomerService() {
+        return "pages/oprations/orderByCustomerService.html";
+    }
 }

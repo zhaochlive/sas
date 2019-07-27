@@ -40,7 +40,7 @@ function loadTable(){
 
 function initTable(colums,data){
 
-    $("#dataTable table").bootstrapTable({
+    $("#dataTable table").bootstrapTable('destroy').bootstrapTable({
         url: "/repurchase/getRepurchaseRate",
         method: "get",
         cache: false,

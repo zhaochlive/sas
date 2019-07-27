@@ -55,11 +55,6 @@ public class RepurchaseRateController {
     @ResponseBody
     public Object RepurchaseRate(HttpServletRequest request){
 
-//        Enumeration<String> parameterNames = request.getParameterNames();
-//        while (parameterNames.hasMoreElements()){
-//            String element = parameterNames.nextElement();
-//            log.info(element+"===="+request.getParameter(element));
-//        }
         Map<String, String> map = new HashMap<>();
         if (StringUtils.isNotBlank(request.getParameter("limit"))) {
             map.put("limit", request.getParameter("limit"));
@@ -77,7 +72,6 @@ public class RepurchaseRateController {
         if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
             map.put("endDate", request.getParameter("endDate"));
         }
-
         if (StringUtils.isNotBlank(request.getParameter("companyname"))) {
             map.put("companyname", request.getParameter("companyname").trim());
         }

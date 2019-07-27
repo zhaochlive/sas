@@ -30,7 +30,7 @@ public class RepurchaseRateService {
      * @param params
      * @return
      */
-    public List<String> getColums(Map<String, String> params) {
+    public List<String>     getColums(Map<String, String> params) {
         List<Object> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder("SELECT TO_CHAR(createtime,'YYYYMM') as month from orders  where 1=1 ");
         if (params != null) {
