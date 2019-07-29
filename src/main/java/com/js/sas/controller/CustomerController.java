@@ -57,6 +57,8 @@ public class CustomerController {
         List<CustomerOfOrder> page = null;
         try {
             page = customerService.getCustomerOfOrder(map);
+            Double lo = customerService.getCountFromAllCustomer(map);
+            resultMap.put("countFromAllCustomer",lo);
             resultMap.put("total", customerService.getCount(map));
             resultMap.put("rows", page);
         } catch (Exception e) {

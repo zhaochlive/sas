@@ -81,6 +81,10 @@
                                             <button type="button" class="btn btn-default pull-right" id="export"
                                                     style="margin-left:20px;">导出Excel</button>
                                         </div>
+                                        <div class="form-group row col-sm-4" style="margin-left: 50px;">
+                                            <label class="col-form-label" style="width: 230px;">所有下单用户第一次下单总额(元)：</label>
+                                            <label class="col-form-label" id="countFromAllCustomer">0</label>
+                                        </div>
                                     </div>
                                 </div>
                             </form>
@@ -284,6 +288,7 @@
                 // 设置导出limit值
                 if (result.total) {
                     $("#limit").val(result.total);
+                    $("#countFromAllCustomer").html(result.countFromAllCustomer);
                 }
             },
             onLoadError: function (error) {
