@@ -3,19 +3,13 @@ function loadTable(){
     var colums=[];
     var data=[];
 
-    colums.push({field: 'realname',title: '客户名称', sortable: false ,align: 'center'},
-        {field: 'mobile',title: '手机号', sortable: false ,align: 'center'},
-        {field: 'companyname',title: '公司名称', sortable: false,align: 'center' ,width:500},
-        {field: '总下单量',title: '总下单量', sortable: true ,align: 'center'},
-        {field: 'firstTime',title: '首次下单时间', sortable: true ,align: 'center',formatter: function (value, row, index) {
-                var date = row.firsttime;
-                date = date.replace("T", " ");
-                return date.substring(0, date.indexOf('.'));
-            }}
-        );
+    colums.push({field: 'clerkname',title: '客服名称', sortable: false ,align: 'center'},
+        {field: 'username',title: '用户名称', sortable: false ,align: 'center'},
+        {field: 'companyname',title: '公司名称', sortable: false,align: 'center' ,width:500}
 
+        );
     $.ajax({
-        url: "repurchase/getColums",
+        url: "customerService/getColums",
         type: "post",
         async: false,
         data: {
@@ -39,7 +33,7 @@ function loadTable(){
 function initTable(colums,data){
 
     $("#dataTable table").bootstrapTable('destroy').bootstrapTable({
-        url: "/customerService/getRepurchaseRate",
+        url: "/customerService/getData",
         method: "get",
         cache: false,
         clickToSelect: true,
@@ -47,7 +41,6 @@ function initTable(colums,data){
         sortable: true,
         // sortName:"name",
         // sortOrder: "desc",     //排序方式
-        sortName: "总下单量",
         sortOrder: "DESC",
         height: 580,
         pageNumber: 1,
@@ -57,14 +50,13 @@ function initTable(colums,data){
         locale: "zh-CN",
         striped: true,
         toggle: true,
-        // smartDisplay: false,
         silent: true,
         sidePagination: "server",
         queryParams: function (params) {
             var temp = {
                 username: $("input[name='username']").val(),
                 companyname: $("input[name='companyname']").val(),
-                mobile: $("input[name='mobile']").val(),
+                clerkname: $("input[name='clerkname']").val(),
                 startDate: startDate,
                 endDate: endDate,
                 offset: params.offset,
