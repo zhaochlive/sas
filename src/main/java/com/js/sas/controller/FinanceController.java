@@ -23,6 +23,7 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 
@@ -47,7 +48,7 @@ public class FinanceController {
     }
 
     /**
-     * 目前调用存储过程实现，存储过程很难维护，后期需要修改实现方法。
+     * 目前调用存储过程实现，后期需要修改实现方法。
      *
      * @param settlementSummasryDTO 结算客户汇总DTO
      * @param result                校验结果
@@ -317,11 +318,13 @@ public class FinanceController {
      * @throws IOException @Description
      */
     private void exportOverdue(HttpServletResponse response, List<String> columnNameList, List<List<Object>> dataList, String fileName, List<List<Integer>> totalList) throws IOException {
+        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
+
         Sheet sheet1 = new Sheet(1, 0);
         sheet1.setSheetName(fileName);
         sheet1.setAutoWidth(Boolean.TRUE);
 
-        fileName = fileName + new Date().getTime();
+        fileName = fileName + df.format(new Date());
         ServletOutputStream out = response.getOutputStream();
         response.setContentType("multipart/form-data");
         response.setCharacterEncoding("utf-8");

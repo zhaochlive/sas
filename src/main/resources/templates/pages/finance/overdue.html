@@ -167,12 +167,19 @@
                     return pageSize * (pageNumber - 1) + index + 1;
                 }
             }, {
+                field: 'customerServiceStaff',
+                title: '业务员',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true',
+                width: '10%'
+            },{
                 field: 'code',
                 title: '编码',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'true',
-                width: '20%'
+                width: '15%'
             }, {
                 field: 'name',
                 title: '结算客户',
@@ -181,12 +188,12 @@
                 sortable: 'true',
                 width: '50%'
             }, {
-                field: 'receivables',
-                title: '逾期金额',
+                field: 'receivablesBeforeToday',
+                title: '（现金）逾期金额',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'true',
-                width: '20%'
+                width: '15%'
             }],
             onLoadSuccess: function (result) {
                 // 设置导出limit值

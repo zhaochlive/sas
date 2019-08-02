@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * @ClassName Partner
@@ -43,7 +44,7 @@ public class PartnerEntity implements Serializable {
 
     // 应收款
     @Column(name = "receivables", nullable = false)
-    private float receivables;
+    private BigDecimal receivables;
 
     // 状态 0-有效 1-无效
     @Column(name = "status", nullable = false)
@@ -63,23 +64,23 @@ public class PartnerEntity implements Serializable {
 
     // 期初应收
     @Column(name = "opening_balance", nullable = false)
-    private float openingBalance;
+    private BigDecimal openingBalance;
 
     // 已收款总金额
     @Column(name = "amount_collected", nullable = false)
-    private float amountCollected;
+    private BigDecimal amountCollected;
 
     // 总发货金额
     @Column(name = "amount_delivery", nullable = false)
-    private float amountDelivery;
+    private BigDecimal amountDelivery;
 
     @Column(name = "customer_service_staff", nullable = false)
     private String customerServiceStaff;
 
     @Column(name = "amount_today", nullable = false)
-    private float amountToday;
+    private BigDecimal amountToday;
 
     @Column(name = "receivables_before_today", nullable = false)
-    private float receivablesBeforeToday;
+    private BigDecimal receivablesBeforeToday;
 
 }

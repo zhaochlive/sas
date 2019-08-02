@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * @ClassName SettlementSummaryEntity
@@ -52,25 +53,25 @@ public class SettlementSummaryEntity extends BaseRowModel implements Serializabl
     // 期初余额
     @ExcelProperty(value = "期初", index = 0)
     @Column(name = "openingBalance", nullable = false)
-    private float openingBalance;
+    private BigDecimal openingBalance;
     // 发货金额
     @ExcelProperty(value = "发货金额", index = 0)
     @Column(name = "deliveryAmount", nullable = false)
-    private float deliveryAmount;
+    private BigDecimal deliveryAmount;
     // 收款金额
     @ExcelProperty(value = "收款金额", index = 0)
     @Column(name = "receivedAmount", nullable = false)
-    private float receivedAmount;
+    private BigDecimal receivedAmount;
     // 应收款
     @ExcelProperty(value = "应收款余额", index = 0)
     @Column(name = "receivables", nullable = false)
-    private float receivables;
+    private BigDecimal receivables;
     // 已开票金额
     @ExcelProperty(value = "已开票金额", index = 0)
     @Column(name = "invoiceAmount", nullable = false)
-    private float invoiceAmount;
+    private BigDecimal invoiceAmount;
     // 发票结余
     @ExcelProperty(value = "发票结余", index = 0)
     @Column(name = "invoiceBalance", nullable = false)
-    private float invoiceBalance;
+    private BigDecimal invoiceBalance;
 }

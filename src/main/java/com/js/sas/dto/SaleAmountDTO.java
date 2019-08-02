@@ -5,6 +5,7 @@ import lombok.Data;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * @ClassName SaleAmountEntity
@@ -22,10 +23,10 @@ public class SaleAmountDTO implements Serializable {
     private int id;
 
     // 总金额
-    private float amount;
+    private BigDecimal amount;
 
     // 总数量
-    private float counts;
+    private BigDecimal counts;
 
     // 日
     private String days;

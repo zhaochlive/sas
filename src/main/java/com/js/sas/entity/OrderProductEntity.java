@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * @ClassName OrderProductEntity
@@ -87,7 +88,7 @@ public class OrderProductEntity implements Serializable {
 
     // 金额
     @Column(name = "amount", nullable = false)
-    private double amount;
+    private BigDecimal amount;
 
     // 订单状态
     @Column(name = "order_status", nullable = false)

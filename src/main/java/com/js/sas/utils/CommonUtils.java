@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -54,10 +55,12 @@ public class CommonUtils {
      * @throws IOException @Description
      */
     public static void export(HttpServletResponse response, List<? extends BaseRowModel> dataList, String fileName, BaseRowModel clazz) throws IOException {
+        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
+
         Sheet sheet1 = new Sheet(1, 0, clazz.getClass());
         sheet1.setSheetName(fileName);
 
-        fileName = fileName + new Date().getTime();
+        fileName = fileName + df.format(new Date());
         ServletOutputStream out = response.getOutputStream();
         response.setContentType("multipart/form-data");
         response.setCharacterEncoding("utf-8");
@@ -80,7 +83,8 @@ public class CommonUtils {
      * @throws IOException @Description
      */
     public static void exportByList(HttpServletResponse response, List<String> columnNameList, List<List<Object>> dataList, String fileName) throws IOException {
-        fileName = new String((fileName + new Date().getTime()).getBytes(), StandardCharsets.UTF_8);
+        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
+        fileName = fileName + df.format(new Date());
         ServletOutputStream out = response.getOutputStream();
         response.setContentType("multipart/form-data");
         response.setCharacterEncoding("utf-8");

@@ -41,7 +41,7 @@ public interface SaleAmountRepository extends JpaRepository<SaleAmountDTO, Integ
      * @return 月销售列表
      */
     @Query(nativeQuery = true, value = "SELECT @rownum \\:= @rownum +1 AS 'id', 0 AS 'days', 0 AS 'years'," +
-            " DATE_FORMAT( sasd.create_time, '%Y年%m月' ) AS 'months'," +
+            " DATE_FORMAT( sasd.create_time, '%Y%m' ) AS 'months'," +
             " COUNT( sasd.id ) AS 'counts'," +
             " SUM( sasd.amount ) AS 'amount'" +
             " FROM" +
@@ -61,7 +61,7 @@ public interface SaleAmountRepository extends JpaRepository<SaleAmountDTO, Integ
      * @return 年销售列表
      */
     @Query(nativeQuery = true, value = "SELECT @rownum \\:= @rownum +1 AS 'id', 0 AS 'days', 0 AS 'months'," +
-            " DATE_FORMAT( sasd.create_time, '%Y年' ) AS 'years'," +
+            " DATE_FORMAT( sasd.create_time, '%Y' ) AS 'years'," +
             " COUNT( sasd.id ) AS 'counts'," +
             " SUM( sasd.amount ) AS 'amount'" +
             " FROM" +

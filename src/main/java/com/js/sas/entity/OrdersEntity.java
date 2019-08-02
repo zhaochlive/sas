@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * @ClassName OrdersEntity
@@ -38,7 +39,7 @@ public class OrdersEntity implements Serializable {
 
     private String address;
 
-    private double amount;
+    private BigDecimal amount;
 
     private String status;
 

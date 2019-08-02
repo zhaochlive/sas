@@ -10,6 +10,7 @@ import javax.persistence.*;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * @ClassName OverdueDTO
@@ -27,6 +28,11 @@ public class OverdueDTO extends BaseRowModel implements Serializable {
 
     @Id
     private int id;
+
+    @ApiModelProperty(value = "客服", example = "1")
+    @Column(name = "customer_service_staff", nullable = false)
+    @ExcelProperty(value = "业务员", index = 0)
+    private String customerServiceStaff;
 
     @ApiModelProperty(value = "用友往来单位编码", example = "1")
     @ExcelProperty(value = "用友往来单位编码", index = 0)
@@ -53,7 +59,7 @@ public class OverdueDTO extends BaseRowModel implements Serializable {
     @ApiModelProperty(value = "截止昨日逾期金额", example = "0")
     @Column(name = "receivables_before_today", nullable = false)
     @ExcelProperty(value = "逾期金额", index = 0)
-    private float receivablesBeforeToday;
+    private BigDecimal receivablesBeforeToday;
 
     // 分页起始数量（偏移量）
     @Min(value = 0, message = "分页起始数量（偏移量）错误")

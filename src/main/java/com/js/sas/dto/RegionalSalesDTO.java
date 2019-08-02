@@ -11,6 +11,7 @@ import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * @ClassName RegionalSalesDTO
@@ -32,7 +33,7 @@ public class RegionalSalesDTO extends BaseRowModel implements  Serializable {
 
     // 销售额
     @ExcelProperty(value = "销售额（元）", index = 0)
-    private double value;
+    private BigDecimal value;
 
     // 销售额占比
     @ExcelProperty(value = "占比（%）", index = 0)
