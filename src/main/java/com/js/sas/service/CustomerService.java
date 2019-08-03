@@ -135,4 +135,11 @@ public class CustomerService {
             list.add(param.get("mobile").replace(" ",""));
         }
     }
+
+    public Double getCountFromAllCustomer(Map<String, String> map) {
+        StringBuilder builder = new StringBuilder("select sum(totalprice) from orders os where id in " +
+                " (select min(id) from orders where orderstatus in (1, 3, 4, 5, 8, 9, 10) ");
+        builder.append(" GROUP BY memberid)");
+        return jdbcTemplate.queryForObject(builder.toString(),Double.class);
+    }
 }
