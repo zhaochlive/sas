@@ -58,10 +58,13 @@ public class SystemController {
     public String customerCountGroup() {
         return "pages/oprations/customerCountGroup.html";
     }
-
     @GetMapping("/orderByCustomerService")
     public String orderByCustomerService() {
         return "pages/oprations/orderByCustomerService.html";
+    }
+    @GetMapping("/storeDetail")
+    public String storeDetail() {
+        return "pages/oprations/storeDetail.html";
     }
 
     // 区域销售额

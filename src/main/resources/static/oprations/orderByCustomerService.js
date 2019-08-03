@@ -21,7 +21,7 @@ function loadTable(){
             keys=resultData;
             if(resultData){
                 $.each(resultData,function(index,value){
-                    colums.push({field:value,title:value,sortable: true ,align: 'center'});
+                    colums.push({field:value,title:value,sortable: false ,align: 'center'});
                 });
             }
         },
