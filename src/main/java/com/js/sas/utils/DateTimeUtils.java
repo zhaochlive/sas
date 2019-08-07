@@ -347,9 +347,37 @@ public class DateTimeUtils extends DateUtils{
         return new Timestamp(calendar.getTimeInMillis());
     }
 
+    /**
+     * @param date
+     * @return 当月第一天
+     */
+    public static String  firstDayOfMonth(Date date){
+        SimpleDateFormat format = new SimpleDateFormat(DATE_FORMAT);
+        Calendar cale = Calendar.getInstance();
+        cale.setTime(date);
+        cale.add(Calendar.MONTH, 0);
+        cale.set(Calendar.DAY_OF_MONTH, 1);
+        return format.format(cale.getTime()) + " 00:00:00";
+    }
+
+    /**
+     * @param date
+     * @return 当月最后一刻
+     */
+    public static String  lastDayOfMonth(Date date){
+        SimpleDateFormat format = new SimpleDateFormat(DATE_FORMAT);
+        Calendar cale = Calendar.getInstance();
+        cale.setTime(date);
+        cale.add(Calendar.MONTH, 1);
+        cale.set(Calendar.DAY_OF_MONTH, 0);
+        return format.format(cale.getTime()) + " 23:59:59";
+    }
+
 
     public static void main(String[] args) throws Exception {
-        System.out.println(convert(addTime(new Date(),-5,DAY)));
+//        System.out.println(convert(addTime(new Date(),-5,DAY)));
+        System.out.println( DateTimeUtils.convert(DateTimeUtils.convert("2019-09-04",DateTimeUtils.DATE_FORMAT),DateTimeUtils.DATE_FORMAT)+" 00:00:00");
+            // 获取当前年份、月份、日期
 
 
 //        String strType = "2018-06-20 12:00:00";
