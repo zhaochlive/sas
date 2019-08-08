@@ -66,4 +66,8 @@ public class SystemController {
     public String storeDetail() {
         return "pages/oprations/storeDetail.html";
     }
+    @GetMapping("/couponStrategy")
+    public String couponStrategy() {
+        return "pages/oprations/couponStrategy.html";
+    }
 }
