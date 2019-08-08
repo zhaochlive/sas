@@ -77,6 +77,8 @@ public class BuyerCapitalController {
             objectHashMap.put("OtherAmount", 0);
             objectHashMap.put("Invoice", 0);
             objectHashMap.put("Receivable", 0);
+            objectHashMap.put("surplusReceivable",0);
+            objectHashMap.put("surplusInvoice",0);
             return objectHashMap;
         }
     }

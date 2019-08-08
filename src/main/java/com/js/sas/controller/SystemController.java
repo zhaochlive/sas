@@ -66,6 +66,10 @@ public class SystemController {
     public String storeDetail() {
         return "pages/oprations/storeDetail.html";
     }
+    @GetMapping("/couponStrategy")
+    public String couponStrategy() {
+        return "pages/oprations/couponStrategy.html";
+    }
 
     // 区域销售额
     @GetMapping("/regionalSales")
