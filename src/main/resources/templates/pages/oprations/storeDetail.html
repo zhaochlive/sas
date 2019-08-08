@@ -41,32 +41,16 @@
                                 <div class="box-body">
                                     <div class="row">
                                         <div class="form-group row col-sm-4">
-                                            <label class="col-sm-3 col-form-label">业务员：</label>
+                                            <label class="col-sm-3 col-form-label">商铺名称：</label>
                                             <div class="col-sm-9">
-                                                <input id="name" name="waysalesman" type="text" placeholder="业务员名称"
+                                                <input id="mobile" name="shopname" type="text" placeholder="输入商铺名称"
                                                        class="settlementName form-control"/>
                                             </div>
                                         </div>
-                                        <div class="form-group row col-sm-4">
-                                            <label class="col-sm-3 col-form-label">企业名称：</label>
-                                            <div class="col-sm-9">
-                                                <input id="companyname" name="companyname" type="text" placeholder="企业名称"
-                                                       class="settlementName form-control"/>
-                                            </div>
-                                        </div>
-                                        <div class="form-group row col-sm-4">
-                                            <label class="col-sm-3 col-form-label">手机号：</label>
-                                            <div class="col-sm-9">
-                                                <input id="mobile" name="mobile" type="text" placeholder="手机号"
-                                                       class="settlementName form-control"/>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
                                         <div class="form-group row col-sm-4">
                                             <label class="col-sm-3 col-form-label">时间周期：</label>
                                             <div class="col-sm-9">
-                                                <input id="dateRange" name="dateRange" placeholder="时间周期"
+                                                <input id="dateRange" name="dateRange" placeholder="选择时间周期"
                                                        class="form-control" type="text"/>
                                             </div>
                                         </div>
@@ -78,14 +62,35 @@
                                                     style="margin-left:20px;">搜 索</button>
                                             <button type="button" class="btn btn-default pull-right" id="refresh"
                                                     style="margin-left:20px;">清 空</button>
-                                            <button type="button" class="btn btn-default pull-right" id="export"
-                                                    style="margin-left:20px;">导出Excel</button>
+<!--                                            <button type="button" class="btn btn-default pull-right" id="export"-->
+<!--                                                    style="margin-left:20px;">导出Excel</button>-->
                                         </div>
                                     </div>
+
                                 </div>
                             </form>
                         </div>
                     </div>
+                    <table class="table table-bordere">
+                        <tr>
+                            <td id="allPayedOrders">店铺订单总量：</td>
+                            <td id="allSentOrders">店铺发货订单：</td>
+                            <td id="amountRate">下单金额环比/同比：</td>
+                            <td id="allPeoples">下单人数：</td>
+                            <td id="amountOfNew">新用户下单金额：</td>
+                            <td id="peopleOfNew">新用户下单人数：</td>
+                            <td id="sentInDay">当天发货：</td>
+                        </tr>
+                        <tr>
+                            <td id="unitPrice">客单价：</td>
+                            <td id="unitPriceRate">客单价环比/同比：</td>
+                            <td id="sendRate">店铺发货率：</td>
+                            <td id="backRate">店铺退货率：</td>
+                            <td id="partSendRate">店铺部分发货比例：</td>
+                            <td id="violateRate">店铺违约率：</td>
+                            <td id="ordersOfCancelRate">店铺未付款超时取消订单比例：</td>
+                        </tr>
+                    </table>
                     <div class="ibox">
                         <div class="ibox-content">
                             <div class="row">
@@ -124,11 +129,10 @@
     $('#side-menu').load('left.html', function () {
         $("li[id='home']").removeClass("active");
         $("li[id='operations']").addClass("active");
-        $("li[id='customerOfNewOrders']").addClass("active");
+        $("li[id='storeDetail']").addClass("active");
     });
     $('#header').load('header.html');
     $('#footer').load('footer.html');
-
     // 开始时间
     var startDate = "";
     // 结束时间
@@ -184,7 +188,7 @@
             cache: false,
             clickToSelect: true,
             pagination: true,
-            // sortable: true,
+            sortable: false,
             pageNumber: 1,
             pageSize: 10,
             pageList: [10, 20, 50, 100],
@@ -196,12 +200,10 @@
             sidePagination: "server",
             // sortName: "name",
             // sortOrder: "asc",
-            url: "/customer/customerOfNewOrders",
+            url: "/storeDetail/page",
             queryParams: function (params) {
                 var temp = {
-                    waysalesman: $("input[name='waysalesman']").val(),
-                    companyname: $("input[name='companyname']").val(),
-                    mobile: $("input[name='mobile']").val(),
+                    shopname: $("input[name='shopname']").val(),
                     startDate: startDate,
                     endDate: endDate,
                     limit: params.limit,
@@ -216,75 +218,218 @@
                 return temp;
             },
             columns: [{
-                field: 'username',
-                title: '会员名称',
-                align: 'center',
+                field: 'shopname',
+                title: '店铺名称',
+                align: 'left',
                 valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: 'companyname',
-                title: '企业名称',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: 'firsttime',
-                title: '首次下单时间',
-                align: 'center',
-                valign: 'middle',
-                formatter: function (value, row, index) {
-                    var date = row.firsttime;
-                    date = date.replace("T", " ");
-                    return date.substring(0, date.indexOf('.'));
+                sortable: 'false',
+                formatter: function (value, row, index){ // 单元格格式化函数
+                    var div = "<div style='width:200px;'>"+value+"</div>";//调列宽，在td中嵌套一个div，调整div大小
+                    return div;
                 }
             }, {
-                field: 'city',
-                title: '所在省市',
+                field: '付款订单数量',
+                title: '付款订单数量',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: '发货订单数量',
+                title: '发货订单数量',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: '下单金额',
+                title: '下单金额',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'true'
             }, {
-                field: 'address',
-                title: '地址',
+                field: '下单金额同比',
+                title: '下单金额环比 / 同比',
+                align: 'left',
+                valign: 'middle',
+                formatter: function (value, row, index) {
+                    var tongbi = row.下单金额同比+'';
+                    var huanbi = row.下单金额环比+'';
+                    if(tongbi == null || tongbi == ''|| tongbi == 'null'){
+                        tongbi ='-';
+                    }else if(tongbi.indexOf('-') != -1){
+                        tongbi='<span style="color:#05c31b"></i>↓'+  tongbi.replace('-','')+'%'+'</span>';
+                    }else{
+                        tongbi='<span style="color:#ea2612"></i>↑'+ tongbi+'%'+'</span>';
+                    }
+                    if(huanbi == null || huanbi == ''|| huanbi == 'null'){
+                        huanbi ='-';
+                    }else if(huanbi.indexOf('-') != -1){
+                        huanbi='<span style="color:#05c31b"></i>↓'+ huanbi.replace('-','')+'%'+'</span>';
+                    }else{
+                        huanbi='<span style="color:#ea2612"></i>↑'+ huanbi+'%'+'</span>';
+                    }
+                    return huanbi+" | "+tongbi;
+                }
+            }, {
+                field: '下单人数',
+                title: '下单人数',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'true'
             }, {
-                field: 'realname',
-                title: '联系人',
+                field: '首次下单金额',
+                title: '新用户下单金额',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'true'
             }, {
-                field: 'mobile',
-                title: '手机',
+                field: '首次下单人数',
+                title: '新用户下单人数',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            },{
+                field: '客单价',
+                title: '客单价',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'true'
             }, {
-                field: 'telephone',
-                title: '座机',
+                field: '同比客单价',
+                title: '&nbsp;&nbsp;&nbsp;客单价环比 / 同比&nbsp;&nbsp;&nbsp; ',
+                align: 'left',
+                valign: 'middle',
+                formatter: function (value, row, index) {
+                    var tongbi = row.同比客单价+'';
+                    var huanbi = row.环比客单价+'';
+                    if(tongbi == null || tongbi == ''|| tongbi == 'null'){
+                        tongbi ='-';
+                    }else if(tongbi.indexOf('-') != -1){
+                        tongbi='<span style="color:#05c31b"></i>↓'+  tongbi.replace('-','')+'%'+'</span>';
+                    }else{
+                        tongbi='<span style="color:#ea2612"></i>↑'+ tongbi+'%'+'</span>';
+                    }
+                    if(huanbi == null || huanbi == ''|| huanbi == 'null'){
+                        huanbi ='-';
+                    }else if(huanbi.indexOf('-') != -1){
+                        huanbi='<span style="color:#05c31b"></i>↓'+ huanbi.replace('-','')+'%'+'</span>';
+                    }else{
+                        huanbi='<span style="color:#ea2612"></i>↑'+ huanbi+'%'+'</span>';
+                    }
+                    return huanbi+" | "+tongbi;
+                }
+            }, {
+                field: '平均规格',
+                title: '订单平均规格数',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'true'
             }, {
-                field: 'waysalesman',
-                title: '业务员',
+                field: '店铺发货率',
+                title: '店铺部分发货比例',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'true'
             }, {
-                field: 'totalprice',
-                title: '总金额',
+                field: '店铺违约率',
+                title: '店铺违约率',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: '未付款超时取消订单',
+                title: '店铺未付款超时取消订单比例',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: '店铺退货率',
+                title: '店铺退货率',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: '当日发货',
+                title: '当日发货',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: '超时一天发货',
+                title: '超时一天发货',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: '超时两天发货',
+                title: '超时两天发货',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: '超时三天',
+                title: '超时三天',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: '低于500元订单',
+                title: '低于500元订单',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: '在500_800元订单',
+                title: '在500_800元订单',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: '在800_1200订单',
+                title: '在800_1200订单',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: '在1200_1500元订单',
+                title: '在1200_1500元订单',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: '在1500_2000元订单',
+                title: '在1500_2000元订单',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: '在2000_5000元订单',
+                title: '在2000_5000元订单',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: '在5000元以上订单',
+                title: '在5000元以上订单',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'true'
             }],
             onLoadSuccess: function (result) {
-                // 设置导出limit值
-                if (result.total) {
-                    $("#limit").val(result.total);
-                }
+                $("#allPayedOrders").html("店铺订单总量："+result.allPayedOrders);
+                $("#allSentOrders").html("店铺发货订单："+result.allSentOrders);
+                $("#amountRate").html("下单金额环比/同比："+result.amountRate);
+                $("#allPeoples").html("下单人数："+result.allPeoples);
+                $("#amountOfNew").html("新用户下单金额："+result.amountOfNew);
+                $("#peopleOfNew").html("新用户下单人数："+result.peopleOfNew);
+                $("#sentInDay").html("平均当天发货率："+result.sentInDay);
+                $("#unitPrice").html("客单价："+result.unitPrice);
+                $("#unitPriceRate").html("客单价环比/同比："+result.unitPriceRate);
+                $("#sendRate").html("店铺发货率："+result.sendRate);
+                $("#backRate").html("店铺退货率："+result.backRate);
+                $("#partSendRate").html("店铺部分发货比例："+result.partSendRate);
+                $("#violateRate").html("店铺违约率："+result.violateRate);
+                $("#ordersOfCancelRate").html("店铺未付款超时取消订单比例："+result.ordersOfCancelRate);
+
             },
             onLoadError: function (error) {
                 console.log(error);
@@ -301,10 +446,7 @@
 
         //清空按钮
         $("button[id='refresh']").click(function () {
-            $("input[name='waysalesman']").val("");
-            $("input[name='companyname']").val("");
-            $("input[name='membername']").val("");
-            $("input[name='mobile']").val("");
+            $("input[name='shopname']").val("");
             $("input[name='dateRange']").val("");
         });
 
