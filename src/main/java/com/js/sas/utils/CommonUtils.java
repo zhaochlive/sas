@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -198,7 +197,7 @@ public class CommonUtils {
      *
      * 例如：账期月 1，账期日 20
      * 如果当前日期小于20日，则计算截止到上上个结算周期的应收；
-     * 如果当前日期大于20日，则计算截止到上个结算周期的应收；
+     * 如果当前日期大于等于20日，则计算截止到上个结算周期的应收；
      *
      * @param month 账期月，0为当月
      * @param day 账期日
@@ -206,8 +205,23 @@ public class CommonUtils {
      */
     public static int overdueMonth(int month, int day) {
         Calendar cal = Calendar.getInstance();
-        if (cal.get(cal.DATE) <= day) {
+        if (cal.get(cal.DATE) < day) {
             month = month + 1;
+        }
+        return month;
+    }
+
+    /**
+     * 账期客户计算逾期补零数量
+     *
+     * @param month 账期月，0为当月
+     * @param day 账期日
+     * @return 从当前月份起，计算逾期应减去的计算周期数
+     */
+    public static int overdueZero(int month, int day) {
+        Calendar cal = Calendar.getInstance();
+        if (cal.get(cal.DATE) >= day) {
+            month = month - 1;
         }
         return month;
     }

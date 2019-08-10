@@ -5,7 +5,9 @@ import com.alibaba.excel.metadata.Sheet;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.js.sas.dto.OverdueDTO;
 import com.js.sas.dto.SettlementSummaryDTO;
+import com.js.sas.entity.Dictionary;
 import com.js.sas.entity.SettlementSummaryEntity;
+import com.js.sas.service.DictionaryService;
 import com.js.sas.service.FinanceService;
 import com.js.sas.utils.*;
 import io.swagger.annotations.ApiOperation;
@@ -40,10 +42,13 @@ public class FinanceController {
 
     private final FinanceService financeService;
 
+    private final DictionaryService dictionaryService;
+
     private final DataSource dataSource;
 
-    public FinanceController(FinanceService financeService, DataSource dataSource) {
+    public FinanceController(FinanceService financeService, DictionaryService dictionaryService, DataSource dataSource) {
         this.financeService = financeService;
+        this.dictionaryService = dictionaryService;
         this.dataSource = dataSource;
     }
 
@@ -184,12 +189,6 @@ public class FinanceController {
 
             while (rs.next()) {
                 ArrayList<Object> dataList = new ArrayList<>();
-                // 总收款金额，目前rs第3列
-                //double amount_collected = rs.getDouble(3);
-                // 总发货金额，目前rs第2列
-                //double amount_delivery = rs.getDouble(2);
-                // 总应收，目前是rs第10列
-                //double overdueAmount = rs.getDouble(10);
                 // 账期月, 目前rs第7列
                 int month = rs.getInt(7);
                 // 账期日，目前rs第8列
@@ -227,8 +226,10 @@ public class FinanceController {
                     }
                 }
 
+                // 补零数量
+                int overdueZero = CommonUtils.overdueZero(month, day);
                 // 导出的Excel显示逾期金额，不是发货金额。需要按照账期周期，向后推迟逾期金额，在期初之后补0实现。
-                for (int overdueIndex = 0; overdueIndex < overdueMonths; overdueIndex++) {
+                for (int overdueIndex = 0; overdueIndex < month; overdueIndex++) {
                     // 插入0
                     dataList.add(8, 0);
                     // 删除最后一位
@@ -355,5 +356,29 @@ public class FinanceController {
 
     }
 
+    /**
+     * 更新逾期数据
+     * @return result
+     */
+    @PostMapping("/refreshOverdueData")
+    public Result refreshOverdueData() {
+        String result = new RemoteShellExecutor("192.168.8.65", 22, "root", "!*9Hi.Dy#09vF5QLsnD8", "/usr/local/kettle/data-integration/cronjobs/001.sh").exec();
+        return ResultUtils.getResult(ResultCode.成功, result);
+    }
+
+    /**
+     * 查询逾期数据更新时间
+     *
+     * @return 逾期数据更新时间
+     */
+    @PostMapping("/findeOverdueRefreshTime")
+    public Result findeOverdueRefreshTime() {
+        List<Dictionary> dictionaryList = dictionaryService.findByCode("001");
+        if (!dictionaryList.isEmpty()) {
+            return ResultUtils.getResult(ResultCode.成功, dictionaryList.get(0).getValue());
+        } else {
+            return ResultUtils.getResult(ResultCode.系统异常);
+        }
+    }
 
 }

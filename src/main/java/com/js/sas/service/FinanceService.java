@@ -1,7 +1,6 @@
 package com.js.sas.service;
 
 import com.js.sas.dto.OverdueDTO;
-import com.js.sas.entity.SettlementSummaryEntity;
 import com.js.sas.repository.PartnerRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

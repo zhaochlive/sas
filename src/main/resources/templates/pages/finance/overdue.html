@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="../../css/bootstrap-table.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" href="../../plugins/toastr/toastr.min.css">
 
     <title>统计分析系统 - 财务 - 逾期统计</title>
 </head>
@@ -28,7 +29,7 @@
                 <div class="col-lg-12">
                     <div class="ibox">
                         <div class="ibox-title">
-                            <h5>现金客户逾期统计</h5>
+                            <h5>逾期统计<div id="refreshTime"></div></h5>
                             <div class="ibox-tools">
                                 <a class="collapse-link">
                                     <i class="fa fa-chevron-up"></i>
@@ -72,6 +73,10 @@
                                             style="margin-left:20px;">
                                         导出<b>账期</b>逾期Excel
                                     </button>
+                                    <button type="button" class="btn btn-default pull-right" id="refreshData"
+                                            style="margin-left:20px; float:right;">
+                                        刷新数据
+                                    </button>
                                 </div>
                             </form>
                         </div>
@@ -107,6 +112,7 @@
 <script src="../../js/bootstrap-table-zh-CN.min.js"></script>
 <script src="../../js/moment.min.js"></script>
 <script src="../../js/typeahead.min.js"></script>
+<script src="../../plugins/toastr/toastr.min.js"></script>
 
 <script>
     // 设置菜单
@@ -119,6 +125,22 @@
     $('#footer').load('footer.html');
 
     $(document).ready(function () {
+        toastr.options = {
+            closeButton: true,
+            debug: false,
+            progressBar: false,
+            positionClass: "toast-top-center",
+            onclick: null,
+            showDuration: "300",
+            hideDuration: "1000",
+            timeOut: "5000",
+            extendedTimeOut: "1000",
+            showEasing: "swing",
+            hideEasing: "linear",
+            showMethod: "fadeIn",
+            hideMethod: "fadeOut"
+        };
+
         // 表单设置
         $("#dataTable table").bootstrapTable({
             method: "POST",
@@ -140,10 +162,10 @@
             sortOrder: "asc",
             url: "/finance/overdue",
             queryParams: function (params) {
-                if($("input[name='code']").val() != ""){
+                if ($("input[name='code']").val() != "") {
                     params['code'] = $("input[name='code']").val();
                 }
-                if($("input[name='name']").val() != ""){
+                if ($("input[name='name']").val() != "") {
                     params['name'] = $("input[name='name']").val();
                 }
                 params['status'] = '0';
@@ -173,7 +195,7 @@
                 valign: 'middle',
                 sortable: 'true',
                 width: '10%'
-            },{
+            }, {
                 field: 'code',
                 title: '编码',
                 align: 'center',
@@ -209,6 +231,18 @@
             }
         });
 
+        // 设置更新时间
+        $.ajax({
+            type: 'POST',
+            url: "/finance/findeOverdueRefreshTime",
+            dataType: "json",
+            success: function (result) {
+                $("#refreshTime").text("数据更新时间: " + result.data);
+            }, error: function (error) {
+                console.log(error);
+            }
+        });
+
         // 查询按钮
         $("button[id='search']").click(function () {
             $("#dataTable table").bootstrapTable('refresh');
@@ -236,6 +270,41 @@
             $("#form1").attr('action', "/finance/overdueCash/download/excel");
             $("#form1").attr('method', "POST");
             $("#form1").submit();
+        });
+
+
+        var index = 1;
+
+        // 刷新数据按钮
+        $("button[id='refreshData']").click(function () {
+            $.ajax({
+                type: 'POST',
+                url: "/finance/refreshOverdueData",
+                dataType: "json",
+                success: function (result) {
+                    toastr.success('数据刷新中，请稍后查看数据。');
+
+                    var interval = setInterval(function(){
+                        $.ajax({
+                            type: 'POST',
+                            url: "/finance/findeOverdueRefreshTime",
+                            dataType: "json",
+                            success: function (result) {
+                                if($("#refreshTime").text() != ("数据更新时间: " + result.data)) {
+                                    $("#refreshTime").text("数据更新时间: " + result.data);
+                                    clearInterval(interval);
+                                    alert("数据已更新完成！");
+                                    return;
+                                }
+                            }, error: function (error) {
+                                console.log(error);
+                            }
+                        });
+                     }, 15000);
+                }, error: function (error) {
+                    console.log(error);
+                }
+            });
         });
 
         // 自动补全
