@@ -1,7 +1,10 @@
 package com.js.sas.controller;
 
+import com.js.sas.service.CouponStrategyService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.servlet.ModelAndView;
 import springfox.documentation.annotations.ApiIgnore;
 
 /**
@@ -66,9 +69,16 @@ public class SystemController {
     public String storeDetail() {
         return "pages/oprations/storeDetail.html";
     }
+
+    @Autowired
+    private CouponStrategyService couponStrategyService;
     @GetMapping("/couponStrategy")
-    public String couponStrategy() {
-        return "pages/oprations/couponStrategy.html";
+    public ModelAndView couponStrategy() {
+
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.addObject("tickets",couponStrategyService.getTickets());
+        modelAndView.setViewName("pages/oprations/couponStrategy.html");
+        return modelAndView;
     }
 
     // 区域销售额

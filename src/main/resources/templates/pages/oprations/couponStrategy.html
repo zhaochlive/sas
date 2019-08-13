@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
 <html lang="zh-cn">
 <head>
     <meta charset="utf-8">
@@ -10,7 +11,7 @@
     <link rel="stylesheet" href="../../css/style.css">
     <link rel="stylesheet" type="text/css" href="../../css/daterangepicker.css"/>
 
-    <title>统计分析系统 - 运营 -店铺详情统计</title>
+    <title>统计分析系统 - 运营 -优惠券定价策略</title>
 </head>
 <body>
 <div id="wrapper">
@@ -29,7 +30,7 @@
                 <div class="col-lg-12">
                     <div class="ibox">
                         <div class="ibox-title">
-                            <h5>店铺详情统计</h5>
+                            <h5>优惠券定价策略</h5>
                             <div class="ibox-tools">
                                 <a class="collapse-link">
                                     <i class="fa fa-chevron-up"></i>
@@ -41,12 +42,15 @@
                                 <div class="box-body">
                                     <div class="row">
                                         <div class="form-group row col-sm-4">
-                                            <label class="col-sm-3 col-form-label">商铺名称：</label>
+                                            <label class="col-sm-3 col-form-label">优惠券：</label>
                                             <div class="col-sm-9">
-                                                <input id="mobile" name="shopname" type="text" placeholder="输入商铺名称"
-                                                       class="settlementName form-control"/>
+                                                <select id ="ticket" name = "ticket" type="select" class="form-control">
+                                                    <option value=" " text ="请选择优惠券"/>
+                                                    <option th:each="ticket :${tickets}" th:value="${ticket.id}" th:text="${ticket.name}"></option>
+                                                </select>
                                             </div>
                                         </div>
+
                                         <div class="form-group row col-sm-4">
                                             <label class="col-sm-3 col-form-label">时间周期：</label>
                                             <div class="col-sm-9">
@@ -71,26 +75,6 @@
                             </form>
                         </div>
                     </div>
-                    <table class="table table-bordere">
-                        <tr>
-                            <td id="allPayedOrders">店铺订单总量：</td>
-                            <td id="allSentOrders">店铺发货订单：</td>
-                            <td id="amountRate">下单金额环比/同比：</td>
-                            <td id="allPeoples">下单人数：</td>
-                            <td id="amountOfNew">新用户下单金额：</td>
-                            <td id="peopleOfNew">新用户下单人数：</td>
-                            <td id="sentInDay">当天发货：</td>
-                        </tr>
-                        <tr>
-                            <td id="unitPrice">客单价：</td>
-                            <td id="unitPriceRate">客单价环比/同比：</td>
-                            <td id="sendRate">店铺发货率：</td>
-                            <td id="backRate">店铺退货率：</td>
-                            <td id="partSendRate">店铺部分发货比例：</td>
-                            <td id="violateRate">店铺违约率：</td>
-                            <td id="ordersOfCancelRate">店铺未付款超时取消订单比例：</td>
-                        </tr>
-                    </table>
                     <div class="ibox">
                         <div class="ibox-content">
                             <div class="row">
@@ -129,7 +113,7 @@
     $('#side-menu').load('left.html', function () {
         $("li[id='home']").removeClass("active");
         $("li[id='operations']").addClass("active");
-        $("li[id='storeDetail']").addClass("active");
+        $("li[id='couponStrategy']").addClass("active");
     });
     $('#header').load('header.html');
     $('#footer').load('footer.html');
@@ -200,10 +184,10 @@
             sidePagination: "server",
             // sortName: "name",
             // sortOrder: "asc",
-            url: "/storeDetail/page",
+            url: "/couponStrategy/page",
             queryParams: function (params) {
                 var temp = {
-                    shopname: $("input[name='shopname']").val(),
+                    ticket: $("select[name='ticket']").val(),
                     startDate: startDate,
                     endDate: endDate,
                     limit: params.limit,
@@ -218,8 +202,8 @@
                 return temp;
             },
             columns: [{
-                field: 'shopname',
-                title: '店铺名称',
+                field: 'name',
+                title: '优惠券',
                 align: 'left',
                 valign: 'middle',
                 sortable: 'false',
@@ -227,208 +211,89 @@
                     var div = "<div style='width:200px;'>"+value+"</div>";//调列宽，在td中嵌套一个div，调整div大小
                     return div;
                 }
-            }, {
-                field: '付款订单数量',
-                title: '付款订单数量',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'false'
-            }, {
-                field: '发货订单数量',
-                title: '发货订单数量',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'false'
-            }, {
-                field: '下单金额',
-                title: '下单金额',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '下单金额同比',
-                title: '下单金额环比 / 同比',
-                align: 'left',
-                valign: 'middle',
-                formatter: function (value, row, index) {
-                    var tongbi = row.下单金额同比+'';
-                    var huanbi = row.下单金额环比+'';
-                    if(tongbi == null || tongbi == ''|| tongbi == 'null'){
-                        tongbi ='-';
-                    }else if(tongbi.indexOf('-') != -1){
-                        tongbi='<span style="color:#05c31b"></i>↓'+  tongbi.replace('-','')+'%'+'</span>';
-                    }else{
-                        tongbi='<span style="color:#ea2612"></i>↑'+ tongbi+'%'+'</span>';
-                    }
-                    if(huanbi == null || huanbi == ''|| huanbi == 'null'){
-                        huanbi ='-';
-                    }else if(huanbi.indexOf('-') != -1){
-                        huanbi='<span style="color:#05c31b"></i>↓'+ huanbi.replace('-','')+'%'+'</span>';
-                    }else{
-                        huanbi='<span style="color:#ea2612"></i>↑'+ huanbi+'%'+'</span>';
-                    }
-                    return huanbi+" | "+tongbi;
-                }
-            }, {
-                field: '下单人数',
-                title: '下单人数',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '首次下单金额',
-                title: '新用户下单金额',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '首次下单人数',
-                title: '新用户下单人数',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true'
             },{
-                field: '客单价',
-                title: '客单价',
+                field: '发放量',
+                title: '发放量',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                sortable: 'false'
             }, {
-                field: '同比客单价',
-                title: '&nbsp;&nbsp;&nbsp;客单价环比 / 同比&nbsp;&nbsp;&nbsp; ',
-                align: 'left',
+                field: '优惠券使用率',
+                title: '优惠券使用率',
+                align: 'center',
                 valign: 'middle',
-                formatter: function (value, row, index) {
-                    var tongbi = row.同比客单价+'';
-                    var huanbi = row.环比客单价+'';
-                    if(tongbi == null || tongbi == ''|| tongbi == 'null'){
-                        tongbi ='-';
-                    }else if(tongbi.indexOf('-') != -1){
-                        tongbi='<span style="color:#05c31b"></i>↓'+  tongbi.replace('-','')+'%'+'</span>';
-                    }else{
-                        tongbi='<span style="color:#ea2612"></i>↑'+ tongbi+'%'+'</span>';
+                sortable: 'false',
+                formatter: function (value, row, index){
+                    var aa =row.使用量;
+                    var bb =row.发放量;
+                    if(aa==0||bb==0){
+                        return '-';
                     }
-                    if(huanbi == null || huanbi == ''|| huanbi == 'null'){
-                        huanbi ='-';
-                    }else if(huanbi.indexOf('-') != -1){
-                        huanbi='<span style="color:#05c31b"></i>↓'+ huanbi.replace('-','')+'%'+'</span>';
-                    }else{
-                        huanbi='<span style="color:#ea2612"></i>↑'+ huanbi+'%'+'</span>';
-                    }
-                    return huanbi+" | "+tongbi;
+                    return (aa/bb*100).toFixed(2)+"%";
                 }
             }, {
-                field: '平均规格',
-                title: '订单平均规格数',
+                field: '订单总额',
+                title: '用券的订单总额',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                sortable: 'false'
             }, {
-                field: '店铺发货率',
-                title: '店铺部分发货比例',
+                field: '用券的优惠客单价',
+                title: '用券的优惠客单价',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                sortable: 'false',
+                formatter: function (value, row, index){
+                    var aa =row.付款总额;
+                    var bb =row.使用量;
+                    if(aa==0||bb==0){
+                        return '-';
+                    }
+                    return (aa/bb).toFixed(2);
+                }
             }, {
-                field: '店铺违约率',
-                title: '店铺违约率',
+                field: '使用量',
+                title: '优惠券操作触发的使用人数',
+                align: 'left',
+                valign: 'middle'
+            }, {
+                field: '新用户比例',
+                title: '优惠券使用的新用户/比例',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                sortable: 'false',
+                formatter: function (value, row, index){
+                    var aa =row.首次下单用户数量;
+                    var bb =row.发放量;
+                    if(aa==0||bb==0){
+                        return '-';
+                    }else{
+                        return aa+'/'+(aa/bb*100).toFixed(2)+'%';
+                    }
+                }
             }, {
-                field: '未付款超时取消订单',
-                title: '店铺未付款超时取消订单比例',
+                field: '金额占总订单金额比',
+                title: '优惠券订单金额占总订单金额比例',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                sortable: 'false',
+                formatter: function (value, row, index){
+                    var aa =row.付款总额;
+                    var bb =row.优惠总额;
+                    if(aa==null||bb==null||aa==0||bb==0){
+                        return '-';
+                    }else{
+                        return (bb/aa*100).toFixed(2)+'%';
+                    }
+                }
             }, {
-                field: '店铺退货率',
-                title: '店铺退货率',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '当日发货',
-                title: '当日发货',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '超时一天发货',
-                title: '超时一天发货',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '超时两天发货',
-                title: '超时两天发货',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '超时三天',
-                title: '超时三天',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '低于500元订单',
-                title: '低于500元订单',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '在500_800元订单',
-                title: '在500_800元订单',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '在800_1200订单',
-                title: '在800_1200订单',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '在1200_1500元订单',
-                title: '在1200_1500元订单',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '在1500_2000元订单',
-                title: '在1500_2000元订单',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '在2000_5000元订单',
-                title: '在2000_5000元订单',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '在5000元以上订单',
-                title: '在5000元以上订单',
+                field: '优惠总额',
+                title: '优惠券总值',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'true'
             }],
             onLoadSuccess: function (result) {
-                $("#allPayedOrders").html("店铺订单总量："+result.allPayedOrders);
-                $("#allSentOrders").html("店铺发货订单："+result.allSentOrders);
-                $("#amountRate").html("下单金额环比/同比："+result.amountRate);
-                $("#allPeoples").html("下单人数："+result.allPeoples);
-                $("#amountOfNew").html("新用户下单金额："+result.amountOfNew);
-                $("#peopleOfNew").html("新用户下单人数："+result.peopleOfNew);
-                $("#sentInDay").html("平均当天发货率："+result.sentInDay);
-                $("#unitPrice").html("客单价："+result.unitPrice);
-                $("#unitPriceRate").html("客单价环比/同比："+result.unitPriceRate);
-                $("#sendRate").html("店铺发货率："+result.sendRate);
-                $("#backRate").html("店铺退货率："+result.backRate);
-                $("#partSendRate").html("店铺部分发货比例："+result.partSendRate);
-                $("#violateRate").html("店铺违约率："+result.violateRate);
-                $("#ordersOfCancelRate").html("店铺未付款超时取消订单比例："+result.ordersOfCancelRate);
 
             },
             onLoadError: function (error) {
@@ -446,7 +311,7 @@
 
         //清空按钮
         $("button[id='refresh']").click(function () {
-            $("input[name='shopname']").val("");
+            $("select[name='ticket']").val("");
             $("input[name='dateRange']").val("");
             startDate = '';
             endDate ='';
