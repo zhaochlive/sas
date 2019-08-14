@@ -74,11 +74,15 @@ public class SystemController {
     private CouponStrategyService couponStrategyService;
     @GetMapping("/couponStrategy")
     public ModelAndView couponStrategy() {
-
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.addObject("tickets",couponStrategyService.getTickets());
         modelAndView.setViewName("pages/oprations/couponStrategy.html");
         return modelAndView;
+    }
+
+    @GetMapping("/productDetail")
+    public String productDetail() {
+        return "pages/oprations/productDetail.html";
     }
 
     // 区域销售额
