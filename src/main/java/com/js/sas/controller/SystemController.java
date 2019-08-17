@@ -72,6 +72,7 @@ public class SystemController {
 
     @Autowired
     private CouponStrategyService couponStrategyService;
+    //优惠策略
     @GetMapping("/couponStrategy")
     public ModelAndView couponStrategy() {
         ModelAndView modelAndView = new ModelAndView();
@@ -79,7 +80,7 @@ public class SystemController {
         modelAndView.setViewName("pages/oprations/couponStrategy.html");
         return modelAndView;
     }
-
+    //产品详情
     @GetMapping("/productDetail")
     public String productDetail() {
         return "pages/oprations/productDetail.html";
@@ -89,5 +90,10 @@ public class SystemController {
     @GetMapping("/regionalSales")
     public String regionalSales() {
         return "pages/operations/regionalSales.html";
+    }
+    //订单详情
+    @GetMapping("/orderDetail")
+    public String orderDetail() {
+        return "pages/oprations/orderDetail.html";
     }
 }

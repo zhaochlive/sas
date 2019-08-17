@@ -1,5 +1,6 @@
 package com.js.sas.controller;
 
+import com.js.sas.service.OrderDetailService;
 import com.js.sas.service.StoreDetailService;
 import com.js.sas.utils.DateTimeUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -10,22 +11,21 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
-import java.math.BigDecimal;
-import java.util.*;
-
-import static java.math.RoundingMode.HALF_DOWN;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Controller
-@RequestMapping("storeDetail")
-public class StoreDetailController {
+@RequestMapping("orderDetail")
+public class OrderDetailController {
 
     @Autowired
-    private StoreDetailService storeDetailService;
+    private OrderDetailService orderDetailService;
 
     @RequestMapping(value = "page",method = RequestMethod.POST)
     @ResponseBody
     public Object storeDetail(HttpServletRequest request) {
-
         Map<String, String> requestMap = new HashMap<>();
         Map<String, Object> result = new HashMap<>();
         if (request.getParameter("startDate")==null|| StringUtils.isBlank(request.getParameter("startDate"))){
@@ -44,8 +44,8 @@ public class StoreDetailController {
             DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT);
             requestMap.put("endDate", DateTimeUtils.convert(DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT),DateTimeUtils.DATE_FORMAT)+" 23:59:59" );
         }
-        if (StringUtils.isNotBlank(request.getParameter("shopname"))){
-            requestMap.put("shopname",request.getParameter("shopname"));
+        if (StringUtils.isNotBlank(request.getParameter("username"))){
+            requestMap.put("username",request.getParameter("username"));
         }
         if (StringUtils.isNotBlank(request.getParameter("limit"))) {
             requestMap.put("limit", request.getParameter("limit"));
@@ -53,15 +53,23 @@ public class StoreDetailController {
             return null;
         }
         if (StringUtils.isNotBlank(request.getParameter("offset"))) {
-            requestMap.put("offset", request.getParameter("offset"));
+            if (StringUtils.isNotBlank(request.getParameter("username"))){
+                requestMap.put("offset", "0");
+            }else{
+                requestMap.put("offset", request.getParameter("offset"));
+            }
         } else {
             requestMap.put("offset", "0");
         }
-        List<Map<String, Object>> page = storeDetailService.getPage(requestMap);
-        Map<String, Object> count = storeDetailService.getTotal(requestMap);
-        result.putAll(count);
+        List<Map<String, Object>> page = orderDetailService.getPage(requestMap);
+        for (Map<String, Object> map : page) {
+            long memberid = Long.parseLong(map.get("memberid").toString());
+
+            List<Map<String, Object>> provinceRate = orderDetailService.getProvinceRateByMemberId(memberid,requestMap);
+            map.put("provinceRate",provinceRate);
+        }
         result.put("rows", page);
-        result.put("total", storeDetailService.getCount(requestMap));
+        result.put("total", orderDetailService.getCount(requestMap));
         return result;
     }
 }

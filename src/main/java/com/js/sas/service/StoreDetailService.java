@@ -104,12 +104,12 @@ public class StoreDetailService {
                     " and os.orderstatus not in (0,7)) or(os.paymenttime::text < DATE(os.paymenttime)||' 16:00:00' " +
                     " and os.sellerdeliverytime::text >= DATE(os.paymenttime+interval'3day')||' 16:00:00' " +
                     " and os.orderstatus not in (0,7)) then 1 else 0 end) 超时三天,");
-            sb.append(" COUNT (os.ID) 所有订单,os.memberid,COUNT ( standardn ) 规格,SUM(子订单总数) 子订单总数,SUM(退货订单数) 退货订单数");
+            sb.append(" COUNT (os.ID) 所有订单,os.memberid,sum( standardn ) 规格,SUM(子订单总数) 子订单总数,SUM(退货订单数) 退货订单数");
             sb.append(" FROM orders os LEFT JOIN ( SELECT orderno, COUNT(DISTINCT (standard)) standardn,COUNT ( 1 ) 子订单总数,");
             sb.append(" SUM ( CASE WHEN backstate != 0 THEN 1 ELSE 0 END ) 退货订单数 FROM orderproduct GROUP BY orderno ) od ON od.orderno = os.orderno ");
-            sb.append(" where createtime>='"+startDate+"' and createtime <='"+endDate+"'  ");
+            sb.append(" where createtime>='"+startDate+"' and createtime <='"+endDate+"'");
             if(params.containsKey("shopname")){
-                sb.append( "and os.shopname ='"+params.get("shopname").trim()+"'");
+                sb.append( " and os.shopname ='"+params.get("shopname").trim()+"'");
             }
             sb.append(" GROUP BY os.shopname,os.memberid ) ss ");
             //同比数据
