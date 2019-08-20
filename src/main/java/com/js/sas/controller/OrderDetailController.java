@@ -25,7 +25,7 @@ public class OrderDetailController {
 
     @RequestMapping(value = "page",method = RequestMethod.POST)
     @ResponseBody
-    public Object storeDetail(HttpServletRequest request) {
+    public Object orderDetail(HttpServletRequest request) {
         Map<String, String> requestMap = new HashMap<>();
         Map<String, Object> result = new HashMap<>();
         if (request.getParameter("startDate")==null|| StringUtils.isBlank(request.getParameter("startDate"))){

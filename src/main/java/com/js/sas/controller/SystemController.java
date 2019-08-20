@@ -96,4 +96,9 @@ public class SystemController {
     public String orderDetail() {
         return "pages/oprations/orderDetail.html";
     }
+    //订单产品
+    @GetMapping("/orderProduct")
+    public String orderProduct() {
+        return "pages/oprations/orderProduct.html";
+    }
 }

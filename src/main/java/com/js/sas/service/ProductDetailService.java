@@ -27,7 +27,7 @@ public class ProductDetailService {
         sb.append(" from ProductInfo p left join sellercompanyinfo sc on p.memberid = sc.memberid ");
         sb.append(" LEFT JOIN (select sum(sumprice) sumprice,pdid,count(pdid) cut,sum(tb.num) num from ( ");
         sb.append(" select op.price*op.num sumprice,op.num,op.id,op.pdid from orderproduct op " );
-        sb.append(" left join orders os on os.id = op.orderid where 1=1");
+        sb.append(" left join orders os on os.id = op.orderid where 1=1 and orderstatus <>7");
         if (params.get("startDate") != null && StringUtils.isNotBlank(params.get("startDate"))) {
             sb.append(" and os.createtime >= ?");
             list.add(DateUtils.parseDate(params.get("startDate") + " 00:00:00", "YYYY-MM-dd HH:mm:ss"));
