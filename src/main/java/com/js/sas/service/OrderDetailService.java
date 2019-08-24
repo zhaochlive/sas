@@ -21,7 +21,7 @@ public class OrderDetailService {
     private JdbcTemplate jdbcTemplate;
 
     /**
-     * 店铺详情
+     * 店铺详情列表
      * @param params
      * @return
      */
@@ -89,7 +89,7 @@ public class OrderDetailService {
 
 
     /**
-     *
+     *订单详情统计count
      * @param params
      * @return
      */
@@ -106,6 +106,12 @@ public class OrderDetailService {
         return jdbcTemplate.queryForObject(sb.toString(),Long.class);
     }
 
+    /**
+     * 获取省份列表
+     * @param memberid
+     * @param params
+     * @return
+     */
     public List<Map<String, Object>> getProvinceRateByMemberId(long memberid, Map<String, String> params){
         String startDate = params.get("startDate");
         String endDate = params.get("endDate");
@@ -116,4 +122,161 @@ public class OrderDetailService {
         return jdbcTemplate.queryForList(sql, memberid,StartDate,EndDate);
     }
 
+    /**
+     * 订单统计主表
+     * @param params
+     * @return
+     */
+    public List<Map<String, Object>> getOrderReport(Map<String, String> params){
+        List<Object> list = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        sb.append(" SELECT to_char( createtime , 'YYYY-MM-DD' ) AS d,");
+        sb.append(" sum(case when orderstatus BETWEEN 3 and 5 then 1 else 0 end ) sentnum,");
+        sb.append(" sum(case when orderstatus = 1 or orderstatus = 10 then 1 else 0 end ) notsentnum,");
+        sb.append(" sum(case when orderstatus = 7 and reason = '订单超时取消' then 1 else 0 end ) cancelnum, ");
+        sb.append(" sum(case when orderstatus = 7 then 1 else 0 end ) backnum, ");
+        sb.append(" sum(case when totalprice < 500 then 1 else 0 end ) underfive, ");
+        sb.append(" sum(case when totalprice >= 500 and totalprice < 800 then 1 else 0 end ) inFiveEight, ");
+        sb.append(" sum(case when totalprice >= 800 and totalprice < 1200 then 1 else 0 end ) inEightTwelve, ");
+        sb.append(" sum(case when totalprice >= 1200 and totalprice < 1500 then 1 else 0 end ) inTwelveFifteen, ");
+        sb.append(" sum(case when totalprice >= 1500 and totalprice < 2000 then 1 else 0 end ) inFifteenTwenty, ");
+        sb.append(" sum(case when totalprice >= 2000 and totalprice < 5000 then 1 else 0 end ) inTwentyFifty, ");
+        sb.append(" sum(case when totalprice >= 5000 then 1 else 0 end ) moreFive, ");
+        sb.append(" COUNT ( os.id ) AS ordernum,");
+        sb.append(" sum(case when sp.cut > 1 then 1 else 0 end ) splitnum");
+        sb.append(" FROM orders os LEFT JOIN ( ");
+        sb.append(" select count(1) cut,os.orderno,to_char( createtime , 'YYYY-MM-DD' ) dd from orders os ");
+        sb.append(" LEFT JOIN orderproduct od on os.id = od.orderid GROUP BY os.orderno,dd");
+        sb.append(" ) sp on os.orderno = sp.orderno WHERE 1=1");
+        System.out.println(params.values());
+        if (params.containsKey("startDate")) {
+            sb.append(" and os.createtime >='"+ params.get("startDate")+"'");
+        }
+        if (params.containsKey("endDate")) {
+//            sb.append(" and os.createtime <=?");
+            sb.append(" and os.createtime <='"+ params.get("endDate")+"'");
+        }
+        sb.append(" GROUP BY d order by d desc");
+        if (StringUtils.isNotBlank(params.get("limit"))) {
+            long limit = Long.parseLong(params.get("limit").trim());
+            sb.append(" limit ? ");
+            list.add(limit);
+        } else {
+            sb.append(" limit 10 ");
+        }
+        if (StringUtils.isNotBlank(params.get("offset"))) {
+            long offset = Long.parseLong(params.get("offset").trim());
+            sb.append(" offset ? ;");
+            list.add(offset);
+        } else {
+            sb.append(" offset 0 ;");
+        }
+        System.out.println(sb.toString());
+        return jdbcTemplate.queryForList(sb.toString(),list.toArray());
+    }
+
+    public Long getReportCount(Map<String ,String > params){
+        List<Object> list = new ArrayList<>();
+        StringBuilder sb = new StringBuilder("select count(1) from( select to_char( createtime , 'YYYY-MM-DD' ) d  from orders ");
+        sb.append("WHERE 1 = 1 ");
+        if (params.containsKey("startDate")) {
+            sb.append(" and createtime >=?");
+            Timestamp alarmStartTime = Timestamp.valueOf(params.get("startDate") );
+            list.add(alarmStartTime);
+        }
+        if (params.containsKey("endDate")) {
+            sb.append(" and createtime <=?");
+            Timestamp alarmStartTime = Timestamp.valueOf(params.get("endDate") );
+            list.add(alarmStartTime);
+        }
+        sb.append(" GROUP BY d) d");
+
+        return jdbcTemplate.queryForObject(sb.toString(),list.toArray(),Long.class);
+    }
+
+
+    /**
+     * 客单价订单列表
+     * @param params
+     * @return
+     */
+    public List<Map<String, Object>> getUnitPrice(Map<String, String> params) {
+        List<Object> list = new ArrayList<>();
+        StringBuilder sb = new StringBuilder(" select count(1) cut, memberid,m.realname,m.waysalesman," +
+                " sum(case when totalprice < 500 then 1 else 0 end ) underfive," +
+                " sum(case when totalprice >= 500 and totalprice < 800 then 1 else 0 end ) inFiveEight, " +
+                " sum(case when totalprice >= 800 and totalprice < 1200 then 1 else 0 end ) inEightTwelve," +
+                " sum(case when totalprice >= 1200 and totalprice < 1500 then 1 else 0 end ) inTwelveFifteen," +
+                " sum(case when totalprice >= 1500 and totalprice < 2000 then 1 else 0 end ) inFifteenTwenty," +
+                " sum(case when totalprice >= 2000 and totalprice < 5000 then 1 else 0 end ) inTwentyFifty," +
+                " sum(case when totalprice >= 5000 then 1 else 0 end ) moreFive" +
+                " from (  ");
+        sb.append(" SELECT os.memberid,os.orderno,sum(od.num*od.price)/count(1) totalprice");
+        sb.append(" from orderproduct od ");
+        sb.append(" LEFT JOIN orders os on os.orderno = od.orderno ");
+        sb.append(" where os.orderstatus <>7 ");
+        if (params.containsKey("startDate")) {
+            sb.append(" and os.createtime >=?");
+            Timestamp alarmStartTime = Timestamp.valueOf(params.get("startDate") + " 00:00:00");
+            list.add(alarmStartTime);
+        }
+        if (params.containsKey("endDate")) {
+            sb.append(" and os.createtime <=?");
+            Timestamp alarmStartTime = Timestamp.valueOf(params.get("endDate") + " 23:59:59");
+            list.add(alarmStartTime);
+        }
+        sb.append(" GROUP BY os.memberid,os.orderno  ) ss");
+        sb.append(" LEFT JOIN member m on m.id =ss.memberid ");
+        sb.append(" where 1=1 ");
+        if (params.get("username") != null && StringUtils.isNotBlank(params.get("username"))) {
+            sb.append(" and m.realname = ?");
+            list.add(params.get("username"));
+        }
+        sb.append(" GROUP BY ss.memberid,m.realname,m.waysalesman");
+        if (StringUtils.isNotBlank(params.get("limit"))) {
+            long limit = Long.parseLong(params.get("limit").trim());
+            sb.append(" limit ? ");
+            list.add(limit);
+        } else {
+            sb.append(" limit 10 ");
+        }
+        if (StringUtils.isNotBlank(params.get("offset"))) {
+            long offset = Long.parseLong(params.get("offset").trim());
+            sb.append(" offset ? ;");
+            list.add(offset);
+        } else {
+            sb.append(" offset 0 ;");
+        }
+        return jdbcTemplate.queryForList(sb.toString(),list.toArray());
+    }
+
+    /**
+     * 客单价订单数量count
+     * @param params
+     * @return
+     */
+    public Long getUnitPriceCount(Map<String, String> params) {
+        List<Object> list = new ArrayList<>();
+        StringBuilder sb = new StringBuilder(" select count(1) from (  ");
+        sb.append(" select count(1) from ( ");
+        sb.append(" SELECT os.memberid,os.orderno,sum(od.num*od.price)/count(1) unit");
+        sb.append(" from orderproduct od ");
+        sb.append(" LEFT JOIN orders os on os.orderno = od.orderno ");
+        sb.append(" where os.orderstatus <>7 ");
+        if (params.containsKey("startDate")) {
+            sb.append(" and os.createtime >=?");
+            Timestamp alarmStartTime = Timestamp.valueOf(params.get("startDate") + " 00:00:00");
+            list.add(alarmStartTime);
+        }
+        if (params.containsKey("endDate")) {
+            sb.append(" and os.createtime <=?");
+            Timestamp alarmStartTime = Timestamp.valueOf(params.get("endDate") + " 23:59:59");
+            list.add(alarmStartTime);
+        }
+        sb.append(" GROUP BY os.memberid,os.orderno  ) ss");
+        sb.append(" where ss.unit <= 500 ");
+        sb.append(" GROUP BY ss.memberid ) tb");
+
+        return jdbcTemplate.queryForObject(sb.toString(),list.toArray(),Long.class);
+    }
 }

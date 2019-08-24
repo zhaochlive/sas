@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="../../css/style.css">
     <link rel="stylesheet" type="text/css" href="../../css/daterangepicker.css"/>
 
-    <title>统计分析系统 - 运营 -店铺详情统计</title>
+    <title>统计分析系统 - 运营 - 客单价订单</title>
 </head>
 <body>
 <div id="wrapper">
@@ -30,7 +30,7 @@
                 <div class="col-lg-12">
                     <div class="ibox">
                         <div class="ibox-title">
-                            <h5>店铺详情统计</h5>
+                            <h5>客单价订单</h5>
                             <div class="ibox-tools">
                                 <a class="collapse-link">
                                     <i class="fa fa-chevron-up"></i>
@@ -109,7 +109,7 @@
     $('#side-menu').load('left.html', function () {
         $("li[id='home']").removeClass("active");
         $("li[id='operations']").addClass("active");
-        $("li[id='orderDetail']").addClass("active");
+        $("li[id='unitPriceOrder']").addClass("active");
     });
     $('#header').load('header.html');
     $('#footer').load('footer.html');
@@ -180,7 +180,7 @@
             sidePagination: "server",
             // sortName: "name",
             // sortOrder: "asc",
-            url: "/orderDetail/page",
+            url: "/orderDetail/getUnitPrice",
             queryParams: function (params) {
                 var temp = {
                     username: $("input[name='username']").val(),
@@ -199,23 +199,49 @@
             },
             columns: [{
                 field: 'realname',
-                title: '客户全称',
+                title: '买家名称',
                 align: 'left',
                 valign: 'middle',
-                sortable: 'false',
-                formatter: function (value, row, index){ // 单元格格式化函数
-                    var div = "<div style='width:150px;'>"+value+"</div>";//调列宽，在td中嵌套一个div，调整div大小
-                    return div;
-                }
+                sortable: 'false'
             }, {
-                field: 'totalprice',
-                title: '客户订单金额',
+                field: 'underfive',
+                title: '低于500元订单',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'false'
             }, {
-                field: 'ordernum',
-                title: '客户订单数',
+                field: 'ineighttwelve',
+                title: '500-800元订单',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: 'ineighttwelve',
+                title: '800-1200订单',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: 'intwelvefifteen',
+                title: '1200-1500元订单',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: 'infifteentwenty',
+                title: '1500-2000元订单',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: 'intwentyfifty',
+                title: '2000-5000元订单',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'false'
+            },{
+                field: 'morefive',
+                title: '5000元以上订单',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'false'
@@ -225,69 +251,6 @@
                 align: 'center',
                 valign: 'middle',
                 sortable: 'false'
-            }, {
-                field: 'creditstate',
-                title: '是否开通授信',
-                align: 'left',
-                valign: 'middle',
-                formatter: function (value, row, index) {
-                   var creditstate = row.creditstate;
-
-                   if(creditstate==0){
-                       return '未开通';
-                   } else if(creditstate==1){
-                       return '已开通';
-                   } else if(creditstate==2){
-                       return '禁用授信';
-                   }else{
-                       return '未开通';
-                   }
-                }
-            }, {
-                field: 'standardn',
-                title: '单个订单平均规格数',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'false'
-            }, {
-                field: 'mtotalprice',
-                title: '环比（销售额）',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'false',
-                formatter:function (value, row, index) {
-                    return (row.mtotalprice/row.totalprice*100 -1).toFixed(2)+"%";
-                }
-            }, {
-                field: 'ytotalprice）',
-                title: '同比（销售额）',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'false',
-                formatter:function (value, row, index) {
-                    return (row.ytotalprice/row.totalprice*100 -1).toFixed(2)+"%";
-                }
-            }, {
-                field: 'provinceRate）',
-                title: '省份|比例',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'false',
-                formatter:function (value, row, index) {
-                    var provinceRate = row.provinceRate;
-                    var total = row.totalprice;
-                    // console.info(provinceRate);
-                    var option;
-                    option = '<select class="form-control" id="selNumber"'+index+' name="province" style="height:33px;">'
-                    // option += "<option value =''>请选择</option>";
-                    $.each(provinceRate,function(i,obj){
-                        var totalprice = obj.totalprice;
-                        var rate = (totalprice/total*100 ).toFixed(2)+"%";
-                        option += "<option value='"+obj.province+"'>"+obj.province+"|" +rate +"</option>";
-                    });
-                    option += "</select>";
-                    return option;
-                }
             }],
             onLoadSuccess: function (result) {
 

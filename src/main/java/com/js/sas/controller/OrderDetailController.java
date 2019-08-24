@@ -23,6 +23,11 @@ public class OrderDetailController {
     @Autowired
     private OrderDetailService orderDetailService;
 
+    /**
+     * 订单详情
+     * @param request
+     * @return
+     */
     @RequestMapping(value = "page",method = RequestMethod.POST)
     @ResponseBody
     public Object orderDetail(HttpServletRequest request) {
@@ -53,7 +58,7 @@ public class OrderDetailController {
             return null;
         }
         if (StringUtils.isNotBlank(request.getParameter("offset"))) {
-            if (StringUtils.isNotBlank(request.getParameter("username"))){
+            if (StringUtils.isNotBlank(request.getParameter("offset"))){
                 requestMap.put("offset", "0");
             }else{
                 requestMap.put("offset", request.getParameter("offset"));
@@ -70,6 +75,84 @@ public class OrderDetailController {
         }
         result.put("rows", page);
         result.put("total", orderDetailService.getCount(requestMap));
+        return result;
+    }
+
+    /**
+     * 主表
+     * @param request
+     * @return
+     */
+
+    @RequestMapping(value = "getOrderReport",method = RequestMethod.POST)
+    @ResponseBody
+    public Object getOrderReport(HttpServletRequest request) {
+        Map<String, String> requestMap = new HashMap<>();
+        Map<String, Object> result = new HashMap<>();
+        if (request.getParameter("startDate")==null|| StringUtils.isBlank(request.getParameter("startDate"))){
+            String firstDayOfMonth = DateTimeUtils.firstDayOfMonth(new Date());
+            requestMap.put("startDate",firstDayOfMonth);
+        }else{
+            String startDate = request.getParameter("startDate");
+            DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT);
+            requestMap.put("startDate", DateTimeUtils.convert(DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT),DateTimeUtils.DATE_FORMAT)+" 00:00:00" );
+        }
+        if (request.getParameter("endDate")==null|| StringUtils.isBlank(request.getParameter("endDate"))){
+            String firstDayOfMonth = DateTimeUtils.lastDayOfMonth(new Date());
+            requestMap.put("endDate",firstDayOfMonth);
+        }else{
+            String startDate = request.getParameter("endDate");
+            DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT);
+            requestMap.put("endDate", DateTimeUtils.convert(DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT),DateTimeUtils.DATE_FORMAT)+" 23:59:59" );
+        }
+
+        if (StringUtils.isNotBlank(request.getParameter("limit"))) {
+            requestMap.put("limit", request.getParameter("limit"));
+        } else {
+            requestMap.put("limit", "0");
+        }
+        if (StringUtils.isNotBlank(request.getParameter("offset"))) {
+            requestMap.put("offset", request.getParameter("offset"));
+        } else {
+            requestMap.put("offset", "0");
+        }
+        List<Map<String, Object>> page = orderDetailService.getOrderReport(requestMap);
+
+        result.put("rows", page);
+        result.put("total", orderDetailService.getReportCount(requestMap));
+        return result;
+    }
+
+    /**
+     * 客单价
+     * @param request
+     * @return
+     */
+    @RequestMapping(value = "getUnitPrice",method = RequestMethod.POST)
+    @ResponseBody
+    public Object getUnitPrice(HttpServletRequest request) {
+        Map<String, String> requestMap = new HashMap<>();
+        Map<String, Object> result = new HashMap<>();
+        if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
+            requestMap.put("startDate", request.getParameter("startDate"));
+        }
+        if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
+            requestMap.put("endDate", request.getParameter("endDate"));
+        }
+        if (StringUtils.isNotBlank(request.getParameter("limit"))) {
+            requestMap.put("limit", request.getParameter("limit"));
+        } else {
+            requestMap.put("limit", "0");
+        }
+        if (StringUtils.isNotBlank(request.getParameter("offset"))) {
+            requestMap.put("offset", request.getParameter("offset"));
+        } else {
+            requestMap.put("offset", "0");
+        }
+        List<Map<String, Object>> page = orderDetailService.getUnitPrice(requestMap);
+
+        result.put("rows", page);
+        result.put("total", orderDetailService.getUnitPriceCount(requestMap));
         return result;
     }
 }

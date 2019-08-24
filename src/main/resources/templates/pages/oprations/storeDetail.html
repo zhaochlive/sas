@@ -171,8 +171,8 @@
         // 时间输入框置空判断
         $("#dateRange").on("input", function (e) {
             if ($.trim(e.delegateTarget.value) == "") {
-                startDate = "";
-                endDate = "";
+                // startDate = "";
+                // endDate = "";
             }
             // console.log(startDate + new Date());
         });
@@ -448,6 +448,8 @@
         $("button[id='refresh']").click(function () {
             $("input[name='shopname']").val("");
             $("input[name='dateRange']").val("");
+            $("#startDate").val('');
+            $("#endDate").val('');
             startDate = '';
             endDate ='';
         });

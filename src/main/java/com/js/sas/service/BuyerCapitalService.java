@@ -276,14 +276,12 @@ public class BuyerCapitalService {
                         }
                         default:
                     }
-
                 }
 
             }else {
                 accountsPayables = null;
             }
         }
-        System.err.println(accountsPayables.size());
         result.put("total",count);
         result.put("rows",accountsPayables);
         return result;

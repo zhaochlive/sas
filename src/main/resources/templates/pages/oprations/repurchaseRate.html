@@ -166,8 +166,8 @@
         // 时间输入框置空判断
         $("#dateRange").on("input", function (e) {
             if ($.trim(e.delegateTarget.value) == "") {
-                startDate = "";
-                endDate = "";
+                // startDate = "";
+                // endDate = "";
             }
         });
 
@@ -187,6 +187,8 @@
         $("input[name='membername']").val("");
         $("input[name='mobile']").val("");
         $("input[name='dateRange']").val("");
+        $("#startDate").val('');
+        $("#endDate").val('');
         // 开始时间
         startDate = "";
         // 结束时间

@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="../../css/style.css">
     <link rel="stylesheet" type="text/css" href="../../css/daterangepicker.css"/>
 
-    <title>统计分析系统 - 运营 -店铺详情统计</title>
+    <title>统计分析系统 - 运营 - 订单拆分详情</title>
 </head>
 <body>
 <div id="wrapper">
@@ -30,7 +30,7 @@
                 <div class="col-lg-12">
                     <div class="ibox">
                         <div class="ibox-title">
-                            <h5>店铺详情统计</h5>
+                            <h5>订单产品</h5>
                             <div class="ibox-tools">
                                 <a class="collapse-link">
                                     <i class="fa fa-chevron-up"></i>
@@ -42,11 +42,13 @@
                                 <div class="box-body">
                                     <div class="row">
                                         <div class="form-group row col-sm-4">
-                                            <label class="col-sm-3 col-form-label">客户名称：</label>
+                                            <label class="col-sm-3 col-form-label">订单编号：</label>
                                             <div class="col-sm-9">
-                                                <input id="username" name="username" type="text" placeholder="输入客户名称" class="settlementName form-control"/>
+                                                <input id="orderno" name="orderno" placeholder="订单编号"
+                                                       class="form-control" type="text"/>
                                             </div>
                                         </div>
+
                                         <div class="form-group row col-sm-4">
                                             <label class="col-sm-3 col-form-label">时间周期：</label>
                                             <div class="col-sm-9">
@@ -109,7 +111,7 @@
     $('#side-menu').load('left.html', function () {
         $("li[id='home']").removeClass("active");
         $("li[id='operations']").addClass("active");
-        $("li[id='orderDetail']").addClass("active");
+        $("li[id='orderSplitDetail']").addClass("active");
     });
     $('#header').load('header.html');
     $('#footer').load('footer.html');
@@ -180,10 +182,10 @@
             sidePagination: "server",
             // sortName: "name",
             // sortOrder: "asc",
-            url: "/orderDetail/page",
+            url: "/orderSplitDetail/getPage",
             queryParams: function (params) {
                 var temp = {
-                    username: $("input[name='username']").val(),
+                    orderno: $("input[name='orderno']").val(),
                     startDate: startDate,
                     endDate: endDate,
                     limit: params.limit,
@@ -198,96 +200,170 @@
                 return temp;
             },
             columns: [{
-                field: 'realname',
-                title: '客户全称',
-                align: 'left',
-                valign: 'middle',
-                sortable: 'false',
-                formatter: function (value, row, index){ // 单元格格式化函数
-                    var div = "<div style='width:150px;'>"+value+"</div>";//调列宽，在td中嵌套一个div，调整div大小
-                    return div;
-                }
-            }, {
-                field: 'totalprice',
-                title: '客户订单金额',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'false'
-            }, {
-                field: 'ordernum',
-                title: '客户订单数',
+                field: 'orderno',
+                title: '订单号',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'false'
             }, {
                 field: 'waysalesman',
-                title: '客服人员',
+                title: '客服',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'false'
             }, {
-                field: 'creditstate',
-                title: '是否开通授信',
+                field: 'realname',
+                title: '买家',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: 'linkman',
+                title: '卖家',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: 'storename',
+                title: '仓库',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: 'orderstatus',
+                title: '状态',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'false',
+                formatter:function (value, row, index) {
+                    var orderstatus = row.orderstatus;
+                    console.info(orderstatus);
+                    var back;
+                    //订单状态0=待付款1=待发货3=待收货4=待验货5=已完成7=已关闭8=备货中9=备货完成10部分发货
+                    switch (orderstatus) {
+                        case 0: back = '待付款';break;
+                        case 1: back = '待发货'; break;
+                        case 3: back = '待收货'; break;
+                        case 4: back = '待验货'; break;
+                        case 5: back = '已完成'; break;
+                        case 7: back = '已关闭'; break;
+                        case 8: back = '备货中'; break;
+                        case 9: back = '备货完成'; break;
+                        case 10: back = '部分发货'; break;
+                        default : back = '未知状态';
+                    }
+                    return back;
+                }
+            }, {
+                field: 'ordertype',
+                title: '订单类型',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'false',
+                formatter:function (value, row, index) {
+                    var ordertype = row.ordertype;
+                    var back;
+                    switch (ordertype) {
+                        case 0:
+                            back = '立即发货';
+                            break;
+                        case 1:
+                            back = '远期全款';
+                            break;
+                        case 2:
+                            back = '远期定金';
+                            break;
+                        default :
+                            back = '未知状态';
+                    }
+                    return back;
+                }
+            }, {
+                field: 'isonline',
+                title: '订单来源',
                 align: 'left',
                 valign: 'middle',
-                formatter: function (value, row, index) {
-                   var creditstate = row.creditstate;
-
-                   if(creditstate==0){
-                       return '未开通';
-                   } else if(creditstate==1){
-                       return '已开通';
-                   } else if(creditstate==2){
-                       return '禁用授信';
-                   }else{
-                       return '未开通';
-                   }
+                sortable: 'false',
+                formatter:function (value, row, index) {
+                    return row.isonline=='0'?'线上':'线下';
                 }
-            }, {
-                field: 'standardn',
-                title: '单个订单平均规格数',
+            },{
+                field: 'pdname',
+                title: '商品名称',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'false'
             }, {
-                field: 'mtotalprice',
-                title: '环比（销售额）',
+                field: 'classify',
+                title: '商品分类',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'false',
-                formatter:function (value, row, index) {
-                    return (row.mtotalprice/row.totalprice*100 -1).toFixed(2)+"%";
-                }
+                sortable: 'false'
             }, {
-                field: 'ytotalprice）',
-                title: '同比（销售额）',
+                field: 'standard',
+                title: '规格',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'false',
-                formatter:function (value, row, index) {
-                    return (row.ytotalprice/row.totalprice*100 -1).toFixed(2)+"%";
-                }
+                sortable: 'false'
             }, {
-                field: 'provinceRate）',
-                title: '省份|比例',
+                field: 'material',
+                title: '材质',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'false',
-                formatter:function (value, row, index) {
-                    var provinceRate = row.provinceRate;
-                    var total = row.totalprice;
-                    // console.info(provinceRate);
-                    var option;
-                    option = '<select class="form-control" id="selNumber"'+index+' name="province" style="height:33px;">'
-                    // option += "<option value =''>请选择</option>";
-                    $.each(provinceRate,function(i,obj){
-                        var totalprice = obj.totalprice;
-                        var rate = (totalprice/total*100 ).toFixed(2)+"%";
-                        option += "<option value='"+obj.province+"'>"+obj.province+"|" +rate +"</option>";
-                    });
-                    option += "</select>";
-                    return option;
-                }
+                sortable: 'false'
+            }, {
+                field: 'gradeno',
+                title: '牌号',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: 'brand',
+                title: '品牌',
+                align: 'left',
+                valign: 'middle'
+            }, {
+                field: 'mark',
+                title: '印记',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: 'surfacetreatment',
+                title: '表面处理',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: 'packagetype',
+                title: '包装方式',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: 'unit',
+                title: '单位',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: 'price',
+                title: '单价',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: 'num',
+                title: '订购量',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: 'amount',
+                title: '货款金额',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true'
             }],
             onLoadSuccess: function (result) {
 
@@ -307,7 +383,7 @@
 
         //清空按钮
         $("button[id='refresh']").click(function () {
-            $("input[name='username']").val("");
+            $("input[name='orderno']").val("");
             $("input[name='dateRange']").val("");
             $("#startDate").val('');
             $("#endDate").val('');
