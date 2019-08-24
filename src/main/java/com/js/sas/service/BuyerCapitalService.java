@@ -57,17 +57,17 @@ public class BuyerCapitalService {
             //查询当期结算
             Map<String, Object> settlement = getSettlement(params);
             result.putAll(settlement);
+            AccountsPayable settleAccountsPayable = new AccountsPayable();
+            //查询上期结转
             if (params.containsKey("startDate")&&StringUtils.isNotBlank(params.get("startDate"))){
                 Map<String, Object> before = jdbcTemplate.queryForMap(getBeforeSql(params));
                 BigDecimal beforeReceivableaccount = CommonUtils.getBigDecimal(before.get("Receivableaccount") == null ? 0.00 : before.get("Receivableaccount"));
                 BigDecimal beforeInvoiceBalance  = CommonUtils.getBigDecimal(before.get("InvoiceBalance") == null ? 0.00 : before.get("InvoiceBalance"));
                 Receivableaccount = Receivableaccount.add(beforeReceivableaccount);
                 InvoiceBalance = InvoiceBalance.add(beforeInvoiceBalance);
-                result.put("surplusReceivable",beforeReceivableaccount);
-                result.put("surplusInvoice",beforeInvoiceBalance);
-            }else {
-                result.put("surplusReceivable",0);
-                result.put("surplusInvoice",0);
+                settleAccountsPayable.setReceivableAccount(beforeReceivableaccount);
+                settleAccountsPayable.setInvoicebalance(beforeInvoiceBalance);
+                settleAccountsPayable.setOrderno("上期结转");
             }
 
             //第一页不需要查询 '之前页结余'
@@ -80,8 +80,10 @@ public class BuyerCapitalService {
                     BigDecimal afterInvoiceBalance  = CommonUtils.getBigDecimal(maps.get("InvoiceBalance") == null ? 0.00 : maps.get("InvoiceBalance"));
                     Receivableaccount = Receivableaccount.add(afterReceivableaccount);
                     InvoiceBalance = Receivableaccount.add(afterInvoiceBalance);
-                    result.put("surplusReceivable",Receivableaccount);
-                    result.put("surplusInvoice",InvoiceBalance);
+//                    result.put("surplusReceivable",Receivableaccount);
+//                    result.put("surplusInvoice",InvoiceBalance);
+                }else{
+                    accountsPayables.add(0,settleAccountsPayable);
                 }
             }
 
@@ -281,6 +283,7 @@ public class BuyerCapitalService {
                 accountsPayables = null;
             }
         }
+        System.err.println(accountsPayables.size());
         result.put("total",count);
         result.put("rows",accountsPayables);
         return result;

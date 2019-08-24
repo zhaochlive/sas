@@ -106,16 +106,16 @@
                             <td id="Invoice">发票结余：</td>
                         </tr>
                     </table>
-                    <table class="table table-bordere">
-                        <tr>
-                            <td><b>上期结转：</b></td>
-<!--                            <td id="DeliveryAmount">发货金额：</td>-->
-<!--                            <td id="ReceiptAmount">收款金额：</td>-->
-<!--                            <td id="OtherAmount">其他金额：</td>-->
-                            <td id="surplusReceivable">结转应收账款：</td>
-                            <td id="surplusInvoice">结转发票结余：</td>
-                        </tr>
-                    </table>
+<!--                    <table class="table table-bordere">-->
+<!--                        <tr>-->
+<!--                            <td><b>上期结转：</b></td>-->
+<!--&lt;!&ndash;                            <td id="DeliveryAmount">发货金额：</td>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <td id="ReceiptAmount">收款金额：</td>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <td id="OtherAmount">其他金额：</td>&ndash;&gt;-->
+<!--                            <td id="surplusReceivable">结转应收账款：</td>-->
+<!--                            <td id="surplusInvoice">结转发票结余：</td>-->
+<!--                        </tr>-->
+<!--                    </table>-->
                     <div class="ibox">
                         <div class="ibox-content">
                             <div class="row">
@@ -287,6 +287,9 @@
                 align: 'center',
                 valign: 'middle',
                 formatter: function (value, row, index) {
+                    if(!row.tradetime){
+                        return '';
+                    }
                     var dateTime = row.tradetime;
                     var date = dateTime.substring(0,dateTime.indexOf('T'));
                     var add = dateTime.substring(11,13);
@@ -350,6 +353,7 @@
                             case 3:v= '余额';break;
                             case 4:v= '授信';break;
                             case 5:v= '返利券'; break;
+                            default : v='';
                         }
                     }
                     // console.info(type+" "+ v);
@@ -372,8 +376,8 @@
                 $("#OtherAmount").html("其他金额："+data.OtherAmount);
                 $("#Receivable").html("应收账款："+data.Receivable);
                 $("#Invoice").html("发票结余："+data.Invoice);
-                $("#surplusReceivable").html("结转应收账款："+data.surplusReceivable);
-                $("#surplusInvoice").html("结转发票结余："+data.surplusInvoice);
+                // $("#surplusReceivable").html("结转应收账款："+data.surplusReceivable);
+                // $("#surplusInvoice").html("结转发票结余："+data.surplusInvoice);
                 if(data.total==0){
                     $("#dataTable table").bootstrapTable('removeAll');
                 }
