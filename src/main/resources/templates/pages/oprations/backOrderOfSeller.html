@@ -110,6 +110,8 @@
         $("li[id='sales']").removeClass("active");
         $("li[id='finance']").removeClass("active");
         $("li[id='operations']").addClass("active");
+        $("li[id='operations'] ul").addClass("in");
+        $("li[id='operations'] ul").attr("aria-expanded=\"true\"");
         $("li[id='backOrderOfSeller']").addClass("active");
     });
     $('#header').load('header.html');
