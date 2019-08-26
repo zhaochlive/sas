@@ -81,7 +81,6 @@ public class OrderDetailService {
             } else {
                 sb.append(" offset 0 ;");
             }
-            System.out.println(sb.toString());
             return jdbcTemplate.queryForList(sb.toString(),list.toArray());
         }
         return null;
@@ -148,7 +147,6 @@ public class OrderDetailService {
         sb.append(" select count(1) cut,os.orderno,to_char( createtime , 'YYYY-MM-DD' ) dd from orders os ");
         sb.append(" LEFT JOIN orderproduct od on os.id = od.orderid GROUP BY os.orderno,dd");
         sb.append(" ) sp on os.orderno = sp.orderno WHERE 1=1");
-        System.out.println(params.values());
         if (params.containsKey("startDate")) {
             sb.append(" and os.createtime >='"+ params.get("startDate")+"'");
         }
@@ -274,7 +272,12 @@ public class OrderDetailService {
             list.add(alarmStartTime);
         }
         sb.append(" GROUP BY os.memberid,os.orderno  ) ss");
-        sb.append(" where ss.unit <= 500 ");
+        sb.append(" LEFT JOIN member m on m.id =ss.memberid ");
+        sb.append(" where 1=1 ");
+        if (params.get("username") != null && StringUtils.isNotBlank(params.get("username"))) {
+            sb.append(" and m.realname = ?");
+            list.add(params.get("username"));
+        }
         sb.append(" GROUP BY ss.memberid ) tb");
 
         return jdbcTemplate.queryForObject(sb.toString(),list.toArray(),Long.class);

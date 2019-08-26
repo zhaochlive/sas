@@ -133,6 +133,9 @@ public class OrderDetailController {
     public Object getUnitPrice(HttpServletRequest request) {
         Map<String, String> requestMap = new HashMap<>();
         Map<String, Object> result = new HashMap<>();
+        if (StringUtils.isNotBlank(request.getParameter("username"))){
+            requestMap.put("username",request.getParameter("username"));
+        }
         if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
             requestMap.put("startDate", request.getParameter("startDate"));
         }

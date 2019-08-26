@@ -116,9 +116,9 @@
     $('#header').load('header.html');
     $('#footer').load('footer.html');
     // 开始时间
-    var startDate = "";
+    var startDate = $("#startDate").val();
     // 结束时间
-    var endDate = "";
+    var endDate = $("#endDate").val();
     // 时间选择插件
     $('input[name="dateRange"]').daterangepicker({
         timePicker: false,

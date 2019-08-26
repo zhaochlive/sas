@@ -241,7 +241,7 @@
                    var splitnum = row.splitnum;
                    var ordernum = row.ordernum;
                    var dat = row.d;
-                   return '<a href="unsentOrderDetail?startDate='+dat+'&endDate='+dat+'">'+(splitnum/ordernum*100).toFixed(2)+'% </a>';
+                   return '<a href="orderSplitDetail?startDate='+dat+'&endDate='+dat+'">'+(splitnum/ordernum*100).toFixed(2)+'% </a>';
                 }
             }, {
                 field: 'cancelnum',
