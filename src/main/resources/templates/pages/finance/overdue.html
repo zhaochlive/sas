@@ -293,14 +293,14 @@
                                 if($("#refreshTime").text() != ("数据更新时间: " + result.data)) {
                                     $("#refreshTime").text("数据更新时间: " + result.data);
                                     clearInterval(interval);
-                                    alert("数据已更新完成！");
+                                    toastr.success('数据已更新完成！');
                                     return;
                                 }
                             }, error: function (error) {
                                 console.log(error);
                             }
                         });
-                     }, 15000);
+                     }, 60000);
                 }, error: function (error) {
                     console.log(error);
                 }

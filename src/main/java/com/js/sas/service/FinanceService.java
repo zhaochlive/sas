@@ -68,7 +68,7 @@ public class FinanceService {
         return result;
     }
 
-    public Page<OverdueDTO> findOverdue(OverdueDTO partner) {
+    public Page findOverdue(OverdueDTO partner) {
         // 排序规则
         Sort.Direction sortDirection;
         if (partner.getSortOrder() == null || partner.getSortOrder().equals("desc")) {

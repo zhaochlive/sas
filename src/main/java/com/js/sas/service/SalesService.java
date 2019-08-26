@@ -11,10 +11,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
+import javax.persistence.StoredProcedureQuery;
 import javax.persistence.Tuple;
 import javax.persistence.criteria.*;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @ClassName SalesService
@@ -45,7 +48,7 @@ public class SalesService {
      * @return 日销售列表
      */
     public List<SaleAmountDTO> getSaleAmountByDay(int limit) {
-       return saleAmountRepository.getSaleAmountByDay(limit);
+        return saleAmountRepository.getSaleAmountByDay(limit);
     }
 
     /**
@@ -148,6 +151,35 @@ public class SalesService {
         cq.select(criteriaBuilder.tuple(count, sum)).where(predicate);
 
         return entityManager.createQuery(cq).getResultList();
+    }
+
+    /**
+     * 销售区域统计
+     *
+     * @param startDate 开始时间
+     * @param endDate   结束时间
+     * @param offset    偏移量
+     * @param limit     数量
+     * @return Map<String, Object>
+     */
+    public Map<String, Object> findOrderAreas(String startDate, String endDate, String province, String city, int offset, int limit) {
+        HashMap<String, Object> result = new HashMap<>();
+
+        StoredProcedureQuery store = this.entityManager.createNamedStoredProcedureQuery("findOrderAreas");
+
+        store.setParameter("startDate", startDate);
+        store.setParameter("endDate", endDate);
+        store.setParameter("province", province);
+        store.setParameter("city", city);
+        store.setParameter("offsetNum", offset);
+        store.setParameter("limitNum", limit);
+
+        List orderAreasList = store.getResultList();
+
+        result.put("rows", orderAreasList);
+        result.put("total", store.getOutputParameterValue("totalNum"));
+
+        return result;
     }
 
 

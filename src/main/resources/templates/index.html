@@ -260,7 +260,7 @@
             }
 
             // 设置当月销售额
-            $("#monthAmout").text(result.data[0].amount / 10000);
+            $("#monthAmout").text((result.data[0].amount / 10000).toFixed(6));
         }, error: function (error) {
             console.log(error);
         }
@@ -296,8 +296,6 @@
                 boundaryGap: true,
                 data: (function () {
                     var now = new Date();
-
-                    console.log(now);
 
                     if (firstDay) {
                         now.setMonth(now.getMonth() - 1);
@@ -379,7 +377,7 @@
                 ordersYear.push(result.data[i].counts);
             }
             // 设置当年销售额
-            $("#yearAmout").text(result.data[0].amount / 10000);
+            $("#yearAmout").text((result.data[0].amount / 10000).toFixed(6));
         }, error: function (error) {
             console.log(error);
         }

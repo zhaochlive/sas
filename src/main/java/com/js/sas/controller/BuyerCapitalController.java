@@ -24,6 +24,7 @@ import java.util.*;
 public class BuyerCapitalController {
 
     @Autowired
+
     private BuyerCapitalService buyerCapitalService;
 
     @ApiOperation(value = "买家对账单所用的资金列表查询")

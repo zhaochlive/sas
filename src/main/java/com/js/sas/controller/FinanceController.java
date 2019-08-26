@@ -52,6 +52,10 @@ public class FinanceController {
         this.dataSource = dataSource;
     }
 
+    public void test() {
+        System.out.println(financeService);
+    }
+
     /**
      * 目前调用存储过程实现，后期需要修改实现方法。
      *
@@ -167,11 +171,15 @@ public class FinanceController {
             ResultSetMetaData rsmd = rs.getMetaData();
             // 数据列数
             int count = rsmd.getColumnCount();
+
             // 列名数据
             ArrayList<String> columnsList = new ArrayList<>();
             // 移除前3列（关联id列、总发货、总收款）
-            for (int i = 4; i <= count; i++) {
+            for (int i = 4; i < count; i++) {
                 columnsList.add(rsmd.getColumnLabel(i));
+                if (i > 11) {
+                    i++;
+                }
             }
 
             // 数据
@@ -195,15 +203,23 @@ public class FinanceController {
                 int day = rs.getInt(8);
                 // 应减去的结算周期数
                 int overdueMonths = CommonUtils.overdueMonth(month, day);
+
                 // 设置数据行，移除前3列（关联id列、总发货、总收款）
                 for (int i = 4; i <= count; i++) {
-                    if (i > 10) {  // 计算每个周期的发货和应收
-                        if (i > count - overdueMonths) {  // 只计算逾期账期数据，如果是未逾期账期数据，需要将逾期款减去相应的发货金额
-                            dataList.set(6, Double.valueOf(dataList.get(6).toString()) - rs.getDouble(i));
+                    if (i > 11) {  // 计算每个周期的发货和应收
+                        if (i > count - overdueMonths * 2) {
+                            // 只计算逾期账期数据，如果是未逾期账期数据，需要将逾期款减去相应的发货金额
+                            if("0".equals(rs.getString("parent_code"))) {
+                                dataList.set(6, Double.valueOf(dataList.get(6).toString()) - rs.getDouble(i++));
+                            } else {
+                                dataList.set(6, Double.valueOf(dataList.get(6).toString()) - rs.getDouble(i++) - rs.getDouble(i));
+                            }
                             dataList.add(0);
                         } else {
-                            dataList.add(rs.getDouble(i));
+                            dataList.add(rs.getDouble(i++));
                         }
+                    } else if( i == 11) {
+                        dataList.add(rs.getDouble(i));
                     } else {
                         dataList.add(rs.getString(i));
                     }
@@ -247,9 +263,16 @@ public class FinanceController {
                     if (!parentCode.equals(rs.getString("parent_code"))) {
                         parentCode = rs.getString("parent_code");
                         // 计算之前应收之和
-                        for (int index : totalIndexList) {
-                            rowsList.get(index - 1).set(5, totalReceivables);
+//                        for (int index : totalIndexList) {
+//                            rowsList.get(index - 1).set(5, totalReceivables);
+//                        }
+                        /**
+                         * 此处修改的目的是防止单元格合并之后，数值求和计算错误。
+                         */
+                        if (!totalIndexList.isEmpty()) {
+                            rowsList.get(totalIndexList.get(0) - 1).set(5, totalReceivables);
                         }
+
                         // 置零
                         totalReceivables = 0.0;
                         // 添加至集合
@@ -316,6 +339,7 @@ public class FinanceController {
      * @param columnNameList 导出列名List
      * @param dataList       导出数据List
      * @param fileName       导出文件名，目前sheet页是相同名称
+     * @param totalList      需要合并的数据序号List
      * @throws IOException @Description
      */
     private void exportOverdue(HttpServletResponse response, List<String> columnNameList, List<List<Object>> dataList, String fileName, List<List<Integer>> totalList) throws IOException {
@@ -358,11 +382,12 @@ public class FinanceController {
 
     /**
      * 更新逾期数据
+     *
      * @return result
      */
     @PostMapping("/refreshOverdueData")
     public Result refreshOverdueData() {
-        String result = new RemoteShellExecutor("192.168.8.65", 22, "root", "!*9Hi.Dy#09vF5QLsnD8", "/usr/local/kettle/data-integration/cronjobs/001.sh").exec();
+        String result = new RemoteShellExecutor("192.168.8.65", 22, "root", "xQL=Q)*rV=hV_i@VFhP2", "sudo /usr/local/kettle/data-integration/cronjobs/001.sh").exec();
         return ResultUtils.getResult(ResultCode.成功, result);
     }
 

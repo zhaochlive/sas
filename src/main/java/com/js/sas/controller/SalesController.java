@@ -144,7 +144,7 @@ public class SalesController {
     /**
      * 区域销售额导出
      *
-     * @param regionalSalesDTO 区域销售额参数
+     * @param regionalSalesDTO    区域销售额参数
      * @param httpServletResponse httpServletResponse
      */
     @PostMapping("/exportRegionalSales")
@@ -167,5 +167,20 @@ public class SalesController {
             log.error("下载区域销售额异常：{}", e);
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 订单区域统计
+     *
+     * @param startDate 开始时间
+     * @param endDate   结束时间
+     * @param offset 偏移量
+     * @param limit  数量
+     * @return Object
+     */
+    @ApiOperation(value = "订单区域统计", notes = "数据来源：用友；数据截止日期：昨天")
+    @PostMapping(value = "/findOrderAreas")
+    public Object findOrderAreas(String startDate, String endDate, String province, String city, int offset, int limit) {
+        return salesService.findOrderAreas(startDate, endDate, province, city, offset, limit);
     }
 }

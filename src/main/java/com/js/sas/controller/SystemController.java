@@ -160,4 +160,10 @@ public class SystemController {
         model.addAttribute("endDate",request.getParameter("endDate"));
         return "pages/oprations/backOrderOfSeller.html";
     }
+
+    // 区域销售额
+    @GetMapping("/orderAreas")
+    public String orderAreas() {
+        return "pages/operations/orderAreas.html";
+    }
 }
