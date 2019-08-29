@@ -12,7 +12,12 @@ import com.js.sas.service.FinanceService;
 import com.js.sas.utils.*;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
@@ -209,7 +214,7 @@ public class FinanceController {
                     if (i > 11) {  // 计算每个周期的发货和应收
                         if (i > count - overdueMonths * 2) {
                             // 只计算逾期账期数据，如果是未逾期账期数据，需要将逾期款减去相应的发货金额
-                            if("0".equals(rs.getString("parent_code"))) {
+                            if ("0".equals(rs.getString("parent_code"))) {
                                 dataList.set(6, Double.valueOf(dataList.get(6).toString()) - rs.getDouble(i++));
                             } else {
                                 dataList.set(6, Double.valueOf(dataList.get(6).toString()) - rs.getDouble(i++) - rs.getDouble(i));
@@ -218,7 +223,7 @@ public class FinanceController {
                         } else {
                             dataList.add(rs.getDouble(i++));
                         }
-                    } else if( i == 11) {
+                    } else if (i == 11) {
                         dataList.add(rs.getDouble(i));
                     } else {
                         dataList.add(rs.getString(i));
@@ -227,6 +232,10 @@ public class FinanceController {
 
                 // 当前逾期金额
                 double overdue = Double.parseDouble(dataList.get(6).toString());
+                if ((overdue < 0.01 && overdue > 0) || (overdue > -0.01 && overdue < 0)) {
+                    overdue = 0;
+                    dataList.set(6,0);
+                }
                 // 根据逾期款，设置excel数据。从后向前，到期初为止。
                 for (int index = dataList.size() - 1; index > 6; index--) {
                     if (overdue <= 0) {  // 逾期金额小于等于0，所有账期逾期金额都是0
@@ -234,6 +243,9 @@ public class FinanceController {
                     } else {  // 逾期金额大于0，从最后一个开始分摊逾期金额
                         if (overdue >= Double.parseDouble(dataList.get(index).toString())) {
                             overdue = overdue - Double.parseDouble(dataList.get(index).toString());
+                            if ((overdue < 0.01 && overdue > 0) || (overdue > -0.01 && overdue < 0)) {
+                                overdue = 0;
+                            }
                             dataList.set(index, dataList.get(index));
                         } else {
                             dataList.set(index, overdue);
@@ -404,6 +416,54 @@ public class FinanceController {
         } else {
             return ResultUtils.getResult(ResultCode.系统异常);
         }
+    }
+
+    @Value("${yongyou.url}")
+    private String url;
+
+    @PostMapping("/findYonyouStatement")
+    public Result findYonyouStatement(String period, String name) {
+
+        if (StringUtils.isBlank(period) || StringUtils.isBlank(name)) {
+            return ResultUtils.getResult(ResultCode.参数错误);
+        }
+
+        String startDate;
+        String endDate;
+
+        String[] dateArray = period.split("-");
+
+        if(dateArray.length == 2) {
+            if(CommonUtils.isNumber(dateArray[0]) && CommonUtils.isNumber(dateArray[1])) {
+                if(Integer.parseInt(dateArray[1]) > 1 && Integer.parseInt(dateArray[1]) <= 12) {
+                    startDate = dateArray[0] + "-" + (Integer.parseInt(dateArray[1])-1) + "-28";
+                    endDate = period + "-27";
+                } else if (Integer.parseInt(dateArray[1]) == 1) {
+                    startDate = (Integer.parseInt(dateArray[0])-1) + "-12-28";
+                    endDate = period + "-27";
+                } else {
+                    return ResultUtils.getResult(ResultCode.参数错误);
+                }
+            } else {
+                return ResultUtils.getResult(ResultCode.参数错误);
+            }
+        } else {
+            return ResultUtils.getResult(ResultCode.参数错误);
+        }
+
+
+        System.out.println(startDate);
+        System.out.println(endDate);
+
+        MultiValueMap<String, String> multiValueMap = new LinkedMultiValueMap<>();
+        multiValueMap.add("startDate", startDate);
+        multiValueMap.add("endDate", endDate);
+        multiValueMap.add("settleCustomer", name);
+
+        ResponseEntity responseEntity = CommonUtils.sendPostRequest(url, multiValueMap);
+
+        return ResultUtils.getResult(ResultCode.成功, responseEntity.getBody());
+
     }
 
 }

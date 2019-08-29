@@ -19,3 +19,6 @@ spring:
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
 
+yongyou:
+  url:  http://47.111.167.68:8000/api/Report/AccountsReceivable
+

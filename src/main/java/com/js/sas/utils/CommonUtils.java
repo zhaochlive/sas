@@ -5,6 +5,9 @@ import com.alibaba.excel.metadata.BaseRowModel;
 import com.alibaba.excel.metadata.Sheet;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import org.springframework.boot.configurationprocessor.json.JSONArray;
+import org.springframework.http.*;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -17,6 +20,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * @ClassName CommonUtils
@@ -26,19 +30,19 @@ import java.util.*;
  **/
 public class CommonUtils {
 
-    public static BigDecimal getBigDecimal(Object value ) {
+    public static BigDecimal getBigDecimal(Object value) {
         BigDecimal ret = null;
-        if( value != null ) {
-            if( value instanceof BigDecimal ) {
+        if (value != null) {
+            if (value instanceof BigDecimal) {
                 ret = (BigDecimal) value;
-            } else if( value instanceof String ) {
-                ret = new BigDecimal( (String) value );
-            } else if( value instanceof BigInteger) {
-                ret = new BigDecimal( (BigInteger) value );
-            } else if( value instanceof Number ) {
-                ret = new BigDecimal( ((Number)value).doubleValue() );
+            } else if (value instanceof String) {
+                ret = new BigDecimal((String) value);
+            } else if (value instanceof BigInteger) {
+                ret = new BigDecimal((BigInteger) value);
+            } else if (value instanceof Number) {
+                ret = new BigDecimal(((Number) value).doubleValue());
             } else {
-                throw new ClassCastException("Not possible to coerce ["+value+"] from class "+value.getClass()+" into a BigDecimal.");
+                throw new ClassCastException("Not possible to coerce [" + value + "] from class " + value.getClass() + " into a BigDecimal.");
             }
         }
         return ret;
@@ -75,10 +79,10 @@ public class CommonUtils {
     /**
      * 自定义导出Excel
      *
-     * @param response HttpServletResponse
+     * @param response       HttpServletResponse
      * @param columnNameList 导出列名List
-     * @param dataList 导出数据List
-     * @param fileName 导出文件名，目前sheet页是相同名称
+     * @param dataList       导出数据List
+     * @param fileName       导出文件名，目前sheet页是相同名称
      * @throws IOException @Description
      */
     public static void exportByList(HttpServletResponse response, List<String> columnNameList, List<List<Object>> dataList, String fileName) throws IOException {
@@ -94,7 +98,7 @@ public class CommonUtils {
         sheet1.setAutoWidth(Boolean.TRUE);
 
         // 设置列名
-        if(columnNameList != null){
+        if (columnNameList != null) {
             List<List<String>> list = new ArrayList<>();
             columnNameList.forEach(h -> list.add(Collections.singletonList(h)));
             sheet1.setHead(list);
@@ -124,7 +128,7 @@ public class CommonUtils {
         // 数据列数
         int count = rsmd.getColumnCount();
 
-        if(withColumns) {
+        if (withColumns) {
             // 列名数据
             List<Map<String, String>> columnsList = new ArrayList<Map<String, String>>();
             for (int i = 1; i <= count; i++) {
@@ -169,7 +173,7 @@ public class CommonUtils {
         // 数据列数
         int count = rsmd.getColumnCount();
 
-        if(withColumns) {
+        if (withColumns) {
             // 列名数据
             List<String> columnsList = new ArrayList<String>();
             for (int i = 1; i <= count; i++) {
@@ -194,18 +198,21 @@ public class CommonUtils {
 
     /**
      * 账期客户计算逾期应减去的计算周期数
-     *
+     * <p>
      * 例如：账期月 1，账期日 20
      * 如果当前日期小于20日，则计算截止到上上个结算周期的应收；
      * 如果当前日期大于等于20日，则计算截止到上个结算周期的应收；
      *
      * @param month 账期月，0为当月
-     * @param day 账期日
+     * @param day   账期日
      * @return 从当前月份起，计算逾期应减去的计算周期数
      */
     public static int overdueMonth(int month, int day) {
         Calendar cal = Calendar.getInstance();
         if (cal.get(cal.DATE) < day) {
+            month = month + 1;
+        }
+        if (cal.get(cal.DATE) > 27) {
             month = month + 1;
         }
         return month;
@@ -215,7 +222,7 @@ public class CommonUtils {
      * 账期客户计算逾期补零数量
      *
      * @param month 账期月，0为当月
-     * @param day 账期日
+     * @param day   账期日
      * @return 从当前月份起，计算逾期应减去的计算周期数
      */
     public static int overdueZero(int month, int day) {
@@ -224,6 +231,37 @@ public class CommonUtils {
             month = month - 1;
         }
         return month;
+    }
+
+    /**
+     * 发送POST请求
+     *
+     * @param url    目的url
+     * @param params 发送的参数
+     * @return ResultVO
+     */
+    public static ResponseEntity sendPostRequest(String url, MultiValueMap<String, String> params) {
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        // 以表单的方式提交
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        //将请求头部和参数合成一个请求
+        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(params, headers);
+        //执行HTTP请求，将返回的结构使用ResultVO类格式化
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
+
+        return response;
+    }
+
+    /**
+     * 判断是否为数字格式不限制位数
+     * @param o
+     *     待校验参数
+     * @return
+     *     如果全为数字，返回true；否则，返回false
+     */
+    public static boolean isNumber(Object o){
+        return  (Pattern.compile("[0-9]*")).matcher(String.valueOf(o)).matches();
     }
 
 }

@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="../../css/bootstrap-4.3.1.min.css">
+    <link rel="stylesheet" href="../../css/bootstrap-table.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" href="../../css/bootstrap-datetimepicker.min.css">
+
+    <title>统计分析系统 - 财务 - 用友对账单</title>
+</head>
+<body>
+<div id="wrapper">
+    <!-- 菜单 -->
+    <nav class="navbar-default navbar-static-side" role="navigation">
+        <div class="sidebar-collapse">
+            <ul class="nav metismenu" id="side-menu"></ul>
+        </div>
+    </nav>
+    <div id="page-wrapper" class="gray-bg dashbard-1">
+        <!-- 顶部 -->
+        <div class="row border-bottom" id="header"></div>
+        <!-- 内容 -->
+        <div class="wrapper wrapper-content">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="ibox">
+                        <div class="ibox-title">
+                            <h5>
+                                用友对账单
+                            </h5>
+                            <div class="ibox-tools">
+                                <a class="collapse-link">
+                                    <i class="fa fa-chevron-up"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="ibox-content">
+                            <form id="form1" class="form-horizontal">
+                                <div class="box-body">
+                                    <div class="row">
+                                        <div class="form-group row col-sm-4">
+                                            <label class="col-sm-3 col-form-label"> 对账名称：</label>
+                                            <div class="col-sm-9">
+                                                <input id="name" name="name" type="text" placeholder="对账名称"
+                                                       class="settlementName form-control"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row col-sm-4">
+                                            <label class="col-sm-3 col-form-label">账期：</label>
+                                            <div class="col-sm-9">
+                                                <input id="period" name="period" type="text" placeholder="账期"
+                                                       class="form-control form_datetime"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box-footer">
+                                    <input type="hidden" id="limit" name="limit" value=""/>
+                                    <button type="button" class="btn btn-primary pull-right" id="search"
+                                            style="margin-left:20px;">搜
+                                        索
+                                    </button>
+                                    <button type="button" class="btn btn-default pull-right" id="refresh"
+                                            style="margin-left:20px;">清 空
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="ibox">
+                        <div class="ibox-content">
+                            <div class="row">
+                                <div class="tableDisplay" id="dataTable" style="width:98%; margin: auto;">
+                                    <div class="form-group row col-sm-12">
+                                        <div id="onlineSettlementName" class="col-sm-12 col-form-label"
+                                             style="text-align: center; font-size: 16px;"></div>
+                                        <div id="onlineSettlementDate" class="col-sm-12 col-form-label"
+                                             style="text-align: center;"></div>
+                                    </div>
+                                    <table class="table table-bordered table-hover" style="margin-bottom:0px;">
+                                        <thead>
+                                        <tr>
+                                            <th style="text-align: center; width: 10%; ">
+                                                <div class="th-inner ">日期</div>
+                                            </th>
+                                            <th style="text-align: center; width: 30%; ">
+                                                <div class="th-inner sortable both">合同编号</div>
+                                            </th>
+                                            <th style="text-align: center; width: 10%; ">
+                                                <div class="th-inner sortable both">类别</div>
+                                            </th>
+                                            <th style="text-align: center; width: 10%; ">
+                                                <div class="th-inner sortable both desc">发货金额</div>
+                                            </th>
+                                            <th style="text-align: center; width: 10%; ">
+                                                <div class="th-inner sortable both">收款金额</div>
+                                            </th>
+                                            <th style="text-align: center; width: 10%; ">
+                                                <div class="th-inner sortable both">应收款</div>
+                                            </th>
+                                            <th style="text-align: center; width: 10%; ">
+                                                <div class="th-inner sortable both">开票金额</div>
+                                            </th>
+                                            <th style="text-align: center; width: 10%; ">
+                                                <div class="th-inner sortable both">发票结余</div>
+                                            </th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="onlineDetail">
+                                        </tbody>
+                                    </table>
+
+                                    <div class="form-group row col-sm-12">
+                                        <div class="col-form-label">备注：本月线上销售、收款、开票如上表所示</div>
+                                    </div>
+
+                                    <div class="form-group row col-sm-12">
+                                        <div id="offlineSettlementName" class="col-sm-12 col-form-label"
+                                             style="text-align: center; font-size: 16px;">
+                                        </div>
+                                        <div id="offlineSettlementDate" class="col-sm-12 col-form-label"
+                                             style="text-align: center;">
+                                        </div>
+                                    </div>
+                                    <table class="table table-bordered table-hover" style="margin-bottom:0px;">
+                                        <thead>
+                                        <tr>
+                                            <th style="text-align: center; width: 10%; ">
+                                                <div class="th-inner ">日期</div>
+                                            </th>
+                                            <th style="text-align: center; width: 30%; ">
+                                                <div class="th-inner sortable both">合同编号</div>
+                                            </th>
+                                            <th style="text-align: center; width: 10%; ">
+                                                <div class="th-inner sortable both">类别</div>
+                                            </th>
+                                            <th style="text-align: center; width: 10%; ">
+                                                <div class="th-inner sortable both desc">发货金额</div>
+                                            </th>
+                                            <th style="text-align: center; width: 10%; ">
+                                                <div class="th-inner sortable both">收款金额</div>
+                                            </th>
+                                            <th style="text-align: center; width: 10%; ">
+                                                <div class="th-inner sortable both">应收款</div>
+                                            </th>
+                                            <th style="text-align: center; width: 10%; ">
+                                                <div class="th-inner sortable both">开票金额</div>
+                                            </th>
+                                            <th style="text-align: center; width: 10%; ">
+                                                <div class="th-inner sortable both">发票结余</div>
+                                            </th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="offlineDetail">
+                                        </tbody>
+                                    </table>
+
+                                    <div class="form-group row col-sm-12">
+                                        <div class="col-form-label">备注：本月线上销售、收款、开票如上表所示</div>
+                                    </div>
+
+                                    <div class="form-group row col-sm-12">
+                                        <div class="col-sm-12 col-form-label"
+                                             style="text-align: center; font-size: 16px;">综上所述,本月汇总如下:
+                                        </div>
+                                    </div>
+                                    <table class="table table-bordered table-hover" style="margin-bottom:0px;">
+                                        <thead>
+                                        <tr>
+                                            <th style="text-align: center; width: 50%; ">
+                                                <div class="th-inner "></div>
+                                            </th>
+                                            <th style="text-align: center; width: 10%; ">
+                                                <div class="th-inner sortable both desc">发货金额</div>
+                                            </th>
+                                            <th style="text-align: center; width: 10%; ">
+                                                <div class="th-inner sortable both">收款金额</div>
+                                            </th>
+                                            <th style="text-align: center; width: 10%; ">
+                                                <div class="th-inner sortable both">应收款</div>
+                                            </th>
+                                            <th style="text-align: center; width: 10%; ">
+                                                <div class="th-inner sortable both">开票金额</div>
+                                            </th>
+                                            <th style="text-align: center; width: 10%; ">
+                                                <div class="th-inner sortable both">发票结余</div>
+                                            </th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr id="onlineTotal">
+                                        </tr>
+                                        <tr id="offlineTotal">
+                                        </tr>
+                                        <tr id="total">
+                                            <td style="text-align: center; ">本月累计</td>
+                                            <td style="text-align: center; ">0</td>
+                                            <td style="text-align: center; ">0</td>
+                                            <td style="text-align: center; ">0</td>
+                                            <td style="text-align: center; ">0</td>
+                                            <td style="text-align: center; ">0</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 底部 -->
+        <div class="footer" id="footer"></div>
+    </div>
+</div>
+</body>
+
+<script src="../../js/jquery-3.3.1.min.js"></script>
+<script src="../../js/popper.min.js"></script>
+<script src="../../js/bootstrap-4.3.1.min.js"></script>
+<script src="../../plugins/slimscroll/jquery.slimscroll.min.js"></script>
+<script src="../../js/inspinia.js"></script>
+<script src="../../plugins/metisMenu/jquery.metisMenu.js"></script>
+<script src="../../js/bootstrap-table.min.js"></script>
+<script src="../../js/bootstrap-table-zh-CN.min.js"></script>
+<script src="../../js/moment.min.js"></script>
+<script src="../../js/typeahead.min.js"></script>
+<script src="../../js/bootstrap-datetimepicker.min.js"></script>
+<script src="../../js/locales/bootstrap-datetimepicker.zh-CN.js"></script>
+
+<script>
+    // 设置菜单
+    $('#side-menu').load('left.html', function () {
+        $("li[id='home']").removeClass("active");
+        $("li[id='finance']").addClass("active");
+        $("li[id='yongyouStatement']").addClass("active");
+    });
+    $('#header').load('header.html');
+    $('#footer').load('footer.html');
+
+    $(document).ready(function () {
+
+        $('.form_datetime').datetimepicker({
+            format: 'yyyy-mm',
+            autoclose: true,
+            todayBtn: true,
+            startView: 'year',
+            minView:'year',
+            maxView:'decade',
+            language:  'zh-CN'
+        });
+
+        // 查询按钮
+        $("button[id='search']").click(function () {
+            $.ajax({
+                type: 'POST',
+                url: "/finance/findYonyouStatement",
+                data: {
+                    period: $('#period').val(),
+                    name: $('#name').val()
+                },
+                dataType: "json",
+                success: function (result) {
+                    var deliverTotal = 0;
+                    var collectTotal = 0;
+                    var receivableTotal = 0;
+                    var invoiceTotal = 0;
+                    var invoiceBalanceTotal = 0;
+
+                    $.each(JSON.parse(result.data).reportContent, function (index, value) {
+                        if (value.explan == "线上") {
+                            $('#onlineSettlementName').html(value.settleCustomer + " - 线上");
+                            $('#onlineSettlementDate').html("日期：" + value.queryStartDate + " - " + value.queryEndDate);
+
+                            $('#onlineDetail').html("");
+                            $('#onlineTotal').html("");
+
+                            // 期初
+                            $('#onlineDetail').append("<tr>\n" +
+                                "<td style=\"text-align: center; \">线上期初数据</td>\n" +
+                                "<td style=\"text-align: center; \">上期结转：</td>\n" +
+                                "<td style=\"text-align: center; \"></td>\n" +
+                                "<td style=\"text-align: center; \"></td>\n" +
+                                "<td style=\"text-align: center; \"></td>\n" +
+                                "<td style=\"text-align: center; \">" + value.initReceivableBanlance + "</td>\n" +
+                                "<td style=\"text-align: center; \"></td>\n" +
+                                "<td style=\"text-align: center; \">" + value.initInvoiceBanlance + "</td>\n" +
+                                "</tr>");
+
+                            $.each(value.arrDetail, function (detailIndex, detailValue) {
+                                $('#onlineDetail').append("<tr>\n" +
+                                    "<td style=\"text-align: center; \">" + detailValue.bookedDate + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + detailValue.summary + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + (detailValue.category != null ? detailValue.category : "") + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + detailValue.deliverAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + detailValue.collectAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + detailValue.receivableAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + detailValue.invoiceAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + detailValue.invoiceBalanceAmount + "</td>\n" +
+                                    "</tr>");
+                            });
+
+                            $('#onlineDetail').append("<tr>\n" +
+                                "<td style=\"text-align: center; \"></td>\n" +
+                                "<td style=\"text-align: center; \">本期线上结算：</td>\n" +
+                                "<td style=\"text-align: center; \"></td>\n" +
+                                "<td style=\"text-align: center; \">" + value.deliverTotalAmount + "</td>\n" +
+                                "<td style=\"text-align: center; \">" + value.collectTotalAmount + "</td>\n" +
+                                "<td style=\"text-align: center; \">" + value.receivableTotalAmount + "</td>\n" +
+                                "<td style=\"text-align: center; \">" + value.invoiceTotalAmount + "</td>\n" +
+                                "<td style=\"text-align: center; \">" + value.invoiceBalanceTotalAmount + "</td>\n" +
+                                "</tr>");
+
+                            $('#onlineTotal').append("<td style=\"text-align: center; \">本月小计 - 线上</td>\n" +
+                                "<td style=\"text-align: center; \">" + value.deliverTotalAmount + "</td>\n" +
+                                "<td style=\"text-align: center; \">" + value.collectTotalAmount + "</td>\n" +
+                                "<td style=\"text-align: center; \">" + value.receivableTotalAmount + "</td>\n" +
+                                "<td style=\"text-align: center; \">" + value.invoiceTotalAmount + "</td>\n" +
+                                "<td style=\"text-align: center; \">" + value.invoiceBalanceTotalAmount + "</td>");
+
+
+                            deliverTotal += value.deliverTotalAmount;
+                            collectTotal += value.collectTotalAmount;
+                            receivableTotal += value.receivableTotalAmount;
+                            invoiceTotal += value.invoiceTotalAmount;
+                            invoiceBalanceTotal += value.invoiceBalanceTotalAmount;
+
+                        }else if (value.explan == "线下") {
+                            $('#offlineSettlementName').html(value.settleCustomer + " - 线下");
+                            $('#offlineSettlementDate').html("日期：" + value.queryStartDate + " - " + value.queryEndDate);
+
+                            $('#offlineDetail').html("");
+                            $('#offlineTotal').html("");
+
+                            // 期初
+                            $('#offlineDetail').append("<tr>\n" +
+                                "<td style=\"text-align: center; \">线下期初数据</td>\n" +
+                                "<td style=\"text-align: center; \">上期结转：</td>\n" +
+                                "<td style=\"text-align: center; \"></td>\n" +
+                                "<td style=\"text-align: center; \"></td>\n" +
+                                "<td style=\"text-align: center; \"></td>\n" +
+                                "<td style=\"text-align: center; \">" + value.initReceivableBanlance + "</td>\n" +
+                                "<td style=\"text-align: center; \"></td>\n" +
+                                "<td style=\"text-align: center; \">" + value.initInvoiceBanlance + "</td>\n" +
+                                "</tr>");
+
+                            $.each(value.arrDetail, function (detailIndex, detailValue) {
+                                $('#offlineDetail').append("<tr>\n" +
+                                    "<td style=\"text-align: center; \">" + detailValue.bookedDate + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + detailValue.summary + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + (detailValue.category != null ? detailValue.category : "") + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + detailValue.deliverAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + detailValue.collectAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + detailValue.receivableAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + detailValue.invoiceAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + detailValue.invoiceBalanceAmount + "</td>\n" +
+                                    "</tr>");
+                            });
+
+                            $('#offlineDetail').append("<tr>\n" +
+                                "<td style=\"text-align: center; \"></td>\n" +
+                                "<td style=\"text-align: center; \">本期线下结算：</td>\n" +
+                                "<td style=\"text-align: center; \"></td>\n" +
+                                "<td style=\"text-align: center; \">" + value.deliverTotalAmount + "</td>\n" +
+                                "<td style=\"text-align: center; \">" + value.collectTotalAmount + "</td>\n" +
+                                "<td style=\"text-align: center; \">" + value.receivableTotalAmount + "</td>\n" +
+                                "<td style=\"text-align: center; \">" + value.invoiceTotalAmount + "</td>\n" +
+                                "<td style=\"text-align: center; \">" + value.invoiceBalanceTotalAmount + "</td>\n" +
+                                "</tr>");
+
+                            $('#offlineTotal').append("<td style=\"text-align: center; \">本月小计 - 线下</td>\n" +
+                                "<td style=\"text-align: center; \">" + value.deliverTotalAmount + "</td>\n" +
+                                "<td style=\"text-align: center; \">" + value.collectTotalAmount + "</td>\n" +
+                                "<td style=\"text-align: center; \">" + value.receivableTotalAmount + "</td>\n" +
+                                "<td style=\"text-align: center; \">" + value.invoiceTotalAmount + "</td>\n" +
+                                "<td style=\"text-align: center; \">" + value.invoiceBalanceTotalAmount + "</td>");
+
+                            deliverTotal += value.deliverTotalAmount;
+                            collectTotal += value.collectTotalAmount;
+                            receivableTotal += value.receivableTotalAmount;
+                            invoiceTotal += value.invoiceTotalAmount;
+                            invoiceBalanceTotal += value.invoiceBalanceTotalAmount;
+
+                        }
+                    });
+
+                    $('#total').html("<td style=\"text-align: center; \">本月累计</td>\n" +
+                        "<td style=\"text-align: center; \">"+deliverTotal.toFixed(2)+"</td>\n" +
+                        "<td style=\"text-align: center; \">"+collectTotal.toFixed(2)+"</td>\n" +
+                        "<td style=\"text-align: center; \">"+receivableTotal.toFixed(2)+"</td>\n" +
+                        "<td style=\"text-align: center; \">"+invoiceTotal.toFixed(2)+"</td>\n" +
+                        "<td style=\"text-align: center; \">"+invoiceBalanceTotal.toFixed(2)+"</td>");
+
+                }, error: function (error) {
+                    console.log(error);
+                }
+            });
+        });
+
+
+        // 现金导出按钮
+        $("button[id='exportCash']").click(function () {
+            $("#form1").attr('action', "");
+            $("#form1").attr('method', "POST");
+            $("#form1").submit();
+        });
+
+        // 自动补全
+        $('.settlementName').typeahead({
+            source: function (query, process) {
+                $.ajax({
+                    type: 'POST',
+                    url: "/partner/getPartnerByNameLikeLimit",
+                    data: {
+                        name: query,
+                        limit: "8"
+                    },
+                    dataType: "json",
+                    success: function (result) {
+                        return process(result.data);
+                    }, error: function (error) {
+                        console.log(error);
+                    }
+                });
+            }
+        });
+    });
+
+    // 回车搜索
+    $(document).on("keydown", function (event) {
+        var e = event || window.event || arguments.callee.caller.arguments[0];
+        if (e && e.keyCode == 13) {
+            $("#search").trigger("click");
+        }
+    });
+
+</script>
+
+</html>

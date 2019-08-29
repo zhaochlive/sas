@@ -166,4 +166,10 @@ public class SystemController {
     public String orderAreas() {
         return "pages/operations/orderAreas.html";
     }
+
+    // 用友对账单
+    @GetMapping("/yongyouStatement")
+    public String yongyouStatement() {
+        return "pages/finance/yongyouStatement.html";
+    }
 }
