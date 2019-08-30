@@ -68,13 +68,6 @@ public class BackOrderOfSellerOrStoreController {
             map.put("endDate", request.getParameter("endDate"));
         }
 
-        if (StringUtils.isNotBlank(request.getParameter("companyname"))) {
-            map.put("companyname", request.getParameter("companyname"));
-        }
-        if (StringUtils.isNotBlank(request.getParameter("mobile"))) {
-            map.put("mobile", request.getParameter("mobile"));
-        }
-
         List<String > columnNameList = new ArrayList<>();
         columnNameList.add("仓库");
         columnNameList.add("数量");

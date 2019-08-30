@@ -70,7 +70,7 @@ public class OrderProductController {
             map.put("endDate", request.getParameter("endDate"));
         }
         if (StringUtils.isNotBlank(request.getParameter("orderno"))){
-            map.put("orderno",request.getParameter("orderno"));
+            map.put("orderno",request.getParameter("orderno").trim());
         }
         List<String > columnNameList = new ArrayList<>();
         columnNameList.add("订单类型");

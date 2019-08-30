@@ -51,7 +51,7 @@ public class OrderDetailController {
             requestMap.put("endDate", DateTimeUtils.convert(DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT),DateTimeUtils.DATE_FORMAT)+" 23:59:59" );
         }
         if (StringUtils.isNotBlank(request.getParameter("username"))){
-            requestMap.put("username",request.getParameter("username"));
+            requestMap.put("username",request.getParameter("username").trim());
         }
         if (StringUtils.isNotBlank(request.getParameter("limit"))) {
             requestMap.put("limit", request.getParameter("limit"));
@@ -135,7 +135,7 @@ public class OrderDetailController {
         Map<String, String> requestMap = new HashMap<>();
         Map<String, Object> result = new HashMap<>();
         if (StringUtils.isNotBlank(request.getParameter("username"))){
-            requestMap.put("username",request.getParameter("username"));
+            requestMap.put("username",request.getParameter("username").trim());
         }
         if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
             requestMap.put("startDate", request.getParameter("startDate"));
@@ -172,7 +172,7 @@ public class OrderDetailController {
             map.put("endDate", request.getParameter("endDate"));
         }
         if (StringUtils.isNotBlank(request.getParameter("username"))){
-            map.put("username",request.getParameter("username"));
+            map.put("username",request.getParameter("username").trim());
         }
         List<String > columnNameList = new ArrayList<>();
         columnNameList.add("买家名称");
@@ -231,7 +231,7 @@ public class OrderDetailController {
             map.put("endDate", DateTimeUtils.convert(DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT),DateTimeUtils.DATE_FORMAT)+" 23:59:59" );
         }
         if (StringUtils.isNotBlank(request.getParameter("username"))){
-            map.put("username",request.getParameter("username"));
+            map.put("username",request.getParameter("username").trim());
         }
         List<String > columnNameList = new ArrayList<>();
         columnNameList.add("客户全称");
@@ -297,9 +297,6 @@ public class OrderDetailController {
         if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
             map.put("endDate", request.getParameter("endDate"));
         }
-        if (StringUtils.isNotBlank(request.getParameter("username"))){
-            map.put("username",request.getParameter("username"));
-        }
         List<String > columnNameList = new ArrayList<>();
         columnNameList.add("日期");
         columnNameList.add("总订单量");
@@ -356,13 +353,6 @@ public class OrderDetailController {
                 objects.add(df.format(inFifteenTwenty/ordernum*100)+"%");
                 objects.add(df.format(inTwentyFifty/ordernum*100)+"%");
                 objects.add(df.format(moreFive/ordernum*100)+"%");
-//                objects.add(order.get("underfive"));
-//                objects.add(order.get("inFiveEight"));
-//                objects.add(order.get("inEightTwelve"));
-//                objects.add(order.get("inTwelveFifteen"));
-//                objects.add(order.get("inFifteenTwenty"));
-//                objects.add(order.get("inTwentyFifty"));
-//                objects.add(order.get("moreFive"));
                 result.add(objects);
             }
             CommonUtils.exportByList(response, columnNameList, result, "客单价订单");

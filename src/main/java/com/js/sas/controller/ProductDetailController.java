@@ -36,7 +36,7 @@ public class ProductDetailController {
                 map.put("endDate", request.getParameter("endDate"));
             }
             if (StringUtils.isNotBlank(request.getParameter("companyname"))) {
-                map.put("companyname", request.getParameter("companyname"));
+                map.put("companyname", request.getParameter("companyname").trim());
             }
             if (StringUtils.isNotBlank(request.getParameter("limit"))) {
                 map.put("limit", request.getParameter("limit"));
@@ -69,7 +69,7 @@ public class ProductDetailController {
             map.put("endDate", request.getParameter("endDate"));
         }
         if (StringUtils.isNotBlank(request.getParameter("companyname"))) {
-            map.put("companyname", request.getParameter("companyname"));
+            map.put("companyname", request.getParameter("companyname").trim());
         }
         List<String > columnNameList = new ArrayList<>();
         columnNameList.add("产品ID");

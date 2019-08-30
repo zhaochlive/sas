@@ -48,7 +48,7 @@ public class StoreDetailController {
             requestMap.put("endDate", DateTimeUtils.convert(DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT),DateTimeUtils.DATE_FORMAT)+" 23:59:59" );
         }
         if (StringUtils.isNotBlank(request.getParameter("shopname"))){
-            requestMap.put("shopname",request.getParameter("shopname"));
+            requestMap.put("shopname",request.getParameter("shopname").trim());
         }
         if (StringUtils.isNotBlank(request.getParameter("limit"))) {
             requestMap.put("limit", request.getParameter("limit"));
@@ -90,7 +90,7 @@ public class StoreDetailController {
             requestMap.put("endDate", DateTimeUtils.convert(DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT),DateTimeUtils.DATE_FORMAT)+" 23:59:59" );
         }
         if (StringUtils.isNotBlank(request.getParameter("shopname"))){
-            requestMap.put("shopname",request.getParameter("shopname"));
+            requestMap.put("shopname",request.getParameter("shopname").trim());
         }
         List<String > columnNameList = new ArrayList<>();
         columnNameList.add("店铺名称");

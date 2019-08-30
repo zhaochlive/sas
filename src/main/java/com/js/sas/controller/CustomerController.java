@@ -51,13 +51,13 @@ public class CustomerController {
         }
 
         if (StringUtils.isNotBlank(request.getParameter("companyname"))) {
-            map.put("companyname", request.getParameter("companyname"));
+            map.put("companyname", request.getParameter("companyname").trim());
         }
         if (StringUtils.isNotBlank(request.getParameter("mobile"))) {
-            map.put("mobile", request.getParameter("mobile"));
+            map.put("mobile", request.getParameter("mobile").trim());
         }
         if (StringUtils.isNotBlank(request.getParameter("waysalesman"))) {
-            map.put("waysalesman", request.getParameter("waysalesman"));
+            map.put("waysalesman", request.getParameter("waysalesman").trim());
         }
 
         List<CustomerOfOrder> page = null;
@@ -86,13 +86,13 @@ public class CustomerController {
         }
 
         if (StringUtils.isNotBlank(request.getParameter("companyname"))) {
-            map.put("companyname", request.getParameter("companyname"));
+            map.put("companyname", request.getParameter("companyname").trim());
         }
         if (StringUtils.isNotBlank(request.getParameter("mobile"))) {
-            map.put("mobile", request.getParameter("mobile"));
+            map.put("mobile", request.getParameter("mobile").trim());
         }
         if (StringUtils.isNotBlank(request.getParameter("waysalesman"))) {
-            map.put("waysalesman", request.getParameter("waysalesman"));
+            map.put("waysalesman", request.getParameter("waysalesman").trim());
         }
         List<String > columnNameList = new ArrayList<>();
         columnNameList.add("会员名称");
