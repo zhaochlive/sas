@@ -1,13 +1,21 @@
-function loadTable(){
-    var keys=null;
-    var colums=[];
-    var data=[];
+function loadTable() {
+    var keys = null;
+    var colums = [];
+    var data = [];
 
-    colums.push({field: 'clerkname',title: '客服名称', sortable: false ,align: 'center'},
-        {field: 'username',title: '用户名称', sortable: false ,align: 'center'},
-        {field: 'companyname',title: '公司名称', sortable: false,align: 'center' ,width:500}
-
-        );
+    colums.push({field: 'clerkname', title: '客服名称', sortable: false, align: 'center'},
+        {field: 'username', title: '用户名称', sortable: false, align: 'center'},
+        {
+            field: 'companyname', title: '公司名称', sortable: false, align: 'center',
+            formatter: function (value, row, index) { // 单元格格式化函数
+                if (value) {
+                    return "<div style='width:200px;'>" + row.companyname + "</div>";//调列宽，在td中嵌套一个div，调整div大小
+                }else {
+                    return "-";
+                }
+            }
+        }
+    );
     $.ajax({
         url: "customerService/getColums",
         type: "post",
@@ -18,19 +26,19 @@ function loadTable(){
         },
         dataType: "json",
         success: function (resultData) {
-            keys=resultData;
-            if(resultData){
-                $.each(resultData,function(index,value){
-                    colums.push({field:value,title:value,sortable: false ,align: 'center'});
+            keys = resultData;
+            if (resultData) {
+                $.each(resultData, function (index, value) {
+                    colums.push({field: value, title: value, sortable: false, align: 'center'});
                 });
             }
         },
     });
 
-    initTable(colums,data);
+    initTable(colums, data);
 }
 
-function initTable(colums,data){
+function initTable(colums, data) {
 
     $("#dataTable table").bootstrapTable('destroy').bootstrapTable({
         url: "/customerService/getData",
@@ -70,7 +78,7 @@ function initTable(colums,data){
             $("#endDate").val(temp.endDate);
             return temp;
         },
-        columns:colums,
+        columns: colums,
         // data:data,
         onLoadSuccess: function (result) {
             // 设置导出limit值

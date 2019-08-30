@@ -62,8 +62,8 @@
                                                     style="margin-left:20px;">搜 索</button>
                                             <button type="button" class="btn btn-default pull-right" id="refresh"
                                                     style="margin-left:20px;">清 空</button>
-<!--                                            <button type="button" class="btn btn-default pull-right" id="export"-->
-<!--                                                    style="margin-left:20px;">导出Excel</button>-->
+                                            <button type="button" class="btn btn-default pull-right" id="export"
+                                                    style="margin-left:20px;">导出Excel</button>
                                         </div>
                                     </div>
 
@@ -429,13 +429,11 @@
                 $("#partSendRate").html("店铺部分发货比例："+result.partSendRate);
                 $("#violateRate").html("店铺违约率："+result.violateRate);
                 $("#ordersOfCancelRate").html("店铺未付款超时取消订单比例："+result.ordersOfCancelRate);
-
             },
             onLoadError: function (error) {
                 console.log(error);
             },
             onDblClickRow: function (row, $element) {
-                //
             }
         });
 
@@ -456,7 +454,7 @@
 
         // 导出按钮
         $("button[id='export']").click(function () {
-            $("#form1").attr('action', "/performance/download/excel");
+            $("#form1").attr('action', "/storeDetail/download/excel");
             $("#form1").attr('method', "POST");
             $("#form1").submit();
         });

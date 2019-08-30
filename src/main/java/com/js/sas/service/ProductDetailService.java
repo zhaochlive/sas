@@ -61,7 +61,7 @@ public class ProductDetailService {
     }
 
     public Long getCount(Map<String, String> map) {
-        String sql ="select count(1) from (select count(1) from orderproduct GROUP BY pdid) tb";
+        String sql ="select count(1) from (select count(1) from orderproduct op LEFT JOIN orders os ON os.ID = op.orderid WHERE orderstatus <> 7  GROUP BY pdid) tb";
         return jdbcTemplate.queryForObject(sql,Long.class);
     }
 }

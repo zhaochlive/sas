@@ -36,12 +36,12 @@
                                 </a>
                             </div>
                         </div>
-                        <!--<div class="ibox-content">
+                        <div class="ibox-content">
                             <form id="form1" class="form-horizontal">
                                 <div class="box-body">
                                     <div class="row">
                                         <div class="form-group row col-sm-4">
-                                            <label class="col-sm-3 col-form-label">客户名称：</label>
+                                            <label class="col-sm-3 col-form-label">仓库名称：</label>
                                             <div class="col-sm-9">
                                                 <input id="username" name="username" type="text" placeholder="输入客户名称" class="settlementName form-control"/>
                                             </div>
@@ -61,14 +61,14 @@
                                                     style="margin-left:20px;">搜 索</button>
                                             <button type="button" class="btn btn-default pull-right" id="refresh"
                                                     style="margin-left:20px;">清 空</button>
-&lt;!&ndash;                                            <button type="button" class="btn btn-default pull-right" id="export"&ndash;&gt;
-&lt;!&ndash;                                                    style="margin-left:20px;">导出Excel</button>&ndash;&gt;
+                                            <button type="button" class="btn btn-default pull-right" id="export"
+                                                    style="margin-left:20px;">导出Excel</button>
                                         </div>
                                     </div>
 
                                 </div>
                             </form>
-                        </div>-->
+                        </div>
                     </div>
                     <div class="ibox">
                         <div class="ibox-content">
@@ -206,7 +206,11 @@
                 title: '仓库',
                 align: 'left',
                 valign: 'middle',
-                sortable: 'false'
+                sortable: 'false',
+                formatter: function (value, row, index){ // 单元格格式化函数
+                    var div = "<div style='width:350px;'>"+value+"</div>";//调列宽，在td中嵌套一个div，调整div大小
+                    return div;
+                }
             }, {
                 field: 'cut',
                 title: '数量',
@@ -214,7 +218,7 @@
                 valign: 'middle',
                 sortable: 'false',
                 formatter: function (value, row, index){ // 单元格格式化函数
-                    var div = "<div style='width:150px;'>"+value+"</div>";//调列宽，在td中嵌套一个div，调整div大小
+                    var div = "<div style='width:550px;'>"+value+"</div>";//调列宽，在td中嵌套一个div，调整div大小
                     return div;
                 }
             }],
@@ -246,7 +250,7 @@
 
         // 导出按钮
         $("button[id='export']").click(function () {
-            $("#form1").attr('action', "/performance/download/excel");
+            $("#form1").attr('action', "/backOfSellerOrStore/download/backOfStore");
             $("#form1").attr('method', "POST");
             $("#form1").submit();
         });

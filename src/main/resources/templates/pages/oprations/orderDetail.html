@@ -62,8 +62,8 @@
                                                     style="margin-left:20px;">搜 索</button>
                                             <button type="button" class="btn btn-default pull-right" id="refresh"
                                                     style="margin-left:20px;">清 空</button>
-<!--                                            <button type="button" class="btn btn-default pull-right" id="export"-->
-<!--                                                    style="margin-left:20px;">导出Excel</button>-->
+                                            <button type="button" class="btn btn-default pull-right" id="export"
+                                                    style="margin-left:20px;">导出Excel</button>
                                         </div>
                                     </div>
 
@@ -276,10 +276,8 @@
                 formatter:function (value, row, index) {
                     var provinceRate = row.provinceRate;
                     var total = row.totalprice;
-                    // console.info(provinceRate);
                     var option;
                     option = '<select class="form-control" id="selNumber"'+index+' name="province" style="height:33px;">'
-                    // option += "<option value =''>请选择</option>";
                     $.each(provinceRate,function(i,obj){
                         var totalprice = obj.totalprice;
                         var rate = (totalprice/total*100 ).toFixed(2)+"%";
@@ -317,7 +315,7 @@
 
         // 导出按钮
         $("button[id='export']").click(function () {
-            $("#form1").attr('action', "/performance/download/excel");
+            $("#form1").attr('action', "/orderDetail/download/excel");
             $("#form1").attr('method', "POST");
             $("#form1").submit();
         });

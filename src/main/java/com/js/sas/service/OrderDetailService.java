@@ -81,6 +81,7 @@ public class OrderDetailService {
             } else {
                 sb.append(" offset 0 ;");
             }
+
             return jdbcTemplate.queryForList(sb.toString(),list.toArray());
         }
         return null;
@@ -151,7 +152,6 @@ public class OrderDetailService {
             sb.append(" and os.createtime >='"+ params.get("startDate")+"'");
         }
         if (params.containsKey("endDate")) {
-//            sb.append(" and os.createtime <=?");
             sb.append(" and os.createtime <='"+ params.get("endDate")+"'");
         }
         sb.append(" GROUP BY d order by d desc");
@@ -245,6 +245,7 @@ public class OrderDetailService {
         } else {
             sb.append(" offset 0 ;");
         }
+        System.out.println(sb.toString());
         return jdbcTemplate.queryForList(sb.toString(),list.toArray());
     }
 

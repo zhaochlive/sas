@@ -1,6 +1,8 @@
 package com.js.sas.controller;
 
+import com.js.sas.dto.CustomerOfOrder;
 import com.js.sas.service.RepurchaseRateService;
+import com.js.sas.utils.CommonUtils;
 import com.js.sas.utils.ResultUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -30,11 +32,6 @@ public class RepurchaseRateController {
     @PostMapping(value = "getColums")
     @ResponseBody
     public Object getColums(HttpServletRequest request){
-//        Enumeration<String> parameterNames = request.getParameterNames();
-//        while (parameterNames.hasMoreElements()){
-//            String element = parameterNames.nextElement();
-//            log.info(element+"===="+request.getParameter(element));
-//        }
         HashMap<String, String> hashMap = new HashMap<>();
         if(StringUtils.isNotBlank(request.getParameter("startDate"))){
             hashMap.put("startDate",request.getParameter("startDate"));
@@ -147,11 +144,66 @@ public class RepurchaseRateController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    @PostMapping(value = "/download/page")
+    public void download(HttpServletResponse response, HttpServletRequest request) {
+        Map<String, String> map = new HashMap<>();
+        map.put("limit", "9999999999");
+        map.put("offset", "0");
+        if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
+            map.put("startDate", request.getParameter("startDate"));
+        }
+        if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
+            map.put("endDate", request.getParameter("endDate"));
+        }
+        if (StringUtils.isNotBlank(request.getParameter("companyname"))) {
+            map.put("companyname", request.getParameter("companyname").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("mobile"))) {
+            map.put("mobile", request.getParameter("mobile").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("username"))) {
+            map.put("username", request.getParameter("username").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("sort"))) {
+            map.put("sort", request.getParameter("sort").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("sortOrder"))) {
+            map.put("sortOrder", request.getParameter("sortOrder").trim());
+        }
+        List<String > columnNameList = new ArrayList<>();
+        columnNameList.add("客户名称");
+        columnNameList.add("手机号");
+        columnNameList.add("公司名称");
+        columnNameList.add("总下单量");
+        columnNameList.add("首次下单时间");
+        List<String> colums = repurchaseRateService.getColums(map);
+        for (String colum : colums) {
+            columnNameList.add("下单次数_"+ colum);
+            columnNameList.add("下单金额_"+ colum);
+        }
 
-
-
-
-
+        try {
+            List<List<Object>> result = new ArrayList<>();
+            List<Map<String,Object>> data = repurchaseRateService.getRepurchaseRate(map);
+            List<Object> objects =null;
+            for (Map<String,Object> order : data) {
+                objects = new ArrayList<>();
+                objects.add(order.get("realname"));
+                objects.add(order.get("mobile"));
+                objects.add(order.get("companyname"));
+                objects.add(order.get("总下单量"));
+                objects.add(order.get("firstTime"));
+                for (String s : colums) {
+                    objects.add(order.get("下单次数_"+s));
+                    objects.add(order.get("下单金额_"+s));
+                }
+                result.add(objects);
+            }
+            CommonUtils.exportByList(response, columnNameList, result, "复购率统计");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }

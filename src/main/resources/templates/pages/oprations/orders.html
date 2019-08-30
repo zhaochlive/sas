@@ -40,12 +40,12 @@
                             <form id="form1" class="form-horizontal">
                                 <div class="box-body">
                                     <div class="row">
-                                        <div class="form-group row col-sm-4">
-                                            <label class="col-sm-3 col-form-label">客户名称：</label>
-                                            <div class="col-sm-9">
-                                                <input id="username" name="username" type="text" placeholder="输入客户名称" class="settlementName form-control"/>
-                                            </div>
-                                        </div>
+<!--                                        <div class="form-group row col-sm-4">-->
+<!--                                            <label class="col-sm-3 col-form-label">客户名称：</label>-->
+<!--                                            <div class="col-sm-9">-->
+<!--                                                <input id="username" name="username" type="text" placeholder="输入客户名称" class="settlementName form-control"/>-->
+<!--                                            </div>-->
+<!--                                        </div>-->
                                         <div class="form-group row col-sm-4">
                                             <label class="col-sm-3 col-form-label">时间周期：</label>
                                             <div class="col-sm-9">
@@ -61,8 +61,8 @@
                                                     style="margin-left:20px;">搜 索</button>
                                             <button type="button" class="btn btn-default pull-right" id="refresh"
                                                     style="margin-left:20px;">清 空</button>
-<!--                                            <button type="button" class="btn btn-default pull-right" id="export"-->
-<!--                                                    style="margin-left:20px;">导出Excel</button>-->
+                                            <button type="button" class="btn btn-default pull-right" id="export"
+                                                    style="margin-left:20px;">导出Excel</button>
                                         </div>
                                     </div>
 
@@ -182,7 +182,7 @@
             url: "/orderDetail/getOrderReport",
             queryParams: function (params) {
                 var temp = {
-                    username: $("input[name='username']").val(),
+                    // username: $("input[name='username']").val(),
                     startDate: startDate,
                     endDate: endDate,
                     limit: params.limit,
@@ -401,7 +401,7 @@
 
         // 导出按钮
         $("button[id='export']").click(function () {
-            $("#form1").attr('action', "/performance/download/excel");
+            $("#form1").attr('action', "/orderDetail/download/getOrderReport");
             $("#form1").attr('method', "POST");
             $("#form1").submit();
         });

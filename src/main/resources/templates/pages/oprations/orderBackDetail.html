@@ -218,7 +218,11 @@
                 title: '买家',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'false'
+                sortable: 'false',
+                formatter: function (value, row, index){ // 单元格格式化函数
+                    var div = "<div style='width:50px;'>"+value+"</div>";//调列宽，在td中嵌套一个div，调整div大小
+                    return div;
+                }
             }, {
                 field: 'linkman',
                 title: '卖家',
@@ -295,7 +299,11 @@
                 title: '商品分类',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'false'
+                sortable: 'false',
+                formatter: function (value, row, index){ // 单元格格式化函数
+                    var div = "<div style='width:100px;'>"+value+"</div>";//调列宽，在td中嵌套一个div，调整div大小
+                    return div;
+                }
             }, {
                 field: 'material',
                 title: '材质',
