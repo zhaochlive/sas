@@ -545,7 +545,7 @@ public class BuyerCapitalService {
 //                builder.append(" and ca.tradetime >='"+params.get("startDate")+"' ");
 //            }
             if (params.containsKey("endDate")&&StringUtils.isNotBlank(params.get("endDate"))){
-                builder.append(" and ca.tradetime <='"+params.get("endDate")+"' ");
+                builder.append(" and ca.tradetime <='"+params.get("endDate")+" 23:59:59' ");
             }
                 builder.append(" Order By ca.tradetime  )bc ");
 
