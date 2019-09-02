@@ -59,7 +59,12 @@ public class CustomerController {
         if (StringUtils.isNotBlank(request.getParameter("waysalesman"))) {
             map.put("waysalesman", request.getParameter("waysalesman").trim());
         }
-
+        if (StringUtils.isNotBlank(request.getParameter("sort"))) {
+            map.put("sort", request.getParameter("sort").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("sortOrder"))) {
+            map.put("sortOrder", request.getParameter("sortOrder").trim());
+        }
         List<CustomerOfOrder> page = null;
         try {
             page = customerService.getCustomerOfOrder(map);

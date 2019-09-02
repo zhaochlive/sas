@@ -161,9 +161,28 @@ public class DateTimeUtils extends DateUtils{
         return convert(thisDate + " " + DAYTIME_END);
     }
 
+    /**
+     *
+     * @param date 格式:2019-01-01
+     * @return 格式:2019-01-01 00:00:00
+     */
+    public static String getStartDatetime(String date) {
+        return date+" 00:00:00";
+    }
+    /**
+     *
+     * @param date 格式:2019-01-01
+     * @return 格式:2019-01-02 00:00:00
+     */
+    public static String getEndDatetime(String date) {
+//        String thisDate = convert(date, DATE_FORMAT);
+//        return convert(thisDate + " " + DAYTIME_START);
+        return null;
+    }
+
 
     /**
-     * 将传入的时间格式的字符串转成时间对象      例如：传入2012-12-03 23:21:24
+     * @param将传入的时间格式的字符串转成时间对象      例如：传入2012-12-03 23:21:24
      */
     public static Date strToDate(String dateStr) {
         SimpleDateFormat formatDate = new SimpleDateFormat(DATE_TIME_FORMAT);
@@ -186,7 +205,7 @@ public class DateTimeUtils extends DateUtils{
     }
 
     /**
-     * 返回该日期加1秒
+     * 返回该日期加1 秒
      */
     public static Timestamp getEndTimeAdd(Date endTime) {
         Timestamp ts = new Timestamp(endTime.getTime());

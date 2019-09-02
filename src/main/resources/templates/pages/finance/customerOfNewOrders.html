@@ -198,8 +198,8 @@
             toggle: true,
             silent: true,
             sidePagination: "server",
-            // sortName: "name",
-            // sortOrder: "asc",
+            sortName: "firsttime",
+            sortOrder: "desc",
             url: "/customer/customerOfNewOrders",
             queryParams: function (params) {
                 var temp = {
@@ -224,18 +224,19 @@
                 title: '会员名称',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                // sortable: 'false'
             }, {
                 field: 'companyname',
                 title: '企业名称',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                // sortable: 'false'
             }, {
                 field: 'firsttime',
                 title: '首次下单时间',
                 align: 'center',
                 valign: 'middle',
+                sortable: 'true',
                 formatter: function (value, row, index) {
                     var date = row.firsttime;
                     date = date.replace("T", " ");
@@ -246,37 +247,37 @@
                 title: '所在省市',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                // sortable: 'false'
             }, {
                 field: 'address',
                 title: '地址',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                // sortable: 'false'
             }, {
                 field: 'realname',
                 title: '联系人',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                // sortable: 'false'
             }, {
                 field: 'mobile',
                 title: '手机',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                // sortable: 'false'
             }, {
                 field: 'telephone',
                 title: '座机',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                // sortable: 'false'
             }, {
                 field: 'waysalesman',
                 title: '业务员',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                // sortable: 'false'
             }, {
                 field: 'totalprice',
                 title: '总金额',

@@ -507,6 +507,10 @@ public class BuyerCapitalService {
 
     private String getSettlementSql(Map<String, String> params) {
         StringBuilder builder = new StringBuilder();
+        String start = "";
+        if (params.containsKey("startDate")&&StringUtils.isNotBlank(params.get("startDate"))){
+              start =" and bc.tradetime >='"+params.get("startDate")+" 00:00:00' ";
+            }
         builder.append(" SELECT SUM(CASE WHEN bc.capitaltype = 0 AND bc.paytype IN ( 3, 4 ) THEN if (bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital ) ");
         builder.append(" WHEN bc.capitaltype = 2 AND bc.paytype NOT IN ( 0, 1, 2 ) THEN if (bc.scattered = 1 ,- (bc.capital+bc.scatteredcapital) ,- bc.capital )");
         builder.append(" WHEN bc.capitaltype = 1 AND bc.rechargestate = 1 THEN if (bc.scattered = 1 ,- (bc.capital+bc.scatteredcapital) ,- bc.capital)");
@@ -515,15 +519,15 @@ public class BuyerCapitalService {
         builder.append(" if (bc.scattered = 1 ,bc.capital +bc.scatteredcapital,bc.capital)) ");
         builder.append(" WHEN bc.capitaltype = 10 THEN if (bc.scattered = 1 , (bc.capital +bc.scatteredcapital), bc.capital) ");
         builder.append(" END ) AS Receivableaccount, SUM(CASE WHEN bc.capitaltype = 0 AND bc.paytype IN (0,1,2,3,4) THEN if(bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital)");
-        builder.append(" WHEN bc.capitaltype = 6 THEN IF(( SELECT COUNT( 1 ) FROM order_product_back_info WHERE orderno = bc.orderno ) > 0, -if(bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital), 0 ) ");
+        builder.append(" WHEN bc.capitaltype = 6  THEN IF(( SELECT COUNT( 1 ) FROM order_product_back_info WHERE orderno = bc.orderno ) > 0, -if(bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital), 0 ) ");
         builder.append(" WHEN bc.capitaltype = 2 THEN -if(bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital) END) AS InvoiceBalance ,");
-        builder.append(" SUM(case WHEN bc.capitaltype =0 and bc.paytype IN (0,1,2,3,4) THEN if (bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital ) ");
-        builder.append(" WHEN bc.capitaltype = 6 THEN IF(( SELECT COUNT(1) FROM order_product_back_info WHERE orderno = bc.orderno ) > 0, -if(bc.scattered = 1 ,bc.capital +bc.scatteredcapital,bc.capital),0)");
-        builder.append(" WHEN bc.capitaltype = 2 THEN -if(bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital ) end) Deliveryamount,");
-        builder.append(" SUM(CASE WHEN bc.capitaltype = 0 AND bc.paytype IN (0,1,2) THEN if (bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital )");
-        builder.append(" WHEN bc.capitaltype = 1 AND bc.rechargestate = 1 THEN if (bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital )");
-        builder.append(" WHEN bc.capitaltype = 2 AND bc.paytype IN ( 0, 1, 2 ) THEN if (bc.scattered = 1 ,-(bc.capital+bc.scatteredcapital),-bc.capital )");
-        builder.append(" WHEN bc.capitaltype = 3 AND bc.rechargestate = 1 THEN if (bc.scattered = 1 ,-(bc.capital+bc.scatteredcapital),-bc.capital )END) Receiptamount,");
+        builder.append(" SUM(case WHEN bc.capitaltype =0 "+start+" and bc.paytype IN (0,1,2,3,4) THEN if (bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital ) ");
+        builder.append(" WHEN bc.capitaltype = 6 "+start+" THEN IF(( SELECT COUNT(1) FROM order_product_back_info WHERE orderno = bc.orderno ) > 0, -if(bc.scattered = 1 ,bc.capital +bc.scatteredcapital,bc.capital),0)");
+        builder.append(" WHEN bc.capitaltype = 2 "+start+"  THEN -if(bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital ) end) Deliveryamount,");
+        builder.append(" SUM(CASE WHEN bc.capitaltype = 0 "+start+" AND bc.paytype IN (0,1,2)  THEN if (bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital )");
+        builder.append(" WHEN bc.capitaltype = 1 "+start+" AND bc.rechargestate = 1  THEN if (bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital )");
+        builder.append(" WHEN bc.capitaltype = 2 "+start+" AND bc.paytype IN ( 0, 1, 2 ) THEN if (bc.scattered = 1 ,-(bc.capital+bc.scatteredcapital),-bc.capital )");
+        builder.append(" WHEN bc.capitaltype = 3 "+start+" AND bc.rechargestate = 1  THEN if (bc.scattered = 1 ,-(bc.capital+bc.scatteredcapital),-bc.capital )END) Receiptamount,");
         builder.append(" SUM(CASE WHEN bc.capitaltype = 10 THEN if (bc.scattered = 1 , (bc.capital+bc.scatteredcapital) , bc.capital )");
         builder.append(" WHEN bc.capitaltype = 6 THEN if (bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital ) END) OtherAmount");
         builder.append(" FROM (SELECT ca.capitaltype,ca.capital,ca.tradetime,ca.paytype,ca.orderno,ca.id,ca.rechargestate,ca.tradeno,ca.scattered,ca.scatteredcapital");
@@ -541,9 +545,6 @@ public class BuyerCapitalService {
             if (params.containsKey("userName")&&StringUtils.isNotBlank(params.get("userName"))){
                 builder.append(" and ca.member_username ='"+params.get("userName").trim()+"' ");
             }
-//            if (params.containsKey("startDate")&&StringUtils.isNotBlank(params.get("startDate"))){
-//                builder.append(" and ca.tradetime >='"+params.get("startDate")+"' ");
-//            }
             if (params.containsKey("endDate")&&StringUtils.isNotBlank(params.get("endDate"))){
                 builder.append(" and ca.tradetime <='"+params.get("endDate")+" 23:59:59' ");
             }
@@ -552,7 +553,7 @@ public class BuyerCapitalService {
         }else{
             builder.append(" Order By ca.tradetime  ) bc " );
         }
-//        log.info("returnCapitalAccount.getSettlementSql :{}",builder.toString());
+        log.info("returnCapitalAccount.getSettlementSql :{}",builder.toString());
 
         return  builder.toString();
     }

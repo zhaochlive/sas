@@ -41,7 +41,14 @@ public class CustomerService {
         sqlCommon(param, list, builder);
 
         builder.append("  group by t1.memberid,t1.firsttime,mb.username,bc.companyname,mb.province || mb.city || mb.citysmall," +
-                " mb.address,mb.realname,mb.mobile,mb.telephone,mb.waysalesman order by t1.firsttime desc");//limit 10; ");
+                " mb.address,mb.realname,mb.mobile,mb.telephone,mb.waysalesman ");//order by t1.firsttime desc limit 10; ");
+        if (StringUtils.isNotBlank(param.get("sort"))) {
+            if (StringUtils.isNotBlank(param.get("sortOrder"))&&"desc".equalsIgnoreCase(param.get("sortOrder"))) {
+                builder.append(" order by " + param.get("sort") + "  desc");
+            }else{
+                builder.append(" order by "+ param.get("sort") +" asc");
+            }
+        }
         if (StringUtils.isNotBlank(param.get("limit"))){
             long limit = Long.parseLong(param.get("limit").trim());
             builder.append(" limit ?");
@@ -56,6 +63,7 @@ public class CustomerService {
         }else{
             builder.append(" offset 0 ;");
         }
+
         List<Map<String,Object>> customers = jdbcTemplate.queryForList(builder.toString(),list.toArray());
 
         List<CustomerOfOrder> customerOfOrders = new ArrayList<>();
@@ -115,11 +123,11 @@ public class CustomerService {
         }
         builder.append(" and os.orderstatus <> 7 left join member mb on t1.memberid = mb.id  left join buyercompanyinfo bc on mb.id = bc.memberid where 1=1 ");
         if (param.get("startDate") != null && StringUtils.isNotBlank(param.get("startDate"))) {
-            builder.append(" and os.createtime >= ?");
+            builder.append(" and t1.firsttime >= ?");
             list.add(DateUtils.parseDate(param.get("startDate") + " 00:00:00","YYYY-MM-dd HH:mm:ss"));
         }
         if (param.get("endDate") != null && StringUtils.isNotBlank(param.get("endDate"))) {
-            builder.append(" and os.createtime <= ?");
+            builder.append(" and t1.firsttime <= ?");
             list.add(DateUtils.parseDate(param.get("endDate") + " 23:59:59","YYYY-MM-dd HH:mm:ss"));
         }
         if (param.get("waysalesman") != null && StringUtils.isNotBlank(param.get("waysalesman"))) {
