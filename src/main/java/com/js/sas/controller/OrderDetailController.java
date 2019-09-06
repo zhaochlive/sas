@@ -360,4 +360,128 @@ public class OrderDetailController {
             e.printStackTrace();
         }
     }
+
+    @RequestMapping(value = "orderInfo",method = RequestMethod.POST)
+    @ResponseBody
+    public Object orderInfo(HttpServletRequest request) {
+        Map<String, String> requestMap = new HashMap<>();
+        Map<String, Object> result = new HashMap<>();
+        if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
+            requestMap.put("startDate", request.getParameter("startDate"));
+        }
+        if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
+            requestMap.put("endDate", request.getParameter("endDate"));
+        }
+        if (StringUtils.isNotBlank(request.getParameter("username"))){
+            requestMap.put("username",request.getParameter("username").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("orderno"))){
+            requestMap.put("orderno",request.getParameter("orderno").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("sellCompany"))){
+            requestMap.put("sellCompany",request.getParameter("sellCompany").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("buyCompany"))){
+            requestMap.put("buyCompany",request.getParameter("buyCompany").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("limit"))) {
+            requestMap.put("limit", request.getParameter("limit"));
+        } else {
+            requestMap.put("limit", "10");
+        }
+            if (StringUtils.isNotBlank(request.getParameter("offset"))){
+                requestMap.put("offset", request.getParameter("offset"));
+            }else{
+                requestMap.put("offset", "0");
+            }
+        List<Map<String, Object>> page = orderDetailService.orderInfo(requestMap);
+        result.put("rows", page);
+        result.put("total", orderDetailService.getOrderInfoCount(requestMap));
+        return result;
+    }
+
+    @PostMapping(value = "/download/orderInfo")
+    public void downloadOrderInfo(HttpServletResponse response, HttpServletRequest request) {
+        Map<String, String> map = new HashMap<>();
+        map.put("limit", "10000000000");
+        map.put("offset", "0");
+        if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
+            map.put("startDate", request.getParameter("startDate"));
+        }
+        if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
+            map.put("endDate", request.getParameter("endDate"));
+        }
+        if (StringUtils.isNotBlank(request.getParameter("username"))){
+            map.put("username",request.getParameter("username").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("orderno"))){
+            map.put("orderno",request.getParameter("orderno").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("sellCompany"))){
+            map.put("sellCompany",request.getParameter("sellCompany").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("buyCompany"))){
+            map.put("buyCompany",request.getParameter("buyCompany").trim());
+        }
+        List<String > columnNameList = new ArrayList<>();
+        columnNameList.add("下单时间");
+        columnNameList.add("订单编号");
+        columnNameList.add("紧商网用户名称");
+        columnNameList.add("买方");
+        columnNameList.add("结算单位名称");
+        columnNameList.add("卖方");
+        columnNameList.add("客服");
+        columnNameList.add("业务员");
+        columnNameList.add("来源");
+        columnNameList.add("状态");
+        columnNameList.add("收货人");
+        columnNameList.add("收货电话");
+        columnNameList.add("收货地址");
+        columnNameList.add("订单金额");
+
+        try {
+            List<List<Object>> result = new ArrayList<>();
+            List<Map<String, Object>> page = orderDetailService.orderInfo(map);
+            List<Object> objects ;
+            for (Map<String,Object> order : page) {
+                objects = new ArrayList<>();
+                objects.add(order.get("createtime"));
+                objects.add(order.get("orderno"));
+                objects.add(order.get("realname"));
+                objects.add(order.get("companyname"));
+                objects.add(order.get("invoiceheadup"));
+                objects.add(order.get("membercompany"));
+                objects.add(order.get("clerkname"));
+                objects.add(order.get("waysalesman"));
+                objects.add("0".equals(order.get("isonline"))?"线上":"线下");
+                Integer orderstatus = Integer.valueOf( order.get("orderstatus").toString());
+                String back;
+                if (orderstatus!=null) {
+                    switch (orderstatus) {
+                        case 0: back = "待付款";break;
+                        case 1: back = "待发货"; break;
+                        case 3: back = "待收货"; break;
+                        case 4: back = "待验货"; break;
+                        case 5: back = "已完成"; break;
+                        case 7: back = "已关闭"; break;
+                        case 8: back = "备货中"; break;
+                        case 9: back = "备货完成"; break;
+                        case 10: back = "部分发货"; break;
+                        default : back = "未知状态";
+                    }
+                }else {
+                    back = "未知状态";
+                }
+                objects.add(back);
+                objects.add(order.get("shipto"));
+                objects.add(order.get("phone"));
+                objects.add(order.get("address"));
+                objects.add(order.get("totalprice"));
+                result.add(objects);
+            }
+            CommonUtils.exportByList(response, columnNameList, result, "订单信息");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

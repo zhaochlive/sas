@@ -47,6 +47,11 @@ public class BackOrderOfSellerOrStoreService {
         return jdbcTemplate.queryForList(sb.toString(),list.toArray());
     }
 
+    /**
+     *  仓库退货pageCount
+     * @param requestMap
+     * @return
+     */
     public Long getBackOfStoreCount(Map<String, String> requestMap) {
         ArrayList<Object> list = new ArrayList<>();
         StringBuilder sb = new StringBuilder("select count(1) from ( select st.name,op.storeid from orderproduct op");
@@ -83,7 +88,11 @@ public class BackOrderOfSellerOrStoreService {
         }
         return jdbcTemplate.queryForList(sb.toString(),list.toArray());
     }
-
+    /**
+     *  店铺退货pageCount
+     * @param requestMap
+     * @return
+     */
     public Long getBackOfSellerCount(Map<String, String> requestMap) {
         ArrayList<Object> list = new ArrayList<>();
         StringBuilder sb = new StringBuilder("select count(1) from ( select sc.companyname,op.sellerid from orderproduct op");

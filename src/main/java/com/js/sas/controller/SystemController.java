@@ -172,4 +172,10 @@ public class SystemController {
     public String yongyouStatement() {
         return "pages/finance/yongyouStatement.html";
     }
+
+    // 用友对账单
+    @GetMapping("/ordersInfo")
+    public String ordersInfo() {
+        return "pages/sales/orderInfo.html";
+    }
 }

@@ -283,4 +283,100 @@ public class OrderDetailService {
 
         return jdbcTemplate.queryForObject(sb.toString(),list.toArray(),Long.class);
     }
+
+    /**
+     * 订单信息
+     * @param params
+     * @return
+     */
+    public List<Map<String, Object>> orderInfo(Map<String, String> params) {
+        List<Object> list = new ArrayList<>();
+        StringBuilder sb = new StringBuilder("SELECT o.createtime,o.orderno,mm.realname,bc.companyname ,o.totalprice, ");
+        sb.append(" (CASE WHEN br.invoiceheadup IS NULL THEN");
+        sb.append(" CASE WHEN bc.companyname IS NULL THEN mm.realname ELSE bc.companyname END ELSE br.invoiceheadup END");
+        sb.append(" ) AS invoiceheadup,o.membercompany,o.waysalesman,o.clerkname,o.isonline,o.orderstatus,o.shipto,o.phone,o.province||o.city||o.area||o.receivingaddress  address");
+        sb.append(" from orders o LEFT JOIN member m on o.saleid=m.id");
+        sb.append(" LEFT JOIN member mm on o.memberid=mm.id");
+        sb.append(" LEFT JOIN billingrecord br ON br.orderno = o.id :: VARCHAR");
+        sb.append(" LEFT JOIN buyercompanyinfo bc on o.memberid=bc.memberid where 1=1");
+        if (params.containsKey("startDate")) {
+            sb.append(" and o.createtime >=?");
+            Timestamp alarmStartTime = Timestamp.valueOf(params.get("startDate") + " 00:00:00");
+            list.add(alarmStartTime);
+        }
+        if (params.containsKey("endDate")) {
+            sb.append(" and o.createtime <=?");
+            Timestamp alarmStartTime = Timestamp.valueOf(params.get("endDate") + " 23:59:59");
+            list.add(alarmStartTime);
+        }
+        if (params.containsKey("username")&&StringUtils.isNotBlank(params.get("username"))) {
+            sb.append(" and mm.realname =?");
+            list.add(params.get("username"));
+        }
+        if (params.containsKey("orderno")&&StringUtils.isNotBlank(params.get("orderno"))) {
+            sb.append(" and o.orderno =?");
+            list.add(params.get("orderno"));
+        }
+        if (params.containsKey("buyCompany")&&StringUtils.isNotBlank(params.get("buyCompany"))) {
+            sb.append(" and bc.companyname =?");
+            list.add(params.get("buyCompany"));
+        }
+        if (params.containsKey("sellCompany")&&StringUtils.isNotBlank(params.get("sellCompany"))) {
+            sb.append(" and o.membercompany =?");
+            list.add(params.get("sellCompany"));
+        }
+        sb.append(" order by  o.createtime desc");
+        if (StringUtils.isNotBlank(params.get("limit"))) {
+            long limit = Long.parseLong(params.get("limit").trim());
+            sb.append(" limit ? ");
+            list.add(limit);
+        } else {
+            sb.append(" limit 10 ");
+        }
+        if (StringUtils.isNotBlank(params.get("offset"))) {
+            long offset = Long.parseLong(params.get("offset").trim());
+            sb.append(" offset ? ;");
+            list.add(offset);
+        } else {
+            sb.append(" offset 0 ;");
+        }
+        return jdbcTemplate.queryForList(sb.toString(),list.toArray());
+    }
+
+
+    public Long getOrderInfoCount(Map<String, String> params) {
+        List<Object> list = new ArrayList<>();
+        StringBuilder sb = new StringBuilder("SELECT  count(1)");
+        sb.append(" from orders o LEFT JOIN member m on o.saleid=m.id");
+        sb.append(" LEFT JOIN member mm on o.memberid=mm.id");
+        sb.append(" LEFT JOIN billingrecord br ON br.orderno = o.id :: VARCHAR");
+        sb.append(" LEFT JOIN buyercompanyinfo bc on o.memberid=bc.memberid where 1=1");
+        if (params.containsKey("username")&&StringUtils.isNotBlank(params.get("username"))) {
+            sb.append(" and mm.realname =?");
+            list.add(params.get("username"));
+        }
+        if (params.containsKey("orderno")&&StringUtils.isNotBlank(params.get("orderno"))) {
+            sb.append(" and o.orderno =?");
+            list.add(params.get("orderno"));
+        }
+        if (params.containsKey("buyCompany")&&StringUtils.isNotBlank(params.get("buyCompany"))) {
+            sb.append(" and bc.companyname =?");
+            list.add(params.get("buyCompany"));
+        }
+        if (params.containsKey("sellCompany")&&StringUtils.isNotBlank(params.get("sellCompany"))) {
+            sb.append(" and o.membercompany =?");
+            list.add(params.get("sellCompany"));
+        }
+        if (params.containsKey("startDate")) {
+            sb.append(" and o.createtime >=?");
+            Timestamp alarmStartTime = Timestamp.valueOf(params.get("startDate") + " 00:00:00");
+            list.add(alarmStartTime);
+        }
+        if (params.containsKey("endDate")) {
+            sb.append(" and o.createtime <=?");
+            Timestamp alarmStartTime = Timestamp.valueOf(params.get("endDate") + " 23:59:59");
+            list.add(alarmStartTime);
+        }
+        return jdbcTemplate.queryForObject(sb.toString(),list.toArray(),Long.class);
+    }
 }

@@ -1,10 +1,7 @@
 package com.js.sas.controller;
 
-import com.js.sas.dto.CustomerOfOrder;
 import com.js.sas.service.BackOrderOfSellerOrStoreService;
-import com.js.sas.service.OrderDetailService;
 import com.js.sas.utils.CommonUtils;
-import com.js.sas.utils.DateTimeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -43,7 +40,7 @@ public class BackOrderOfSellerOrStoreController {
         if (StringUtils.isNotBlank(request.getParameter("limit"))) {
             requestMap.put("limit", request.getParameter("limit"));
         } else {
-            requestMap.put("limit", "0");
+            requestMap.put("limit", "10");
         }
         if (StringUtils.isNotBlank(request.getParameter("offset"))) {
             requestMap.put("offset", request.getParameter("offset"));
@@ -56,6 +53,11 @@ public class BackOrderOfSellerOrStoreController {
         result.put("total", back.getBackOfStoreCount(requestMap));
         return result;
     }
+    /**
+     * 仓库退单信息报表导出
+     * @param request
+     * @return
+     */
     @PostMapping(value = "/download/backOfStore")
     public void download(HttpServletResponse response, HttpServletRequest request) {
         Map<String, String> map = new HashMap<>();
@@ -86,6 +88,11 @@ public class BackOrderOfSellerOrStoreController {
             e.printStackTrace();
         }
     }
+    /**
+     * 店铺退单信息
+     * @param request
+     * @return
+     */
     @RequestMapping(value = "backOfSeller",method = RequestMethod.POST)
     @ResponseBody
     public Object backOfSeller(HttpServletRequest request) {
@@ -100,7 +107,7 @@ public class BackOrderOfSellerOrStoreController {
         if (StringUtils.isNotBlank(request.getParameter("limit"))) {
             requestMap.put("limit", request.getParameter("limit"));
         } else {
-            requestMap.put("limit", "0");
+            requestMap.put("limit", "10");
         }
         if (StringUtils.isNotBlank(request.getParameter("offset"))) {
             requestMap.put("offset", request.getParameter("offset"));
@@ -112,6 +119,11 @@ public class BackOrderOfSellerOrStoreController {
         result.put("total", back.getBackOfSellerCount(requestMap));
         return result;
     }
+    /**
+     * 店铺退单信息报表导出
+     * @param request
+     * @return
+     */
     @PostMapping(value = "/download/backOfSeller")
     public void downloadOfSeller(HttpServletResponse response, HttpServletRequest request) {
         Map<String, String> map = new HashMap<>();

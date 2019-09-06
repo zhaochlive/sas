@@ -32,6 +32,11 @@ public class SalesPerformanceController {
     @Autowired
     private SalesPerformanceService salesPerformanceService;
 
+    /**
+     * 业务员业绩报表
+     * @param request
+     * @return
+     */
     @PostMapping("/salesPerformance")
     @ResponseBody
     public Object salesPerformance(HttpServletRequest request) {
@@ -40,7 +45,8 @@ public class SalesPerformanceController {
         if (StringUtils.isNotBlank(request.getParameter("limit"))) {
             map.put("limit", request.getParameter("limit"));
         } else {
-            return null;
+            map.put("limit", "10");
+//            return null;
         }
         if (StringUtils.isNotBlank(request.getParameter("offset"))) {
             map.put("offset", request.getParameter("offset"));
@@ -48,13 +54,13 @@ public class SalesPerformanceController {
             map.put("offset", "0");
         }
         if (StringUtils.isNotBlank(request.getParameter("companyname"))) {
-            map.put("companyname", request.getParameter("companyname"));
+            map.put("companyname", request.getParameter("companyname").trim());
         }
         if (StringUtils.isNotBlank(request.getParameter("membername"))) {
-            map.put("membername", request.getParameter("membername"));
+            map.put("membername", request.getParameter("membername").trim());
         }
         if (StringUtils.isNotBlank(request.getParameter("waysalesman"))) {
-            map.put("waysalesman", request.getParameter("waysalesman"));
+            map.put("waysalesman", request.getParameter("waysalesman").trim());
         }
         if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
             map.put("startDate", request.getParameter("startDate"));
@@ -80,10 +86,14 @@ public class SalesPerformanceController {
         return resultMap;
     }
 
+    /**
+     * 业务员业绩报表导出
+     * @param response
+     * @param request
+     */
     @ApiIgnore
     @PostMapping(value = "/download/excel")
     public void download(HttpServletResponse response, HttpServletRequest request) {
-        Map<String, Object> resultMap = new HashMap<>();
         Map<String, String> map = new HashMap<>();
         map.put("limit", "9999999999");
         map.put("offset", "0");
@@ -110,7 +120,6 @@ public class SalesPerformanceController {
             page = salesPerformanceService.getPage(map);
             for (Map<String, Object> mp : page) {
                 SalesperHead salesperHead = new SalesperHead();
-
                 salesperHead.setCompanyname(mp.get("公司名称") == null ? null : mp.get("公司名称").toString());
                 salesperHead.setMonth(mp.get("下单月份") == null ? null : mp.get("下单月份").toString());
                 salesperHead.setMembername(mp.get("买家账号") == null ? null : mp.get("买家账号").toString());
@@ -123,7 +132,6 @@ public class SalesPerformanceController {
                 salesperHead.setCreatetime(createTime.substring(0,createTime.indexOf(".")));
                 salesperHanders.add(salesperHead);
             }
-
             CommonUtils.export(response, salesperHanders, "业务员业绩", new SalesperHead());
         } catch (IOException e) {
             e.printStackTrace();
