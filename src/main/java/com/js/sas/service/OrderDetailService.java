@@ -299,6 +299,7 @@ public class OrderDetailService {
         sb.append(" LEFT JOIN member mm on o.memberid=mm.id");
         sb.append(" LEFT JOIN billingrecord br ON br.orderno = o.id :: VARCHAR");
         sb.append(" LEFT JOIN buyercompanyinfo bc on o.memberid=bc.memberid where 1=1");
+        sb.append(" and o.orderstatus <> 7");
         if (params.containsKey("startDate")) {
             sb.append(" and o.createtime >=?");
             Timestamp alarmStartTime = Timestamp.valueOf(params.get("startDate") + " 00:00:00");
