@@ -44,7 +44,7 @@
                                             <label class="col-sm-3 col-form-label">卖家公司名称：</label>
                                             <div class="col-sm-9">
                                                 <input id="companyname" name="companyname" placeholder="卖家公司名称"
-                                                       class="form-control" type="text"/>
+                                                       class="SellerCompany form-control" type="text"/>
                                             </div>
                                         </div>
 
@@ -104,12 +104,16 @@
 <script src="../../js/moment.min.js"></script>
 <script src="../../js/daterangepicker.min.js"></script>
 <script src="../../js/typeahead.min.js"></script>
+<script src="../../js/searchOption.js"></script>
 
 <script>
     // 设置展开和选中的菜单
     $('#side-menu').load('left.html', function () {
         $("li[id='home']").removeClass("active");
-        $("li[id='operations']").addClass("active");
+        $("#sales").removeClass("active");
+        $("#operations").addClass("active");
+        $("#operations ul").addClass("in");
+        $("#operations ul").attr("aria-expanded=\'true\'");
         $("li[id='productDetail']").addClass("active");
     });
     $('#header').load('header.html');

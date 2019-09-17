@@ -4,9 +4,8 @@ function loadTable() {
     var data = [];
 
     colums.push({field: 'clerkname', title: '客服名称', sortable: false, align: 'center'},
-        {field: 'username', title: '用户名称', sortable: false, align: 'center'},
-        {
-            field: 'companyname', title: '公司名称', sortable: false, align: 'center',
+        {field: 'username', title: '客户名称', sortable: false, align: 'center'},
+        {field: 'companyname', title: '公司名称', sortable: false, align: 'center',
             formatter: function (value, row, index) { // 单元格格式化函数
                 if (value) {
                     return "<div style='width:200px;'>" + row.companyname + "</div>";//调列宽，在td中嵌套一个div，调整div大小

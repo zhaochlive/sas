@@ -44,14 +44,14 @@
                                             <label class="col-sm-3 col-form-label">业务员：</label>
                                             <div class="col-sm-9">
                                                 <input id="name" name="waysalesman" type="text" placeholder="业务员名称"
-                                                       class="settlementName form-control"/>
+                                                       class="salesman form-control"/>
                                             </div>
                                         </div>
                                         <div class="form-group row col-sm-4">
                                             <label class="col-sm-3 col-form-label">买家账号：</label>
                                             <div class="col-sm-9">
                                                 <input id="membername" name="membername" type="text" placeholder="买家账号"
-                                                       class="settlementName form-control"/>
+                                                       class="form-control"/>
                                             </div>
                                         </div>
                                         <div class="form-group row col-sm-4">
@@ -127,12 +127,16 @@
 <script src="../../js/moment.min.js"></script>
 <script src="../../js/daterangepicker.min.js"></script>
 <script src="../../js/typeahead.min.js"></script>
+<script src="../../js/searchOption.js"></script>
 
 <script>
     // 设置展开和选中的菜单
     $('#side-menu').load('left.html', function () {
         $("li[id='home']").removeClass("active");
-        $("li[id='operations']").addClass("active");
+        $("#sales").removeClass("active");
+        $("#operations").addClass("active");
+        $("#operations ul").addClass("in");
+        $("#operations ul").attr("aria-expanded=\'true\'");
         $("li[id='salesPerformance']").addClass("active");
     });
     $('#header').load('header.html');

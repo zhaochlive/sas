@@ -44,7 +44,7 @@
                                         <div class="form-group row col-sm-4">
                                             <label class="col-sm-3 col-form-label">客户名称：</label>
                                             <div class="col-sm-9">
-                                                <input id="username" name="username" type="text" placeholder="输入客户名称" class="settlementName form-control"/>
+                                                <input id="username" name="username" type="text" placeholder="输入客户名称" class="username form-control"/>
                                             </div>
                                         </div>
                                         <div class="form-group row col-sm-4">
@@ -103,12 +103,16 @@
 <script src="../../js/moment.min.js"></script>
 <script src="../../js/daterangepicker.min.js"></script>
 <script src="../../js/typeahead.min.js"></script>
+<script src="../../js/searchOption.js"></script>
 
 <script>
     // 设置展开和选中的菜单
     $('#side-menu').load('left.html', function () {
-        $("li[id='home']").removeClass("active");
-        $("li[id='operations']").addClass("active");
+        $("#home").removeClass("active");
+        $("#sales").removeClass("active");
+        $("#operations").addClass("active");
+        $("#operations ul").addClass("in");
+        $("#operations ul").attr("aria-expanded=\'true\'");
         $("li[id='unitPriceOrder']").addClass("active");
     });
     $('#header').load('header.html');
@@ -170,7 +174,7 @@
             pagination: true,
             sortable: false,
             pageNumber: 1,
-            pageSize: 10,
+            pageSize: 100,
             pageList: [10, 20, 50, 100],
             clickToSelect: true,
             locale: "zh-CN",
@@ -201,6 +205,12 @@
                 field: 'realname',
                 title: '买家名称',
                 align: 'left',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: 'cut',
+                title: '订单总个数',
+                align: 'center',
                 valign: 'middle',
                 sortable: 'false'
             }, {
@@ -247,7 +257,7 @@
                 sortable: 'false'
             }, {
                 field: 'waysalesman',
-                title: '客服人员',
+                title: '业务员',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'false'

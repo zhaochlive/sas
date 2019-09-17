@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="../../css/style.css">
     <link rel="stylesheet" type="text/css" href="../../css/daterangepicker.css"/>
 
-    <title>统计分析系统 - 营销 -复购率统计</title>
+    <title>统计分析系统 - 营销 - 复购率统计</title>
 </head>
 <body>
 <div id="wrapper">
@@ -44,7 +44,7 @@
                                             <label class="col-sm-3 col-form-label">客户名称 ：</label>
                                             <div class="col-sm-9">
                                                 <input id="name" name="username" type="text" placeholder="客户名称"
-                                                       class="settlementName form-control"/>
+                                                       class="username form-control"/>
                                             </div>
                                         </div>
                                         <div class="form-group row col-sm-4">
@@ -117,12 +117,16 @@
 <script src="../../js/daterangepicker.min.js"></script>
 <script src="../../js/typeahead.min.js"></script>
 <script src="../../oprations/repurchaseRate.js"></script>
+<script src="../../js/searchOption.js"></script>
 
 <script>
     // 设置展开和选中的菜单
     $('#side-menu').load('left.html', function () {
         $("li[id='home']").removeClass("active");
-        $("li[id='operations']").addClass("active");
+        $("#sales").removeClass("active");
+        $("#operations").addClass("active");
+        $("#operations ul").addClass("in");
+        $("#operations ul").attr("aria-expanded=\'true\'");
         $("li[id='repurchaseRate']").addClass("active");
     });
     $('#header').load('header.html');

@@ -45,6 +45,11 @@ public class SystemController {
         return "pages/finance/salesPerformance.html";
     }
 
+    @GetMapping("/salesPerformanceCollect")
+    public String salesPerformanceCollect() {
+        return "pages/oprations/salesPerformanceCollect.html";
+    }
+
     @GetMapping("/productValueOfSales")
     public String productValueOfSales() {
         return "pages/sales/productValueOfSales.html";
@@ -173,9 +178,21 @@ public class SystemController {
         return "pages/finance/yongyouStatement.html";
     }
 
-    // 用友对账单
+    // 紧商订单信息
     @GetMapping("/ordersInfo")
     public String ordersInfo() {
         return "pages/sales/orderInfo.html";
+    }
+
+    // 紧商订单详情列表
+    @GetMapping("/ordersList")
+    public String ordersList() {
+        return "pages/sales/orderList.html";
+    }
+
+    // 用友订单信息
+    @GetMapping("/yyOrdersInfo")
+    public String yyOrdersInfo() {
+        return "pages/sales/yyOrdersInfo.html";
     }
 }

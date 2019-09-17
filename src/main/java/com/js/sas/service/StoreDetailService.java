@@ -34,6 +34,7 @@ public class StoreDetailService {
             String endDate = params.get("endDate");
             Date StartDate = DateTimeUtils.convert(startDate);
             Date EndDate = DateTimeUtils.convert(endDate);
+
             Timestamp lastMonthStartDate = DateTimeUtils.addTime(StartDate, -1, DateTimeUtils.MONTH);
             Timestamp lastMonthEndDate = DateTimeUtils.addTime(EndDate, -1, DateTimeUtils.MONTH);
             Timestamp lastYearStartDate = DateTimeUtils.addTime(StartDate, -1, DateTimeUtils.YEAR);

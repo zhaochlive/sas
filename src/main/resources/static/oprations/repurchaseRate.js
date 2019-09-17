@@ -3,7 +3,10 @@ function loadTable(){
     var colums=[];
     var data=[];
 
-    colums.push({field: 'realname',title: '客户名称', sortable: false ,align: 'center'},
+    colums.push(
+        {field: 'clerkname',title: '客服名称', sortable: false ,align: 'center'},
+        {field: 'waysalesman',title: '业务员名称', sortable: false ,align: 'center'},
+        {field: 'realname',title: '客户名称', sortable: false ,align: 'center'},
         {field: 'mobile',title: '手机号', sortable: false ,align: 'center'},
         {field: 'companyname',title: '公司名称', sortable: false,align: 'center' ,width:500},
         {field: '总下单量',title: '总下单量', sortable: true ,align: 'center'},
@@ -53,7 +56,7 @@ function initTable(colums,data){
         sortOrder: "DESC",
         height: 580,
         pageNumber: 1,
-        pageSize: 20,
+        pageSize: 100,
         pageList: [10, 20, 50, 100],
         clickToSelect: true,
         locale: "zh-CN",

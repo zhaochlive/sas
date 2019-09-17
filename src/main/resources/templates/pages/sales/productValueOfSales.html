@@ -184,13 +184,16 @@
 <script src="../../js/moment.min.js"></script>
 <script src="../../js/daterangepicker.min.js"></script>
 <script src="../../js/typeahead.min.js"></script>
+<script src="../../js/searchOption.js"></script>
 
 <script>
     // 设置菜单
     $('#side-menu').load('left.html', function () {
-        $("li[id='home']").removeClass("active");
-        $("li[id='sales']").addClass("active");
-        $("li[id='productValueOfSales']").addClass("active");
+        $("#home").removeClass("active");
+        $("#sales").addClass("active");
+        $("#sales ul").addClass("in");
+        $("#sales ul").attr("aria-expanded=\'true\'");
+        $("#productValueOfSales").addClass("active");
     });
     $('#header').load('header.html');
     $('#footer').load('footer.html');

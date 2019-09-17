@@ -41,9 +41,9 @@
                                 <div class="box-body">
                                     <div class="row">
                                         <div class="form-group row col-sm-4">
-                                            <label class="col-sm-3 col-form-label">店铺名称：</label>
+                                            <label class="col-sm-3 col-form-label">商家公司名称：</label>
                                             <div class="col-sm-9">
-                                                <input id="username" name="username" type="text" placeholder="输入客户名称" class="settlementName form-control"/>
+                                                <input id="username" name="username" type="text" placeholder="输入商家公司名称" class="SellerCompany form-control"/>
                                             </div>
                                         </div>
                                         <div class="form-group row col-sm-4">
@@ -102,16 +102,17 @@
 <script src="../../js/moment.min.js"></script>
 <script src="../../js/daterangepicker.min.js"></script>
 <script src="../../js/typeahead.min.js"></script>
+<script src="../../js/searchOption.js"></script>
 
 <script>
     // 设置展开和选中的菜单
     $('#side-menu').load('left.html', function () {
         $("li[id='home']").removeClass("active");
-        $("li[id='sales']").removeClass("active");
+        $("#sales").removeClass("active");
         $("li[id='finance']").removeClass("active");
-        $("li[id='operations']").addClass("active");
-        $("li[id='operations'] ul").addClass("in");
-        $("li[id='operations'] ul").attr("aria-expanded=\"true\"");
+        $("#operations").addClass("active");
+        $("#operations ul").addClass("in");
+        $("#operations ul").attr("aria-expanded=\'true\'");
         $("li[id='backOrderOfSeller']").addClass("active");
     });
     $('#header').load('header.html');
@@ -173,7 +174,7 @@
             pagination: true,
             sortable: false,
             pageNumber: 1,
-            pageSize: 10,
+            pageSize: 100,
             pageList: [10, 20, 50, 100],
             clickToSelect: true,
             locale: "zh-CN",
@@ -202,7 +203,7 @@
             },
             columns: [{
                 field: 'companyname',
-                title: '店铺',
+                title: '商家公司名称',
                 align: 'left',
                 valign: 'middle',
                 sortable: 'false',

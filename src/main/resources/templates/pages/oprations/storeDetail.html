@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="../../css/style.css">
     <link rel="stylesheet" type="text/css" href="../../css/daterangepicker.css"/>
 
-    <title>统计分析系统 - 运营 -店铺详情统计</title>
+    <title>统计分析系统 - 运营 - 商家详情统计</title>
 </head>
 <body>
 <div id="wrapper">
@@ -29,7 +29,7 @@
                 <div class="col-lg-12">
                     <div class="ibox">
                         <div class="ibox-title">
-                            <h5>店铺详情统计</h5>
+                            <h5>商家详情统计</h5>
                             <div class="ibox-tools">
                                 <a class="collapse-link">
                                     <i class="fa fa-chevron-up"></i>
@@ -41,10 +41,10 @@
                                 <div class="box-body">
                                     <div class="row">
                                         <div class="form-group row col-sm-4">
-                                            <label class="col-sm-3 col-form-label">商铺名称：</label>
+                                            <label class="col-sm-3 col-form-label">商家名称：</label>
                                             <div class="col-sm-9">
-                                                <input id="mobile" name="shopname" type="text" placeholder="输入商铺名称"
-                                                       class="settlementName form-control"/>
+                                                <input id="mobile" name="shopname" type="text" placeholder="输入商家名称"
+                                                       class="shopname form-control"/>
                                             </div>
                                         </div>
                                         <div class="form-group row col-sm-4">
@@ -73,22 +73,22 @@
                     </div>
                     <table class="table table-bordere">
                         <tr>
-                            <td id="allPayedOrders">店铺订单总量：</td>
-                            <td id="allSentOrders">店铺发货订单：</td>
-                            <td id="amountRate">下单金额环比/同比：</td>
+                            <td id="allPayedOrders">商家订单总量：</td>
+                            <td id="allSentOrders">商家发货订单：</td>
+                            <td id="amountRate">订单金额环比|同比：</td>
                             <td id="allPeoples">下单人数：</td>
-                            <td id="amountOfNew">新用户下单金额：</td>
+                            <td id="amountOfNew">新用户订单金额：</td>
                             <td id="peopleOfNew">新用户下单人数：</td>
                             <td id="sentInDay">当天发货：</td>
                         </tr>
                         <tr>
                             <td id="unitPrice">客单价：</td>
-                            <td id="unitPriceRate">客单价环比/同比：</td>
-                            <td id="sendRate">店铺发货率：</td>
-                            <td id="backRate">店铺退货率：</td>
-                            <td id="partSendRate">店铺部分发货比例：</td>
-                            <td id="violateRate">店铺违约率：</td>
-                            <td id="ordersOfCancelRate">店铺未付款超时取消订单比例：</td>
+                            <td id="unitPriceRate">客单价环比|同比：</td>
+                            <td id="sendRate">商家发货率：</td>
+                            <td id="backRate">商家退货率：</td>
+                            <td id="partSendRate">商家部分发货比例：</td>
+                            <td id="violateRate">商家违约率：</td>
+                            <td id="ordersOfCancelRate">订单未付款超时取消比例：</td>
                         </tr>
                     </table>
                     <div class="ibox">
@@ -123,12 +123,16 @@
 <script src="../../js/moment.min.js"></script>
 <script src="../../js/daterangepicker.min.js"></script>
 <script src="../../js/typeahead.min.js"></script>
+<script src="../../js/searchOption.js"></script>
 
 <script>
     // 设置展开和选中的菜单
     $('#side-menu').load('left.html', function () {
         $("li[id='home']").removeClass("active");
-        $("li[id='operations']").addClass("active");
+        $("#sales").removeClass("active");
+        $("#operations").addClass("active");
+        $("#operations ul").addClass("in");
+        $("#operations ul").attr("aria-expanded=\'true\'");
         $("li[id='storeDetail']").addClass("active");
     });
     $('#header').load('header.html');
@@ -190,7 +194,7 @@
             pagination: true,
             sortable: false,
             pageNumber: 1,
-            pageSize: 10,
+            pageSize: 100,
             pageList: [10, 20, 50, 100],
             clickToSelect: true,
             locale: "zh-CN",
@@ -219,7 +223,7 @@
             },
             columns: [{
                 field: 'shopname',
-                title: '店铺名称',
+                title: '商家名称',
                 align: 'left',
                 valign: 'middle',
                 sortable: 'false',
@@ -241,13 +245,13 @@
                 sortable: 'false'
             }, {
                 field: '下单金额',
-                title: '下单金额',
+                title: '订单金额',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'true'
             }, {
                 field: '下单金额同比',
-                title: '下单金额环比 / 同比',
+                title: '订单金额环比 | 同比',
                 align: 'left',
                 valign: 'middle',
                 formatter: function (value, row, index) {
@@ -277,7 +281,7 @@
                 sortable: 'true'
             }, {
                 field: '首次下单金额',
-                title: '新用户下单金额',
+                title: '新用户订单金额',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'true'
@@ -295,7 +299,7 @@
                 sortable: 'true'
             }, {
                 field: '同比客单价',
-                title: '&nbsp;&nbsp;&nbsp;客单价环比 / 同比&nbsp;&nbsp;&nbsp; ',
+                title: '&nbsp;&nbsp;&nbsp;客单价环比 | 同比&nbsp;&nbsp;&nbsp; ',
                 align: 'left',
                 valign: 'middle',
                 formatter: function (value, row, index) {
@@ -325,13 +329,13 @@
                 sortable: 'true'
             }, {
                 field: '店铺发货率',
-                title: '店铺部分发货比例',
+                title: '商家部分发货比例',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'true'
             }, {
                 field: '店铺违约率',
-                title: '店铺违约率',
+                title: '商家违约率',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'true'
@@ -343,7 +347,7 @@
                 sortable: 'true'
             }, {
                 field: '店铺退货率',
-                title: '店铺退货率',
+                title: '商家退货率',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'true'
@@ -415,20 +419,20 @@
                 sortable: 'true'
             }],
             onLoadSuccess: function (result) {
-                $("#allPayedOrders").html("店铺订单总量："+result.allPayedOrders);
-                $("#allSentOrders").html("店铺发货订单："+result.allSentOrders);
+                $("#allPayedOrders").html("商家订单总量："+result.allPayedOrders);
+                $("#allSentOrders").html("商家已发货订单："+result.allSentOrders);
                 $("#amountRate").html("下单金额环比/同比："+result.amountRate);
                 $("#allPeoples").html("下单人数："+result.allPeoples);
                 $("#amountOfNew").html("新用户下单金额："+result.amountOfNew);
                 $("#peopleOfNew").html("新用户下单人数："+result.peopleOfNew);
-                $("#sentInDay").html("平均当天发货率："+result.sentInDay);
+                $("#sentInDay").html("平均发货完成率："+result.sentInDay);
                 $("#unitPrice").html("客单价："+result.unitPrice);
                 $("#unitPriceRate").html("客单价环比/同比："+result.unitPriceRate);
-                $("#sendRate").html("店铺发货率："+result.sendRate);
-                $("#backRate").html("店铺退货率："+result.backRate);
-                $("#partSendRate").html("店铺部分发货比例："+result.partSendRate);
-                $("#violateRate").html("店铺违约率："+result.violateRate);
-                $("#ordersOfCancelRate").html("店铺未付款超时取消订单比例："+result.ordersOfCancelRate);
+                $("#sendRate").html("商家发货率："+result.sendRate);
+                $("#backRate").html("商家退货率："+result.backRate);
+                $("#partSendRate").html("商家部分发货比例："+result.partSendRate);
+                $("#violateRate").html("商家违约率："+result.violateRate);
+                $("#ordersOfCancelRate").html("订单未付款超时取消比例："+result.ordersOfCancelRate);
             },
             onLoadError: function (error) {
                 console.log(error);

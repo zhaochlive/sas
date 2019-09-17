@@ -6,6 +6,8 @@ import com.js.sas.utils.CommonUtils;
 import com.js.sas.utils.DateTimeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -176,6 +178,7 @@ public class OrderDetailController {
         }
         List<String > columnNameList = new ArrayList<>();
         columnNameList.add("买家名称");
+        columnNameList.add("订单总个数");
         columnNameList.add("低于500元订单");
         columnNameList.add("500-800元订单");
         columnNameList.add("800-1200订单");
@@ -183,7 +186,7 @@ public class OrderDetailController {
         columnNameList.add("1500-2000元订单");
         columnNameList.add("2000-5000元订单");
         columnNameList.add("5000元以上订单");
-        columnNameList.add("客服人员");
+        columnNameList.add("业务员");
 
         try {
             List<List<Object>> result = new ArrayList<>();
@@ -192,6 +195,7 @@ public class OrderDetailController {
             for (Map<String,Object> order : data) {
                 objects = new ArrayList<>();
                 objects.add(order.get("realname"));
+                objects.add(order.get("cut"));
                 objects.add(order.get("underfive"));
                 objects.add(order.get("inFiveEight"));
                 objects.add(order.get("inEightTwelve"));
@@ -361,6 +365,11 @@ public class OrderDetailController {
         }
     }
 
+    /**
+     * 紧商订单信息
+     * @param request
+     * @return
+     */
     @RequestMapping(value = "orderInfo",method = RequestMethod.POST)
     @ResponseBody
     public Object orderInfo(HttpServletRequest request) {
@@ -483,5 +492,106 @@ public class OrderDetailController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 用友订单详情
+     */
+    @RequestMapping(value = "yyOrderInfo",method = RequestMethod.POST)
+    @ResponseBody
+    public Object yyOrderInfo(HttpServletRequest request) {
+        Map<String, String> requestMap = new HashMap<>();
+        Map<String, Object> result = new HashMap<>();
+        if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
+            requestMap.put("startDate", request.getParameter("startDate"));
+        }
+        if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
+            requestMap.put("endDate", request.getParameter("endDate"));
+        }
+        if (StringUtils.isNotBlank(request.getParameter("username"))){
+            requestMap.put("username",request.getParameter("username").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("orderno"))){
+            requestMap.put("orderno",request.getParameter("orderno").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("sellCompany"))){
+            requestMap.put("sellCompany",request.getParameter("sellCompany").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("buyCompany"))){
+            requestMap.put("buyCompany",request.getParameter("buyCompany").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("limit"))) {
+            requestMap.put("limit", request.getParameter("limit"));
+        } else {
+            requestMap.put("limit", "10");
+        }
+        if (StringUtils.isNotBlank(request.getParameter("offset"))){
+            requestMap.put("offset", request.getParameter("offset"));
+        }else{
+            requestMap.put("offset", "0");
+        }
+        List<Map<String, Object>> page = orderDetailService.orderInfo(requestMap);
+        result.put("rows", page);
+        result.put("total", orderDetailService.getOrderInfoCount(requestMap));
+        return result;
+    }
+    /**
+     * 紧商订单信息
+     * @param request
+     * @return
+     */
+    @RequestMapping(value = "ordersList",method = RequestMethod.POST)
+    @ResponseBody
+    public Object ordersList(HttpServletRequest request) {
+        Map<String, String> requestMap = new HashMap<>();
+        Map<String, Object> result = new HashMap<>();
+        if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
+            requestMap.put("startDate", request.getParameter("startDate"));
+        }
+        if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
+            requestMap.put("endDate", request.getParameter("endDate"));
+        }
+        if (StringUtils.isNotBlank(request.getParameter("username"))){
+            requestMap.put("username",request.getParameter("username").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("waysalesman"))){
+            requestMap.put("waysalesman",request.getParameter("waysalesman").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("invoiceheadup"))){
+            requestMap.put("invoiceheadup",request.getParameter("invoiceheadup").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("gradeno"))){
+            requestMap.put("gradeno",request.getParameter("gradeno").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("standard"))){
+            requestMap.put("standard",request.getParameter("standard").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("classify"))){
+            requestMap.put("classify",request.getParameter("classify").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("city"))){
+            requestMap.put("city",request.getParameter("city").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("province"))){
+            requestMap.put("province",request.getParameter("province").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("clerkname"))){
+            requestMap.put("clerkname",request.getParameter("clerkname").trim());
+        }
+
+        if (StringUtils.isNotBlank(request.getParameter("limit"))) {
+            requestMap.put("limit", request.getParameter("limit"));
+        } else {
+            requestMap.put("limit", "10");
+        }
+        if (StringUtils.isNotBlank(request.getParameter("offset"))){
+            requestMap.put("offset", request.getParameter("offset"));
+        }else{
+            requestMap.put("offset", "0");
+        }
+        List<Map<String, Object>> page = orderDetailService.ordersList(requestMap);
+        result.put("rows", page);
+        result.put("total", orderDetailService.ordersListCount(requestMap));
+        return result;
     }
 }

@@ -80,10 +80,11 @@
 <script type="text/javascript">
 
     $('#side-menu').load('left.html', function () {
-        $("li[id='sales']").removeClass("active");
         $("li[id='home']").removeClass("active");
-        $("li[id='finance']").removeClass("active");
-        $("li[id='operations']").addClass("active");
+        $("#sales").removeClass("active");
+        $("#operations").addClass("active");
+        $("#operations ul").addClass("in");
+        $("#operations ul").attr("aria-expanded=\'true\'");
         $("li[id='customerCountGroup']").addClass("active");
     });
     $('#header').load('header.html');

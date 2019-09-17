@@ -30,7 +30,7 @@ public class RepurchaseRateService {
      * @param params
      * @return
      */
-    public List<String>     getColums(Map<String, String> params) {
+    public List<String> getColums(Map<String, String> params) {
         List<Object> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder("SELECT TO_CHAR(createtime,'YYYYMM') as month from orders  where 1=1 ");
         if (params != null) {
@@ -59,7 +59,7 @@ public class RepurchaseRateService {
             return null;
         }
         StringBuilder groupBy = new StringBuilder();
-        StringBuilder sb = new StringBuilder("SELECT mb.realname,mb.mobile,bc.companyname ,count(1) 总下单量,min(createtime) firstTime,tb.* from orders od left join ( select ");
+        StringBuilder sb = new StringBuilder("SELECT mb.realname,mb.mobile,bc.companyname ,od.waysalesman,mb.clerkname,count(1) 总下单量,min(createtime) firstTime,tb.* from orders od left join ( select ");
         List<String> colums = getColums(param);
         List<Object> list = new ArrayList<>();
         for (String colum : colums) {
@@ -98,7 +98,7 @@ public class RepurchaseRateService {
         }
         sb.append("  GROUP BY ");
         sb.append(groupBy);
-        sb.append(" tb.memberid,mb.realname,bc.companyname,mb.mobile  ");
+        sb.append(" tb.memberid,mb.realname,bc.companyname,mb.mobile,od.waysalesman,mb.clerkname  ");
         if (StringUtils.isNotBlank(param.get("sort"))) {
             if (StringUtils.isNotBlank(param.get("sortOrder"))&&"desc".equalsIgnoreCase(param.get("sortOrder"))) {
                 sb.append(" order by " + param.get("sort") + "  desc");

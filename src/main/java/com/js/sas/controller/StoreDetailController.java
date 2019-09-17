@@ -18,6 +18,9 @@ import java.util.*;
 
 import static java.math.RoundingMode.HALF_DOWN;
 
+/**
+ * 商铺信息
+ */
 @Controller
 @RequestMapping("storeDetail")
 public class StoreDetailController {
@@ -25,26 +28,28 @@ public class StoreDetailController {
     @Autowired
     private StoreDetailService storeDetailService;
 
+    /**
+     * 商家详情统计  默认当天数据
+     * @param request
+     * @return
+     */
+
     @RequestMapping(value = "page",method = RequestMethod.POST)
     @ResponseBody
     public Object storeDetail(HttpServletRequest request) {
-
+        Date now = new Date();
         Map<String, String> requestMap = new HashMap<>();
         Map<String, Object> result = new HashMap<>();
         if (request.getParameter("startDate")==null|| StringUtils.isBlank(request.getParameter("startDate"))){
-            String firstDayOfMonth = DateTimeUtils.firstDayOfMonth(new Date());
-            requestMap.put("startDate",firstDayOfMonth);
+            requestMap.put("startDate",DateTimeUtils.convert(now,DateTimeUtils.DATE_FORMAT)+" 00:00:00" );
         }else{
             String startDate = request.getParameter("startDate");
-            DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT);
             requestMap.put("startDate", DateTimeUtils.convert(DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT),DateTimeUtils.DATE_FORMAT)+" 00:00:00" );
         }
         if (request.getParameter("endDate")==null|| StringUtils.isBlank(request.getParameter("endDate"))){
-            String firstDayOfMonth = DateTimeUtils.lastDayOfMonth(new Date());
-            requestMap.put("endDate",firstDayOfMonth);
+            requestMap.put("endDate",DateTimeUtils.convert(now,DateTimeUtils.DATE_FORMAT)+" 23:59:59" );
         }else{
             String startDate = request.getParameter("endDate");
-            DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT);
             requestMap.put("endDate", DateTimeUtils.convert(DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT),DateTimeUtils.DATE_FORMAT)+" 23:59:59" );
         }
         if (StringUtils.isNotBlank(request.getParameter("shopname"))){

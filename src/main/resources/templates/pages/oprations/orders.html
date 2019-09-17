@@ -106,9 +106,12 @@
 <script>
     // 设置展开和选中的菜单
     $('#side-menu').load('left.html', function () {
-        $("li[id='home']").removeClass("active");
-        $("li[id='operations']").addClass("active");
-        $("li[id='orders']").addClass("active");
+        $("#home").removeClass("active");
+        $("#sales").removeClass("active");
+        $("#operations").addClass("active");
+        $("#operations ul").addClass("in");
+        $("#operations ul").attr("aria-expanded=\'true\'");
+        $("#orders").addClass("active");
     });
     $('#header').load('header.html');
     $('#footer').load('footer.html');
@@ -276,15 +279,15 @@
                 formatter:function (value, row, index) {
                     return '<a href="backOrderOfSeller">查看</a>'
                 }
-            }, {
-                field: 'provinceRate',
-                title: '仓库退货率',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'false',
-                formatter:function (value, row, index) {
-                    return '<a href="backOrderOfStore">查看</a>'
-                }
+            // }, {
+            //     field: 'provinceRate',
+            //     title: '仓库退货率',
+            //     align: 'center',
+            //     valign: 'middle',
+            //     sortable: 'false',
+            //     formatter:function (value, row, index) {
+            //         return '<a href="backOrderOfStore">查看</a>'
+            //     }
             }, {
                 field: 'AreaAmountRate',
                 title: '区域消费金额比例地图',

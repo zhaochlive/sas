@@ -3,6 +3,7 @@ package com.js.sas.controller;
 import com.js.sas.dto.CustomerOfOrder;
 import com.js.sas.service.RepurchaseRateService;
 import com.js.sas.utils.CommonUtils;
+import com.js.sas.utils.DateTimeUtils;
 import com.js.sas.utils.ResultUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -35,9 +36,15 @@ public class RepurchaseRateController {
         HashMap<String, String> hashMap = new HashMap<>();
         if(StringUtils.isNotBlank(request.getParameter("startDate"))){
             hashMap.put("startDate",request.getParameter("startDate"));
+        }else{
+            Calendar cal = Calendar.getInstance();
+            int year = cal.get(Calendar.YEAR);
+            hashMap.put("startDate",year+"-01-01");
         }
         if(StringUtils.isNotBlank(request.getParameter("endDate"))){
             hashMap.put("endDate",request.getParameter("endDate"));
+        }else {
+            hashMap.put("endDate",DateTimeUtils.convert(new Date(),DateTimeUtils.DATE_FORMAT));
         }
         List<String> colums = repurchaseRateService.getColums(hashMap);
         List<String> result = new ArrayList<>();
@@ -56,18 +63,23 @@ public class RepurchaseRateController {
         if (StringUtils.isNotBlank(request.getParameter("limit"))) {
             map.put("limit", request.getParameter("limit"));
         } else {
-            return null;
+            map.put("limit", "100");
         }
         if (StringUtils.isNotBlank(request.getParameter("offset"))) {
             map.put("offset", request.getParameter("offset"));
         } else {
             map.put("offset", "0");
         }
-        if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
-            map.put("startDate", request.getParameter("startDate"));
+        if(StringUtils.isNotBlank(request.getParameter("startDate"))){
+            map.put("startDate",request.getParameter("startDate"));
+        }else{
+            Calendar cal = Calendar.getInstance();
+            map.put("startDate",cal.get(Calendar.YEAR)+"-01-01");
         }
-        if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
-            map.put("endDate", request.getParameter("endDate"));
+        if(StringUtils.isNotBlank(request.getParameter("endDate"))){
+            map.put("endDate",request.getParameter("endDate"));
+        }else {
+            map.put("endDate",DateTimeUtils.convert(new Date(),DateTimeUtils.DATE_FORMAT));
         }
         if (StringUtils.isNotBlank(request.getParameter("companyname"))) {
             map.put("companyname", request.getParameter("companyname").trim());

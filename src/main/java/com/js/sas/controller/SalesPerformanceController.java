@@ -85,6 +85,45 @@ public class SalesPerformanceController {
 
         return resultMap;
     }
+    /**
+     * 业务员业绩报表
+     * @param request
+     * @return
+     */
+    @PostMapping("/salesPerformanceCollect")
+    @ResponseBody
+    public Object salesPerformanceCollect(HttpServletRequest request) {
+        Map<String, Object> resultMap = new HashMap<>();
+        Map<String, String> map = new HashMap<>();
+        if (StringUtils.isNotBlank(request.getParameter("limit"))) {
+            map.put("limit", request.getParameter("limit"));
+        } else {
+            map.put("limit", "10");
+        }
+        if (StringUtils.isNotBlank(request.getParameter("offset"))) {
+            map.put("offset", request.getParameter("offset"));
+        } else {
+            map.put("offset", "0");
+        }
+        if (StringUtils.isNotBlank(request.getParameter("waysalesman"))) {
+            map.put("waysalesman", request.getParameter("waysalesman").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
+            map.put("startDate", request.getParameter("startDate"));
+        }
+        if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
+            map.put("endDate", request.getParameter("endDate"));
+        }
+        List<Map<String, Object>> page = null;
+        try {
+            resultMap.put("total", salesPerformanceService.getCollectCount(map));
+            resultMap.put("rows", salesPerformanceService.getCollectPage(map));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return resultMap;
+    }
 
     /**
      * 业务员业绩报表导出

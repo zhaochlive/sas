@@ -112,7 +112,10 @@
     // 设置展开和选中的菜单
     $('#side-menu').load('left.html', function () {
         $("li[id='home']").removeClass("active");
-        $("li[id='operations']").addClass("active");
+        $("#sales").removeClass("active");
+        $("#operations").addClass("active");
+        $("#operations ul").addClass("in");
+        $("#operations ul").attr("aria-expanded=\"true\"");
         $("li[id='couponStrategy']").addClass("active");
     });
     $('#header').load('header.html');
@@ -174,7 +177,7 @@
             pagination: true,
             sortable: false,
             pageNumber: 1,
-            pageSize: 10,
+            pageSize: 100,
             pageList: [10, 20, 50, 100],
             clickToSelect: true,
             locale: "zh-CN",

@@ -20,6 +20,9 @@ public class OrderDetailService {
     @Qualifier(value = "secodJdbcTemplate")
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    @Qualifier(value = "sqlServerJdbcTemplate")
+    private JdbcTemplate sqlServer;
     /**
      * 店铺详情列表
      * @param params
@@ -41,7 +44,7 @@ public class OrderDetailService {
 
             List<Object> list = new ArrayList<>();
             StringBuilder sb = new StringBuilder();
-            sb.append(" select m.username,m.realname,M.creditstate,m.waysalesman,m.id memberid,al.totalprice,al.ordernum,st.standardn,tbmonth.totalprice mtotalprice,tbyear.totalprice ytotalprice");
+            sb.append(" select m.username,m.realname,M.creditstate,m.waysalesman,bc.companyname,m.id memberid,al.totalprice,al.ordernum,st.standardn,tbmonth.totalprice mtotalprice,tbyear.totalprice ytotalprice");
             sb.append(" from member m LEFT JOIN (");
             sb.append(" SELECT count(DISTINCT(standard)) standard,os.memberid from orders os ");
             sb.append(" left JOIN orderproduct od on od.orderid = os.id where os.orderstatus <> 7 and os.createtime>='"+startDate+"' and os.createtime <='"+endDate+"' ");
@@ -61,7 +64,9 @@ public class OrderDetailService {
             sb.append(" left join ( SELECT count(id) ordernum,memberid,sum(totalprice) totalprice from orders os");
             sb.append(" where os.orderstatus <> 7 and os.createtime>='"+lastYearStartDate+"' and os.createtime <='"+lastYearEndDate+"' ");
             sb.append(" GROUP BY memberid ) tbyear on tbyear.memberid = m.ID");
+            sb.append(" left join buyerCompanyInfo bc on bc.memberid = m.id ");
             sb.append(" where al.ordernum is not null ");
+
             if(params.containsKey("username")){
                 sb.append( "and m.realname ='"+params.get("username").trim()+"'");
             }
@@ -169,7 +174,6 @@ public class OrderDetailService {
         } else {
             sb.append(" offset 0 ;");
         }
-        System.out.println(sb.toString());
         return jdbcTemplate.queryForList(sb.toString(),list.toArray());
     }
 
@@ -245,7 +249,6 @@ public class OrderDetailService {
         } else {
             sb.append(" offset 0 ;");
         }
-        System.out.println(sb.toString());
         return jdbcTemplate.queryForList(sb.toString(),list.toArray());
     }
 
@@ -377,6 +380,131 @@ public class OrderDetailService {
             sb.append(" and o.createtime <=?");
             Timestamp alarmStartTime = Timestamp.valueOf(params.get("endDate") + " 23:59:59");
             list.add(alarmStartTime);
+        }
+        return jdbcTemplate.queryForObject(sb.toString(),list.toArray(),Long.class);
+    }
+
+    /**
+     * 紧商订单列表
+     * @param params
+     * @return
+     */
+    public List<Map<String, Object>> ordersList(Map<String, String> params) {
+        List<Object> list = new ArrayList<>();
+        StringBuilder sb = new StringBuilder("select op.id,os.orderno,os.shipto,os.phone,os.membername,op.standard,op.classify,op.gradeno,op.mark,op.brand,mb.username,bc.companyname,mb.realname,os.memberid, ");
+        sb.append(" (case when bg.invoiceheadup is not null then invoiceheadup else (case when companyname is not null THEN companyname else mb.realname end) end) invoiceheadup,");
+        sb.append(" os.province,os.city,os.area||os.receivingaddress address,os.totalprice,os.clerkname,os.waysalesman");
+        sb.append(" from orderproduct op left join orders os on op.orderno = os.orderno ");
+        sb.append(" left join member mb on os.memberid = mb.ID ");
+        sb.append(" left join buyercompanyinfo bc on os.memberid=bc.memberid ");
+        sb.append(" left join billingrecord bg on bg.orderno = os.id ::VARCHAR  ");
+        sb.append(" where os.orderstatus <> 7");
+        if (params.containsKey("startDate")) {
+            sb.append(" and os.createtime >=?");
+            Timestamp alarmStartTime = Timestamp.valueOf(params.get("startDate") + " 00:00:00");
+            list.add(alarmStartTime);
+        }
+        if (params.containsKey("endDate")) {
+            sb.append(" and os.createtime <=?");
+            Timestamp alarmStartTime = Timestamp.valueOf(params.get("endDate") + " 23:59:59");
+            list.add(alarmStartTime);
+        }
+
+        if (params.containsKey("username")&&StringUtils.isNotBlank(params.get("username"))) {
+            sb.append(" and mb.username =?");
+            list.add(params.get("username").trim());
+            System.out.println(params.get("username").trim());
+        }
+        if (params.containsKey("waysalesman")&&StringUtils.isNotBlank(params.get("waysalesman"))) {
+            sb.append(" and os.waysalesman =?");
+            list.add(params.get("waysalesman").trim());
+        }
+        if (params.containsKey("classify")&&StringUtils.isNotBlank(params.get("classify"))) {
+            sb.append(" and op.classify =?");
+            list.add(params.get("classify").trim());
+        }
+        if (params.containsKey("invoiceheadup")&&StringUtils.isNotBlank(params.get("invoiceheadup"))) {
+            sb.append(" and bg.invoiceheadup =?");
+            list.add(params.get("invoiceheadup").trim());
+        }
+        if (params.containsKey("gradeno")&&StringUtils.isNotBlank(params.get("gradeno"))) {
+            sb.append(" and op.gradeno =?");
+            list.add(params.get("gradeno").trim());
+        }
+        if (params.containsKey("standard")&&StringUtils.isNotBlank(params.get("standard"))) {
+            sb.append(" and op.standard =?");
+            list.add(params.get("standard").trim());
+        }
+        if (params.containsKey("city")&&StringUtils.isNotBlank(params.get("city"))) {
+            sb.append(" and os.city =?");
+            list.add(params.get("city").trim());
+        }
+        if (params.containsKey("province")&&StringUtils.isNotBlank(params.get("province"))) {
+            sb.append(" and os.province =?");
+            list.add(params.get("province").trim());
+        }
+        if (params.containsKey("clerkname")&&StringUtils.isNotBlank(params.get("clerkname"))) {
+            sb.append(" and os.clerkname =?");
+            list.add(params.get("clerkname").trim());
+        }
+        sb.append(" order by os.createtime desc");
+        if (StringUtils.isNotBlank(params.get("limit"))) {
+            long limit = Long.parseLong(params.get("limit").trim());
+            sb.append(" limit ? ");
+            list.add(limit);
+        } else {
+            sb.append(" limit 10 ");
+        }
+        if (StringUtils.isNotBlank(params.get("offset"))) {
+            long offset = Long.parseLong(params.get("offset").trim());
+            sb.append(" offset ? ;");
+            list.add(offset);
+        } else {
+            sb.append(" offset 0 ;");
+        }
+        return jdbcTemplate.queryForList(sb.toString(),list.toArray());
+    }
+
+    public Long ordersListCount(Map<String, String> params) {
+        List<Object> list = new ArrayList<>();
+        StringBuilder sb = new StringBuilder("SELECT  count(1) from orderproduct op " +
+                "left join orders os on op.orderno = os.orderno " +
+                "left join member mb on os.memberid = mb.ID " +
+                "left join buyercompanyinfo bc on os.memberid=bc.memberid " +
+                "left join billingrecord bg on bg.orderno = os.id ::VARCHAR " +
+                "where os.orderstatus <> 7");
+        if (params.containsKey("username")&&StringUtils.isNotBlank(params.get("username"))) {
+            sb.append(" and mb.username =?");
+            list.add(params.get("username").trim());
+            System.out.println(params.get("username").trim());
+        }
+        if (params.containsKey("waysalesman")&&StringUtils.isNotBlank(params.get("waysalesman"))) {
+            sb.append(" and os.waysalesman =?");
+            list.add(params.get("waysalesman").trim());
+        }
+        if (params.containsKey("invoiceheadup")&&StringUtils.isNotBlank(params.get("invoiceheadup"))) {
+            sb.append(" and bg.invoiceheadup =?");
+            list.add(params.get("invoiceheadup").trim());
+        }
+        if (params.containsKey("gradeno")&&StringUtils.isNotBlank(params.get("gradeno"))) {
+            sb.append(" and op.gradeno =?");
+            list.add(params.get("gradeno").trim());
+        }
+        if (params.containsKey("standard")&&StringUtils.isNotBlank(params.get("standard"))) {
+            sb.append(" and op.standard =?");
+            list.add(params.get("standard").trim());
+        }
+        if (params.containsKey("city")&&StringUtils.isNotBlank(params.get("city"))) {
+            sb.append(" and os.city =?");
+            list.add(params.get("city").trim());
+        }
+        if (params.containsKey("province")&&StringUtils.isNotBlank(params.get("province"))) {
+            sb.append(" and os.province =?");
+            list.add(params.get("province").trim());
+        }
+        if (params.containsKey("clerkname")&&StringUtils.isNotBlank(params.get("clerkname"))) {
+            sb.append(" and os.clerkname =?");
+            list.add(params.get("clerkname").trim());
         }
         return jdbcTemplate.queryForObject(sb.toString(),list.toArray(),Long.class);
     }

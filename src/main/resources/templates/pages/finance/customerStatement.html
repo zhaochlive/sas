@@ -65,7 +65,7 @@
                                         <div class="form-group row col-sm-4">
                                             <label class="col-sm-3 col-form-label">下单会员账号：</label>
                                             <div class="col-sm-9">
-                                                <input type="text" placeholder="下单会员账号" name="userName" id="userName" class="settlementName form-control"/>
+                                                <input type="text" placeholder="下单会员账号" name="userName" id="userName" class="form-control"/>
                                             </div>
                                         </div>
                                         <div class="form-group row col-sm-4">
@@ -148,16 +148,17 @@
 <script src="../../js/bootstrap-table.min.js"></script>
 <script src="../../js/bootstrap-table-export.min.js"></script>
 <script src="../../js/bootstrap-table-zh-CN.min.js"></script>
+<script src="../../js/searchOption.js"></script>
 
 <script type="text/javascript" src="../../js/moment.min.js"></script>
 <script type="text/javascript" src="../../js/daterangepicker.min.js"></script>
 <script type="text/javascript" src="../../js/typeahead.min.js"></script>
-
 <script>
     // 设置菜单
     $('#side-menu').load('left.html', function () {
         $("li[id='home']").removeClass("active");
-        $("li[id='finance']").addClass("active");
+        $("#finance").addClass("active");
+        $("#finance ul").addClass("in");
         $("li[id='customerStatement']").addClass("active");
     });
     $('#header').load('header.html');
@@ -224,24 +225,7 @@
         // return value;
     }
 
-    $('.settlementName').typeahead({
-        source: function (query, process) {
-            $.ajax({
-                type: 'POST',
-                url: "/partner/getPartnerByNameLikeLimit",
-                data: {
-                    name: query,
-                    limit: "8"
-                },
-                dataType: "json",
-                success: function (result) {
-                    return process(result.data);
-                }, error: function (error) {
-                    console.log(error);
-                }
-            });
-        }
-    });
+
     $(document).ready(function () {
         var date = $("input[name='dateRange']").val();
         if(date==null||date==''){

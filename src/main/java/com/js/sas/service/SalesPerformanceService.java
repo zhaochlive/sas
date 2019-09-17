@@ -139,6 +139,11 @@ public class SalesPerformanceService {
         }
     }
 
+    /**
+     * 查询业务员业绩
+     * @param params
+     * @return
+     */
     public Double getPerformanceOfSales(Map<String, String> params) {
         if (params != null) {
             try {
@@ -185,6 +190,99 @@ public class SalesPerformanceService {
             }
         } else {
             return 0D;
+        }
+    }
+
+    /**
+     * 业务员业绩汇总
+     *
+     * @param params
+     * @return
+     */
+    public List<Map<String, Object>> getCollectPage(Map<String, String> params) {
+        if (params != null) {
+            try {
+                if (params.get("limit") == null || params.get("offset") == null) {
+                    return null;
+                }
+                List<Object> list = new ArrayList<>();
+                StringBuilder builder = new StringBuilder(" select ss.业务员,count(1) cut ,sum(订单总金额) 订单总金额,sum(业绩额) 业绩额 from (" +
+                        "SELECT *, CASE WHEN 下单月份 <= 6 THEN '1%' WHEN 下单月份 <= 12 THEN '0.5%' ELSE '0%' END AS 比例, " +
+                        " CASE WHEN 下单月份 <= 6 THEN 0.01*订单总金额 WHEN 下单月份 <= 12 THEN 0.005*订单总金额 ELSE  0 END AS 业绩额 FROM ");
+                builder.append(" (SELECT os.waysalesman AS \"业务员\",os.totalprice AS \"订单总金额\",months_between ( " +
+                        " (SELECT fot.firsttime FROM (SELECT MIN (os.createtime) AS firsttime,os.memberid FROM orders os GROUP BY os.memberid ) fot" +
+                        " WHERE fot.memberid = os.memberid ) :: DATE, os.createtime :: DATE ) + 1 AS \"下单月份\" FROM orders os " +
+                        " LEFT JOIN buyercompanyinfo bci ON bci.memberid = os.memberid WHERE 1=1 ");
+                if (params.get("startDate") != null && StringUtils.isNotBlank(params.get("startDate"))) {
+                    builder.append(" and os.createtime >= ?");
+                    list.add(DateUtils.parseDate(params.get("startDate") + " 00:00:00","YYYY-MM-dd HH:mm:ss"));
+                }
+                if (params.get("endDate") != null && StringUtils.isNotBlank(params.get("endDate"))) {
+                    builder.append(" and os.createtime <= ?");
+                    list.add(DateUtils.parseDate(params.get("endDate") + " 23:59:59","YYYY-MM-dd HH:mm:ss"));
+                }
+                if (params.get("waysalesman") != null && StringUtils.isNotBlank(params.get("waysalesman"))) {
+                    builder.append(" and os.waysalesman = ?");
+                    list.add(params.get("waysalesman").replace(" ",""));
+                }
+
+                //订单状态0=待付款 1=待发货 3=待收货 4=待验货 5=已完成 7=已关闭 8=备货中 9=备货完成 10=部分发货
+                builder.append(" AND os.orderstatus IN (1, 3, 4, 5, 8, 10)");
+                builder.append(" ORDER BY os.createtime desc) AS T ) ss WHERE ss.业务员 !='' GROUP BY ss.业务员 limit ? OFFSET ?;");
+                list.add(Long.parseLong(params.get("limit")));
+                list.add(Integer.parseInt(params.get("offset")));
+                return jdbcTemplate.queryForList(builder.toString(), list.toArray());
+            } catch (ParseException e) {
+                e.printStackTrace();
+                throw new RuntimeException("日期类型转换异常");
+            }
+        } else {
+            return null;
+        }
+
+    }
+
+    /**
+     * 业务员汇总count
+     * @param params
+     * @return
+     */
+    public Long getCollectCount(Map<String, String> params) {
+        if (params != null) {
+
+            try {
+                List<Object> list = new ArrayList<>();
+                StringBuilder builder = new StringBuilder("SELECT count(1) cut FROM ( select waysalesman from orders WHERE waysalesman !=''");
+                builder.append(" AND orderstatus IN (1, 3, 4, 5, 8, 10) ");
+                if (params.get("startDate") != null && StringUtils.isNotBlank(params.get("startDate"))) {
+                    builder.append(" and createtime >= ?");
+                    list.add(DateUtils.parseDate(params.get("startDate") + " 00:00:00","YYYY-MM-dd HH:mm:ss"));
+                }
+                if (params.get("endDate") != null && StringUtils.isNotBlank(params.get("endDate"))) {
+                    builder.append(" and createtime <= ?");
+                    list.add(DateUtils.parseDate(params.get("endDate") + " 23:59:59","YYYY-MM-dd HH:mm:ss"));
+                }
+                if (params.get("waysalesman") != null && StringUtils.isNotBlank(params.get("waysalesman"))) {
+                    builder.append(" and waysalesman = ?");
+                    list.add(params.get("waysalesman").trim());
+                }
+                //订单状态0=待付款 1=待发货 3=待收货 4=待验货 5=已完成 7=已关闭 8=备货中 9=备货完成 10=部分发货
+                builder.append(" GROUP BY waysalesman ) t;");
+                return jdbcTemplate.query(builder.toString(), list.toArray(), new ResultSetExtractor<Long>() {
+                    @Override
+                    public Long extractData(ResultSet rs) throws SQLException, DataAccessException {
+                        if (rs.next()) {
+                            return rs.getLong("cut");
+                        }
+                        return 0L;
+                    }
+                });
+            } catch (ParseException e) {
+                e.printStackTrace();
+                throw new RuntimeException("日期类型转换异常");
+            }
+        } else {
+            return 0L;
         }
     }
 }

@@ -18,9 +18,10 @@ public class DatasourceConfigration {
         return new JdbcTemplate(dataSource);
     }
 
-    @Bean(name = "secodJdbcTemplate")
-    public JdbcTemplate secondaryJdbcTemplate(@Qualifier("secodDataSource") DataSource dataSource) {
-        return new JdbcTemplate(dataSource);
+    @Primary
+    @Bean
+    public DataSource dataSource(DataSourceProperties dataSourceProperties) {
+        return dataSourceProperties.initializeDataSourceBuilder().build();
     }
 
     @Bean
@@ -36,14 +37,30 @@ public class DatasourceConfigration {
         return new DataSourceProperties();
     }
 
-    @Primary
-    @Bean
-    public DataSource dataSource(DataSourceProperties dataSourceProperties) {
-        return dataSourceProperties.initializeDataSourceBuilder().build();
-    }
-
     @Bean(name = "secodDataSource")
     public DataSource secodDataSource(@Qualifier(value = "secondProperties") DataSourceProperties dataSourceProperties) {
         return dataSourceProperties.initializeDataSourceBuilder().build();
+    }
+    @Bean(name = "secodJdbcTemplate")
+    public JdbcTemplate secondaryJdbcTemplate(@Qualifier("secodDataSource") DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
+
+    /**
+     * 用友SQLServer数据源
+     * @return
+     */
+    @Bean("sqlServerProperties")
+    @ConfigurationProperties(prefix = "spring.sqlserver")
+    public DataSourceProperties sqlServerProperties() {
+        return new DataSourceProperties();
+    }
+    @Bean(name = "sqlServerDataSource")
+    public DataSource sqlServerDataSource(@Qualifier(value = "sqlServerProperties") DataSourceProperties dataSourceProperties) {
+        return dataSourceProperties.initializeDataSourceBuilder().build();
+    }
+    @Bean(name = "sqlServerJdbcTemplate")
+    public JdbcTemplate sqlServerJdbcTemplate(@Qualifier("sqlServerDataSource") DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
     }
 }

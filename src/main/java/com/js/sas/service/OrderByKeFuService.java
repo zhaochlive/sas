@@ -97,7 +97,7 @@ public class OrderByKeFuService {
         for (String colum : colums) {
             sb.append("sum(case when MONTH='"+colum+"' then total else 0 end) as 月份_"+colum+",");
         }
-        sb.append(" SUM(siz) siz from ( SELECT TO_CHAR(os.createtime,'YYYYMM') as MONTH, os.clerkname , mb.username ,bc.companyname ,COUNT(realname) siz ,SUM(os.totalprice) total");
+        sb.append(" SUM(siz) siz from ( SELECT TO_CHAR(os.createtime,'YYYYMM') as MONTH, os.clerkname , mb.realname username  ,bc.companyname ,COUNT(realname) siz ,SUM(os.totalprice) total");
         sb.append(" FROM orders os LEFT JOIN MEMBER mb ON os.memberid = mb.ID LEFT JOIN buyercompanyinfo bc ON mb. ID = bc.memberid ");
         sb.append(" WHERE os.orderstatus in (1, 3, 4, 5, 10)");
         try {
@@ -110,7 +110,7 @@ public class OrderByKeFuService {
                 list.add(DateUtils.parseDate(param.get("endDate") + " 23:59:59","YYYY-MM-dd HH:mm:ss"));
             }
             if (param.get("username") != null && StringUtils.isNotBlank(param.get("username"))) {
-                sb.append(" and mb.username = ?");
+                sb.append(" and mb.realname = ?");
                 list.add(param.get("username"));
             }
             if (param.get("companyname") != null && StringUtils.isNotBlank(param.get("companyname"))) {
@@ -125,7 +125,7 @@ public class OrderByKeFuService {
             e.printStackTrace();
             log.info("输入参数格式不正确导致日期转换异常");
         }
-        sb.append(" GROUP BY TO_CHAR(os.createtime,'YYYYMM'),os.clerkname, mb.username,bc.companyname ) t");
+        sb.append(" GROUP BY TO_CHAR(os.createtime,'YYYYMM'),os.clerkname, mb.realname,bc.companyname ) t");
         sb.append(" where clerkname is not null and clerkname!='' group by clerkname,companyname,username ");
 
         if (StringUtils.isNotBlank(param.get("sort"))) {
