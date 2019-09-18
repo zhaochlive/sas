@@ -338,91 +338,106 @@
                 title: '商家部分发货比例',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                sortable: 'true',
+                formatter: function (value, row, index) { return value+" %"; }
             }, {
                 field: '店铺违约率',
                 title: '商家违约率',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                sortable: 'true',
+                formatter: function (value, row, index) { return value+" %"; }
             }, {
                 field: '未付款超时取消订单',
                 title: '未付款超时取消订单比例',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                sortable: 'true',
+                formatter: function (value, row, index) { return value+" %"; }
             }, {
                 field: '店铺退货率',
                 title: '商家退货率',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                sortable: 'true',
+                formatter: function (value, row, index) { return value+" %"; }
             }, {
                 field: '当日发货',
                 title: '当日发货',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                sortable: 'true',
+                formatter: function (value, row, index) { return value+" %"; }
             }, {
                 field: '超时一天发货',
                 title: '超时一天发货',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                sortable: 'true',
+                formatter: function (value, row, index) { return value+" %"; }
             }, {
                 field: '超时两天发货',
                 title: '超时两天发货',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                sortable: 'true',
+                formatter: function (value, row, index) { return value+" %"; }
             }, {
                 field: '超时三天',
                 title: '超时三天',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                sortable: 'true',
+                formatter: function (value, row, index) { return value+" %"; }
             }, {
                 field: '低于500元订单',
                 title: '低于500元订单',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                sortable: 'true',
+                formatter: function (value, row, index) { return value+" %"; }
             }, {
                 field: '在500_800元订单',
                 title: '在500_800元订单',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                sortable: 'true',
+                formatter: function (value, row, index) { return value+" %"; }
             }, {
                 field: '在800_1200订单',
                 title: '在800_1200订单',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                sortable: 'true',
+                formatter: function (value, row, index) { return value+" %"; }
             }, {
                 field: '在1200_1500元订单',
                 title: '在1200_1500元订单',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                sortable: 'true',
+                formatter: function (value, row, index) { return value+" %"; }
             }, {
                 field: '在1500_2000元订单',
                 title: '在1500_2000元订单',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                sortable: 'true',
+                formatter: function (value, row, index) { return value+" %"; }
             }, {
                 field: '在2000_5000元订单',
                 title: '在2000_5000元订单',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                sortable: 'true',
+                formatter: function (value, row, index) { return value+" %"; }
             }, {
                 field: '在5000元以上订单',
                 title: '在5000元以上订单',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
+                sortable: 'true',
+                formatter: function (value, row, index) { return value+" %"; }
             }],
             onLoadSuccess: function (result) {
                 $("#allPayedOrders").html("商家订单总量："+result.allPayedOrders);
