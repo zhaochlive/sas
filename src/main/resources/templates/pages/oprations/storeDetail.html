@@ -232,6 +232,12 @@
                     return div;
                 }
             }, {
+                field: '非关闭订单',
+                title: '有效订单数量',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
                 field: '付款订单数量',
                 title: '付款订单数量',
                 align: 'center',
@@ -341,7 +347,7 @@
                 sortable: 'true'
             }, {
                 field: '未付款超时取消订单',
-                title: '店铺未付款超时取消订单比例',
+                title: '未付款超时取消订单比例',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'true'
@@ -423,8 +429,8 @@
                 $("#allSentOrders").html("商家已发货订单："+result.allSentOrders);
                 $("#amountRate").html("下单金额环比/同比："+result.amountRate);
                 $("#allPeoples").html("下单人数："+result.allPeoples);
-                $("#amountOfNew").html("新用户下单金额："+result.amountOfNew);
-                $("#peopleOfNew").html("新用户下单人数："+result.peopleOfNew);
+                $("#amountOfNew").html("新用户下单金额："+ (result.amountOfNew==null?0:result.amountOfNew));
+                $("#peopleOfNew").html("新用户下单人数："+ (result.peopleOfNew==null?0:result.peopleOfNew));
                 $("#sentInDay").html("平均发货完成率："+result.sentInDay);
                 $("#unitPrice").html("客单价："+result.unitPrice);
                 $("#unitPriceRate").html("客单价环比/同比："+result.unitPriceRate);

@@ -42,7 +42,7 @@ public class StoreDetailService {
 
             List<Object> list = new ArrayList<>();
             StringBuilder sb = new StringBuilder();
-            sb.append("SELECT ss.shopname,SUM (付款订单数量) 付款订单数量,SUM (发货订单数量) 发货订单数量,SUM (ss.下单金额) 下单金额,");
+            sb.append("SELECT ss.shopname,SUM (付款订单数量) 付款订单数量,sum(非关闭订单) 非关闭订单,SUM (发货订单数量) 发货订单数量,SUM (ss.下单金额) 下单金额,");
             sb.append(" round((SUM(ss.下单金额)/Lastmonth.下单金额-1)* 100,2) 下单金额环比,Lastmonth.下单金额 上月下单金额,Lastyear.下单金额 去年下单金额,");
             sb.append(" round((SUM(ss.下单金额)/Lastyear.下单金额-1)* 100,2)  下单金额同比,");
             sb.append(" COUNT(ss.memberid) 下单人数, mi.首次下单金额,mi.首次下单人数,round(avg(ss.规格),4) 平均规格,sum(ss.当日发货) 当日发货量,");
@@ -144,7 +144,7 @@ public class StoreDetailService {
                 sb.append(" offset 0 ;");
             }
             List<Map<String, Object>> maps = jdbcTemplate.queryForList(sb.toString(),list.toArray());
-
+            System.out.println(sb.toString());
             return maps;
         }
         return null;
