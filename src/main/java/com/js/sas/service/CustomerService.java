@@ -1,6 +1,7 @@
 package com.js.sas.service;
 
 import com.js.sas.dto.CustomerOfOrder;
+import com.js.sas.utils.DateTimeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -14,10 +15,7 @@ import org.springframework.stereotype.Service;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -36,10 +34,8 @@ public class CustomerService {
         StringBuilder builder = new StringBuilder("SELECT t1.memberid ,mb.username ,t1.firsttime ,bc.companyname ," +
                 " mb.province || mb.city || mb.citysmall as city, mb.address,mb.realname,mb.mobile as mobile," +
                 " mb.telephone,mb.waysalesman ,sum ( os.totalprice ) as totalprice  from" +
-                "(select min( os.createtime ) as firsttime,os.memberid from orders os where 1=1");
-
+                "(select min( os.createtime ) as firsttime,os.memberid from orders os where 1=1 ");
         sqlCommon(param, list, builder);
-
         builder.append("  group by t1.memberid,t1.firsttime,mb.username,bc.companyname,mb.province || mb.city || mb.citysmall," +
                 " mb.address,mb.realname,mb.mobile,mb.telephone,mb.waysalesman ");//order by t1.firsttime desc limit 10; ");
         if (StringUtils.isNotBlank(param.get("sort"))) {
@@ -63,7 +59,6 @@ public class CustomerService {
         }else{
             builder.append(" offset 0 ;");
         }
-
         List<Map<String,Object>> customers = jdbcTemplate.queryForList(builder.toString(),list.toArray());
 
         List<CustomerOfOrder> customerOfOrders = new ArrayList<>();
@@ -82,7 +77,6 @@ public class CustomerService {
             customerOfOrder.setWaysalesman(customer.get("waysalesman")==null?null:customer.get("waysalesman").toString());
             customerOfOrder.setTotalprice(customer.get("totalprice")==null?null:customer.get("totalprice").toString());
             customerOfOrders.add(customerOfOrder);
-//            System.out.println(customerOfOrder.toString());
         }
         return customerOfOrders;
     }
@@ -91,6 +85,7 @@ public class CustomerService {
         if (param==null){
             return  0L;
         }
+
         List<Object > list = new ArrayList<>();
         StringBuilder builder = new StringBuilder("SELECT count(1) cut from  (SELECT mb.username from " +
                 "(select min( os.createtime ) as firsttime,os.memberid from orders os where 1=1");
@@ -98,8 +93,6 @@ public class CustomerService {
         builder.append("  group by t1.memberid,t1.firsttime,mb.username,bc.companyname,mb.province || mb.city || mb.citysmall," +
                 " mb.address,mb.realname,mb.mobile,mb.telephone,mb.waysalesman order by t1.firsttime ) tb;");
 
-        log.info(builder.toString());
-        log.info(list.toString());
         return jdbcTemplate.query(builder.toString(), list.toArray(), new ResultSetExtractor<Long>() {
             @Override
             public Long extractData(ResultSet rs) throws SQLException, DataAccessException {
@@ -142,12 +135,21 @@ public class CustomerService {
             builder.append(" and mb.mobile  =?");
             list.add(param.get("mobile").replace(" ",""));
         }
+        if (param.get("firsttime") != null && StringUtils.isNotBlank(param.get("firsttime"))) {
+            builder.append(" and firsttime  >= ?");
+            list.add(DateTimeUtils.convert( param.get("firsttime")));
+        }
     }
 
     public Double getCountFromAllCustomer(Map<String, String> map) {
+        List<Object > list = new ArrayList<>();
         StringBuilder builder = new StringBuilder("select sum(totalprice) from orders os where id in " +
                 " (select min(id) from orders where orderstatus in (1, 3, 4, 5, 8, 9, 10) ");
+        if (map.get("firsttime") != null && StringUtils.isNotBlank(map.get("firsttime"))) {
+            builder.append(" and createTime  >= ?");
+            list.add(DateTimeUtils.convert( map.get("firsttime")));
+        }
         builder.append(" GROUP BY memberid)");
-        return jdbcTemplate.queryForObject(builder.toString(),Double.class);
+        return jdbcTemplate.queryForObject(builder.toString(),list.toArray(),Double.class);
     }
 }

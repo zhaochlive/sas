@@ -42,12 +42,12 @@ public class SystemController {
 
     @GetMapping("/salesPerformance")
     public String salesPerformance() {
-        return "pages/finance/salesPerformance.html";
+        return "pages/operations/salesPerformance.html";
     }
 
     @GetMapping("/salesPerformanceCollect")
     public String salesPerformanceCollect() {
-        return "pages/oprations/salesPerformanceCollect.html";
+        return "pages/operations/salesPerformanceCollect.html";
     }
 
     @GetMapping("/productValueOfSales")
@@ -57,7 +57,7 @@ public class SystemController {
 
     @GetMapping("/repurchaseRate")
     public String repurchaseRate() {
-        return "pages/oprations/repurchaseRate.html";
+        return "pages/operations/repurchaseRate.html";
     }
 
     @GetMapping("/customerOfNewOrders")
@@ -67,15 +67,15 @@ public class SystemController {
 
     @GetMapping("/customerCountGroup")
     public String customerCountGroup() {
-        return "pages/oprations/customerCountGroup.html";
+        return "pages/operations/customerCountGroup.html";
     }
     @GetMapping("/orderByCustomerService")
     public String orderByCustomerService() {
-        return "pages/oprations/orderByCustomerService.html";
+        return "pages/operations/orderByCustomerService.html";
     }
     @GetMapping("/storeDetail")
     public String storeDetail() {
-        return "pages/oprations/storeDetail.html";
+        return "pages/operations/storeDetail.html";
     }
 
     @Autowired
@@ -85,7 +85,7 @@ public class SystemController {
     public ModelAndView couponStrategy() {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.addObject("tickets",couponStrategyService.getTickets());
-        modelAndView.setViewName("pages/oprations/couponStrategy.html");
+        modelAndView.setViewName("pages/operations/couponStrategy.html");
         return modelAndView;
     }
     //产品详情
@@ -93,7 +93,7 @@ public class SystemController {
     public String productDetail(HttpServletRequest request, Model model) {
         model.addAttribute("startDate",request.getParameter("startDate"));
         model.addAttribute("endDate",request.getParameter("endDate"));
-        return "pages/oprations/productDetail.html";
+        return "pages/operations/productDetail.html";
     }
 
     // 区域销售额
@@ -106,28 +106,28 @@ public class SystemController {
     //订单主表
     @GetMapping("/orders")
     public String orders(HttpServletRequest request, Model model) {
-        return "pages/oprations/orders.html";
+        return "pages/operations/orders.html";
     }
     //订单详情
     @GetMapping("/orderDetail")
     public String orderDetail(HttpServletRequest request, Model model) {
         model.addAttribute("startDate",request.getParameter("startDate"));
         model.addAttribute("endDate",request.getParameter("endDate"));
-        return "pages/oprations/orderDetail.html";
+        return "pages/operations/orderDetail.html";
     }
     //订单产品
     @GetMapping("/orderProduct")
     public String orderProduct(HttpServletRequest request, Model model) {
         model.addAttribute("startDate",request.getParameter("startDate"));
         model.addAttribute("endDate",request.getParameter("endDate"));
-        return "pages/oprations/orderProduct.html";
+        return "pages/operations/orderProduct.html";
     }
     //订单拆分详情
     @GetMapping("/orderSplitDetail")
     public String orderSplitDetail(HttpServletRequest request, Model model) {
         model.addAttribute("startDate",request.getParameter("startDate"));
         model.addAttribute("endDate",request.getParameter("endDate"));
-        return "pages/oprations/orderSplitDetail.html";
+        return "pages/operations/orderSplitDetail.html";
     }
 
     //订单退单详情
@@ -135,35 +135,35 @@ public class SystemController {
     public String  orderBackDetail(HttpServletRequest request, Model model) {
         model.addAttribute("startDate",request.getParameter("startDate"));
         model.addAttribute("endDate",request.getParameter("endDate"));
-        return "pages/oprations/orderBackDetail.html";
+        return "pages/operations/orderBackDetail.html";
     }
     //未发货订单详情
     @GetMapping("/unsentOrderDetail")
     public String unsentOrderDetail(HttpServletRequest request, Model model) {
         model.addAttribute("startDate",request.getParameter("startDate"));
         model.addAttribute("endDate",request.getParameter("endDate"));
-        return "pages/oprations/unsentOrderDetail.html";
+        return "pages/operations/unsentOrderDetail.html";
     }
     //客单价订单
     @GetMapping("/unitPriceOrder")
     public String unitPriceOrder(HttpServletRequest request, Model model) {
         model.addAttribute("startDate",request.getParameter("startDate"));
         model.addAttribute("endDate",request.getParameter("endDate"));
-        return "pages/oprations/unitPriceOrder.html";
+        return "pages/operations/unitPriceOrder.html";
     }
     //退货店铺及仓库
     @GetMapping("/backOrderOfStore")
     public String backOrderOfStore(HttpServletRequest request, Model model) {
         model.addAttribute("startDate",request.getParameter("startDate"));
         model.addAttribute("endDate",request.getParameter("endDate"));
-        return "pages/oprations/backOrderOfStore.html";
+        return "pages/operations/backOrderOfStore.html";
     }
     //退货店铺及仓库
     @GetMapping("/backOrderOfSeller")
     public String backOrderOfSeller(HttpServletRequest request, Model model) {
         model.addAttribute("startDate",request.getParameter("startDate"));
         model.addAttribute("endDate",request.getParameter("endDate"));
-        return "pages/oprations/backOrderOfSeller.html";
+        return "pages/operations/backOrderOfSeller.html";
     }
 
     // 区域销售额

@@ -206,19 +206,19 @@
                 title: '商家公司名称',
                 align: 'left',
                 valign: 'middle',
-                sortable: 'false',
-                formatter: function (value, row, index){ // 单元格格式化函数
-                    var div = "<div style='width:150px;'>"+value+"</div>";//调列宽，在td中嵌套一个div，调整div大小
+                sortable: 'false'
+                , formatter: function (value, row, index){ // 单元格格式化函数
+                    var div = "<div style='width:300px;'>"+value+"</div>";//调列宽，在td中嵌套一个div，调整div大小
                     return div;
                 }
             }, {
                 field: 'cut',
                 title: '数量',
-                align: 'center',
+                align: 'left',
                 valign: 'middle',
-                sortable: 'false',
-                formatter: function (value, row, index){ // 单元格格式化函数
-                    var div = "<div style='width:150px;'>"+value+"</div>";//调列宽，在td中嵌套一个div，调整div大小
+                sortable: 'false'
+                ,formatter: function (value, row, index){ // 单元格格式化函数
+                    var div = "<div style='width:300px;'>"+value+"</div>";//调列宽，在td中嵌套一个div，调整div大小
                     return div;
                 }
             }],

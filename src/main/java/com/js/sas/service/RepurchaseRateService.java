@@ -124,7 +124,6 @@ public class RepurchaseRateService {
         } else {
             sb.append(" offset 0 ;");
         }
-//        System.out.println(sb.toString()+"\r\n" +list.toString());
         List<Map<String, Object>> mapList = jdbcTemplate.queryForList(sb.toString(),list.toArray());
         return mapList;
     }

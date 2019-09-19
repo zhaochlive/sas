@@ -4,6 +4,7 @@ import com.js.sas.dto.CustomerOfOrder;
 import com.js.sas.dto.SalesperHead;
 import com.js.sas.service.CustomerService;
 import com.js.sas.utils.CommonUtils;
+import com.js.sas.utils.DateTimeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -15,11 +16,9 @@ import springfox.documentation.annotations.ApiIgnore;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RequestMapping("customer")
 @Controller
@@ -65,6 +64,10 @@ public class CustomerController {
         if (StringUtils.isNotBlank(request.getParameter("sortOrder"))) {
             map.put("sortOrder", request.getParameter("sortOrder").trim());
         }
+        long current=System.currentTimeMillis();//当前时间毫秒数  and firsttime > '"+convert+"'
+        long zero=current/(1000*3600*24)*(1000*3600*24)- TimeZone.getDefault().getRawOffset();
+        String convert = DateTimeUtils.convert(DateTimeUtils.addTime(new Timestamp(zero), -1, DateTimeUtils.MONTH));
+        map.put("firsttime",convert);
         List<CustomerOfOrder> page = null;
         try {
             page = customerService.getCustomerOfOrder(map);

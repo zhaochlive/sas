@@ -54,7 +54,7 @@ function initTable(colums,data){
         // sortOrder: "desc",     //排序方式
         sortName: "总下单量",
         sortOrder: "DESC",
-        height: 580,
+        // height: 580,
         pageNumber: 1,
         pageSize: 100,
         pageList: [10, 20, 50, 100],

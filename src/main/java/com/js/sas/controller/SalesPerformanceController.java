@@ -3,6 +3,7 @@ package com.js.sas.controller;
 import com.js.sas.dto.SalesperHead;
 import com.js.sas.service.SalesPerformanceService;
 import com.js.sas.utils.CommonUtils;
+import com.js.sas.utils.DateTimeUtils;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -46,7 +47,6 @@ public class SalesPerformanceController {
             map.put("limit", request.getParameter("limit"));
         } else {
             map.put("limit", "10");
-//            return null;
         }
         if (StringUtils.isNotBlank(request.getParameter("offset"))) {
             map.put("offset", request.getParameter("offset"));
@@ -62,11 +62,21 @@ public class SalesPerformanceController {
         if (StringUtils.isNotBlank(request.getParameter("waysalesman"))) {
             map.put("waysalesman", request.getParameter("waysalesman").trim());
         }
-        if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
-            map.put("startDate", request.getParameter("startDate"));
+        if (request.getParameter("startDate")==null|| StringUtils.isBlank(request.getParameter("startDate"))){
+            String firstDayOfMonth = DateTimeUtils.firstDayOfMonth(new Date());
+            map.put("startDate",firstDayOfMonth);
+        }else{
+            String startDate = request.getParameter("startDate");
+            DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT);
+            map.put("startDate", DateTimeUtils.convert(DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT),DateTimeUtils.DATE_FORMAT)+" 00:00:00" );
         }
-        if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
-            map.put("endDate", request.getParameter("endDate"));
+        if (request.getParameter("endDate")==null|| StringUtils.isBlank(request.getParameter("endDate"))){
+            String firstDayOfMonth = DateTimeUtils.lastDayOfMonth(new Date());
+            map.put("endDate",firstDayOfMonth);
+        }else{
+            String startDate = request.getParameter("endDate");
+            DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT);
+            map.put("endDate", DateTimeUtils.convert(DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT),DateTimeUtils.DATE_FORMAT)+" 23:59:59" );
         }
         List<Map<String, Object>> page = null;
         try {
@@ -108,11 +118,21 @@ public class SalesPerformanceController {
         if (StringUtils.isNotBlank(request.getParameter("waysalesman"))) {
             map.put("waysalesman", request.getParameter("waysalesman").trim());
         }
-        if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
-            map.put("startDate", request.getParameter("startDate"));
+        if (request.getParameter("startDate")==null|| StringUtils.isBlank(request.getParameter("startDate"))){
+            String firstDayOfMonth = DateTimeUtils.firstDayOfMonth(new Date());
+            map.put("startDate",firstDayOfMonth);
+        }else{
+            String startDate = request.getParameter("startDate");
+            DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT);
+            map.put("startDate", DateTimeUtils.convert(DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT),DateTimeUtils.DATE_FORMAT)+" 00:00:00" );
         }
-        if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
-            map.put("endDate", request.getParameter("endDate"));
+        if (request.getParameter("endDate")==null|| StringUtils.isBlank(request.getParameter("endDate"))){
+            String firstDayOfMonth = DateTimeUtils.lastDayOfMonth(new Date());
+            map.put("endDate",firstDayOfMonth);
+        }else{
+            String startDate = request.getParameter("endDate");
+            DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT);
+            map.put("endDate", DateTimeUtils.convert(DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT),DateTimeUtils.DATE_FORMAT)+" 23:59:59" );
         }
         List<Map<String, Object>> page = null;
         try {
@@ -145,12 +165,24 @@ public class SalesPerformanceController {
         if (StringUtils.isNotBlank(request.getParameter("membername"))) {
             map.put("membername", request.getParameter("membername"));
         }
-        if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
-            map.put("startDate", request.getParameter("startDate"));
+        if (request.getParameter("startDate")==null|| StringUtils.isBlank(request.getParameter("startDate"))){
+            String firstDayOfMonth = DateTimeUtils.firstDayOfMonth(new Date());
+            map.put("startDate",firstDayOfMonth);
+        }else{
+            String startDate = request.getParameter("startDate");
+            DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT);
+            map.put("startDate", DateTimeUtils.convert(DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT),DateTimeUtils.DATE_FORMAT)+" 00:00:00" );
         }
-        if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
-            map.put("endDate", request.getParameter("endDate"));
+        if (request.getParameter("endDate")==null|| StringUtils.isBlank(request.getParameter("endDate"))){
+            String firstDayOfMonth = DateTimeUtils.lastDayOfMonth(new Date());
+            map.put("endDate",firstDayOfMonth);
+        }else{
+            String startDate = request.getParameter("endDate");
+            DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT);
+            map.put("endDate", DateTimeUtils.convert(DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT),DateTimeUtils.DATE_FORMAT)+" 23:59:59" );
         }
+
+
         List<Map<String, Object>> page = null;
         List<SalesperHead> salesperHanders = new ArrayList<>();
 
