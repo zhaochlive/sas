@@ -225,10 +225,10 @@ public class SalesPerformanceService {
             StringBuilder builder = new StringBuilder("SELECT count(1) cut FROM ( select waysalesman from orders WHERE waysalesman !=''");
             builder.append(" AND orderstatus IN (1, 3, 4, 5, 8, 10) ");
             if (params.containsKey("startDate")) {
-                builder.append(" and os.createtime >='" + params.get("startDate") + "'");
+                builder.append(" and createtime >='" + params.get("startDate") + "'");
             }
             if (params.containsKey("endDate")) {
-                builder.append(" and os.createtime <='" + params.get("endDate") + "'");
+                builder.append(" and createtime <='" + params.get("endDate") + "'");
             }
             if (params.get("waysalesman") != null && StringUtils.isNotBlank(params.get("waysalesman"))) {
                 builder.append(" and waysalesman = ?");
