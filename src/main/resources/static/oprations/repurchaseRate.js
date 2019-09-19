@@ -8,7 +8,7 @@ function loadTable(){
         {field: 'waysalesman',title: '业务员名称', sortable: false ,align: 'center'},
         {field: 'realname',title: '客户名称', sortable: false ,align: 'center'},
         {field: 'mobile',title: '手机号', sortable: false ,align: 'center'},
-        {field: 'companyname',title: '公司名称', sortable: false,align: 'center' ,width:500},
+        {field: 'companyname',title: '客户公司名称', sortable: false,align: 'center' ,width:500},
         {field: '总下单量',title: '总下单量', sortable: true ,align: 'center'},
         {field: 'firstTime',title: '首次下单时间', sortable: true ,align: 'center',formatter: function (value, row, index) {
                 var date = row.firsttime;

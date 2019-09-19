@@ -236,9 +236,11 @@
 <script>
     // 设置菜单
     $('#side-menu').load('left.html', function () {
-        $("li[id='home']").removeClass("active");
-        $("li[id='finance']").addClass("active");
-        $("li[id='yongyouStatement']").addClass("active");
+        $("#home").removeClass("active");
+        $("#finance").addClass("active");
+        $("#finance ul").addClass("in");
+        $("#finance ul").attr("aria-expanded=\'true\'");
+        $("#yongyouStatement").addClass("active");
     });
     $('#header').load('header.html');
     $('#footer').load('footer.html');
