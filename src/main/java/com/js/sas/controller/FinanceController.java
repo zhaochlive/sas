@@ -57,10 +57,6 @@ public class FinanceController {
         this.dataSource = dataSource;
     }
 
-    public void test() {
-        System.out.println(financeService);
-    }
-
     /**
      * 目前调用存储过程实现，后期需要修改实现方法。
      *
