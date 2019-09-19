@@ -117,8 +117,11 @@
 <script>
     // 设置菜单
     $('#side-menu').load('left.html', function () {
-        $("li[id='home']").removeClass("active");
-        $("li[id='finance']").addClass("active");
+        $("#home").removeClass("active");
+        // $("li[id='overdue']").addClass("active");
+        $("#finance").addClass("active");
+        $("#finance ul").addClass("in");
+        $("#finance ul").attr("aria-expanded=\'true\'");
         $("li[id='overdue']").addClass("active");
     });
     $('#header').load('header.html');
