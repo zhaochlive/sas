@@ -195,4 +195,21 @@ public class SystemController {
     public String yyOrdersInfo() {
         return "pages/sales/yyOrdersInfo.html";
     }
+
+    // 品牌销售情况
+    @GetMapping("/brandSales")
+    public String brandSales() {
+        return "pages/sales/brandSales.html";
+    }
+
+    // 客服销售统计
+    @GetMapping("/clerkManSales")
+    public String clerkManSales() {
+        return "pages/sales/clerkManSales.html";
+    }
+    // 客户结算统计
+    @GetMapping("/settlementCustomer")
+    public String settlementCustomer() {
+        return "pages/sales/settlementCustomer.html";
+    }
 }

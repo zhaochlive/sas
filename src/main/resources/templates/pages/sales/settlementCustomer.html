@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="../../css/bootstrap-4.3.1.min.css">
+    <link rel="stylesheet" href="../../css/bootstrap-table.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" type="text/css" href="../../css/daterangepicker.css"/>
+
+    <title>统计分析系统 - 销售 - 客户结算统计</title>
+</head>
+<body>
+<div id="wrapper">
+    <!-- 菜单 -->
+    <nav class="navbar-default navbar-static-side" role="navigation">
+        <div class="sidebar-collapse">
+            <ul class="nav metismenu" id="side-menu"></ul>
+        </div>
+    </nav>
+    <div id="page-wrapper" class="gray-bg dashbard-1">
+        <!-- 顶部 -->
+        <div class="row border-bottom" id="header"></div>
+        <!-- 内容 -->
+        <div class="wrapper wrapper-content">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="ibox">
+                        <div class="ibox-title">
+                            <h5>客户结算统计</h5>
+                            <div class="ibox-tools">
+                                <a class="collapse-link">
+                                    <i class="fa fa-chevron-up"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="ibox-content">
+                            <form id="form1" class="form-horizontal">
+                                <div class="box-body">
+                                    <div class="row">
+                                        <div class="form-group row col-sm-4">
+                                            <label class="col-sm-3 col-form-label">年份：</label>
+                                            <div class="col-sm-9">
+                                                <select id="years" name="years" placeholder="选择年份" class="form-control">
+                                                    <option value="2019" selected="selected">2019</option>
+                                                    <option value="2018">2018</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row col-sm-4">
+                                            <label class="col-sm-3 col-form-label">客户结算单位：</label>
+                                            <div class="col-sm-9">
+                                                <input id="invoiceheadup" name="invoiceheadup" type="text" placeholder="客户结算单位"
+                                                       class="invoiceheadup form-control"/>
+                                            </div>
+                                        </div>
+                                        <div class="box-footer">
+                                            <input type="hidden" id="startDate" name="startDate" value=""/>
+                                            <input type="hidden" id="endDate" name="endDate" value=""/>
+                                            <input type="hidden" id="limit" name="limit" value=""/>
+                                            <button type="button" class="btn btn-primary pull-right" id="search"
+                                                    style="margin-left:20px;">搜 索
+                                            </button>
+                                            <button type="button" class="btn btn-default pull-right" id="refresh"
+                                                    style="margin-left:20px;">清 空
+                                            </button>
+                                            <!--                                            <button type="button" class="btn btn-default pull-right" id="export"-->
+                                            <!--                                                    style="margin-left:20px;">导出Excel</button>-->
+                                            <!--                                            <label class="col-form-label"><p style="color: #ff7978">&nbsp;&nbsp;请选择范围后导出</p></label>-->
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="ibox">
+                        <div class="ibox-content">
+                            <div class="row">
+                                <div class="tableDisplay" id="dataTable" style="width:98%; margin: auto;">
+                                    <table class="table table-bordered" style="margin-bottom:0px;">
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 底部 -->
+        <div class="footer" id="footer"></div>
+    </div>
+</div>
+</body>
+
+<script src="../../js/jquery-3.3.1.min.js"></script>
+<script src="../../js/popper.min.js"></script>
+<script src="../../js/bootstrap-4.3.1.min.js"></script>
+<script src="../../plugins/slimscroll/jquery.slimscroll.min.js"></script>
+<script src="../../js/inspinia.js"></script>
+<script src="../../plugins/metisMenu/jquery.metisMenu.js"></script>
+<script src="../../js/tableExport.min.js"></script>
+<script src="../../js/bootstrap-table.min.js"></script>
+<script src="../../js/bootstrap-table-export.min.js"></script>
+<script src="../../js/bootstrap-table-zh-CN.min.js"></script>
+<script src="../../js/moment.min.js"></script>
+<script src="../../js/daterangepicker.min.js"></script>
+<script src="../../js/typeahead.min.js"></script>
+<script src="../../js/searchOption.js"></script>
+
+<script>
+    // 设置展开和选中的菜单
+    $('#side-menu').load('left.html', function () {
+        $("#home").removeClass("active");
+        $("#sales").addClass("active");
+        $("#sales ul").addClass("in");
+        $("#sales ul").attr("aria-expanded=\'true\'");
+        $("#settlementCustomer").addClass("active");
+    });
+    $('#header').load('header.html');
+    $('#footer').load('footer.html');
+
+    // 开始时间
+    var startDate = "";
+    // 结束时间
+    var endDate = "";
+    // 时间选择插件
+    $('input[name="dateRange"]').daterangepicker({
+        timePicker: false,
+        autoUpdateInput: false,
+        showDropdowns: true,
+        autoApply: true,
+        locale: {
+            format: 'YYYY-MM-DD',
+            applyLabel: '确定',
+            cancelLabel: '取消',
+            fromLabel: '从',
+            toLabel: '到',
+            weekLabel: 'W',
+            customRangeLabel: 'Custom Range',
+            daysOfWeek: ['日', '一', '二', '三', '四', '五', '六'],
+            monthNames: ['一月', '二月', '三月', '四月', '五月', '六月',
+                '七月', '八月', '九月', '十月', '十一月', '十二月'],
+            firstDay: moment.localeData()._week.dow
+        }
+    }, function (start, end, label) {
+        startDate = start.format(this.locale.format);
+        endDate = end.format(this.locale.format);
+        if (!start) {
+            this.element.val('');
+        } else {
+            this.element.val(startDate + this.locale.separator + endDate);
+            // 设置自定义表单字段
+            $("#startDate").val(startDate);
+            $("#endDate").val(endDate);
+        }
+
+     // 时间输入框置空判断
+        $("#dateRange").on("input", function (e) {
+            if ($.trim(e.delegateTarget.value) == "") {
+                startDate = "";
+                endDate = "";
+            }
+        });
+
+    });
+
+    $(document).ready(function () {
+        // 表单设置
+        $("#dataTable table").bootstrapTable({
+            method: "POST",
+            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+            cache: false,
+            clickToSelect: true,
+            pagination: true,
+            sortable: false,
+            pageNumber: 1,
+            pageSize: 100,
+            pageList: [10, 20, 50, 100],
+            clickToSelect: true,
+            locale: "zh-CN",
+            striped: true,
+            toggle: true,
+            silent: true,
+            sidePagination: "server",
+            // sortName: "name",
+            // sortOrder: "asc",
+            url: "/settle/settlementCustomer",
+            queryParams: function (params) {
+                var temp = {
+                    invoiceheadup: $("#invoiceheadup").val(),
+                    year: $("#years").val(),
+                    startDate: startDate,
+                    endDate: endDate,
+                    limit: params.limit,
+                    offset: params.offset,
+                    sort: params.sort,
+                    sortOrder: params.order
+                };
+                // 设置开始时间
+                $("#startDate").val(temp.startDate);
+                // 设置结束时间
+                $("#endDate").val(temp.endDate);
+                return temp;
+            },
+            columns: [{
+                field: 'invoiceheadup',
+                title: '结算单位',
+                align: 'right',
+                valign: 'middle'
+            }, {
+                field: 'total',
+                title: '总计（元）',
+                align: 'right',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: '一月',
+                title: '一月份',
+                align: 'right',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: '二月',
+                title: '二月份',
+                align: 'right',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: '三月',
+                title: '三月份',
+                align: 'right',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: '四月',
+                title: '四月份',
+                align: 'right',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: '五月',
+                title: '五月份',
+                align: 'right',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: '六月',
+                title: '六月份',
+                align: 'right',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: '七月',
+                title: '七月份',
+                align: 'right',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: '八月',
+                title: '八月份',
+                align: 'right',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: '九月',
+                title: '九月份',
+                align: 'right',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: '十月',
+                title: '十月份',
+                align: 'right',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: '十一月',
+                title: '十一月份',
+                align: 'right',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: '十二月',
+                title: '十二月份',
+                align: 'right',
+                valign: 'middle',
+                sortable: 'false'
+            }],
+            onLoadSuccess: function (result) {
+
+            },
+            onLoadError: function (error) {
+                console.log(error);
+            },
+            onDblClickRow: function (row, $element) {
+                //
+            }
+        });
+
+        //查询按钮
+        $("button[id='search']").click(function () {
+            $("#dataTable table").bootstrapTable('refresh');
+        });
+
+        //清空按钮
+        $("button[id='refresh']").click(function () {
+
+            $("input[name='dateRange']").val("");
+            $("#invoiceheadup").val("");
+            startDate = "";
+            endDate = "";
+        });
+
+        // 导出按钮
+        $("button[id='export']").click(function () {
+            $("#form1").attr('action', "/performance/download/excel");
+            $("#form1").attr('method', "POST");
+            $("#form1").submit();
+        });
+
+    });
+
+</script>
+
+</html>
