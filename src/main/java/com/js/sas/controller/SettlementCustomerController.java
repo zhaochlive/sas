@@ -56,6 +56,12 @@ public class SettlementCustomerController {
         } else {
             params.put("offset", "0");
         }
+        if (StringUtils.isNotBlank(request.getParameter("sort"))) {
+            params.put("sort", request.getParameter("sort").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("sortOrder"))) {
+            params.put("sortOrder", request.getParameter("sortOrder").trim());
+        }
         result.put("rows",customerService.getSettlementCustomerPage(params,year));
         result.put("total",customerService.getSettlementCustomerCount(params,year));
         return result;

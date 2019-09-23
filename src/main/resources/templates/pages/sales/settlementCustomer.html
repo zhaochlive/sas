@@ -174,7 +174,7 @@
             cache: false,
             clickToSelect: true,
             pagination: true,
-            sortable: false,
+            sortable: true,
             pageNumber: 1,
             pageSize: 100,
             pageList: [10, 20, 50, 100],
@@ -184,8 +184,8 @@
             toggle: true,
             silent: true,
             sidePagination: "server",
-            // sortName: "name",
-            // sortOrder: "asc",
+            sortName: "total",
+            sortOrder: "desc",
             url: "/settle/settlementCustomer",
             queryParams: function (params) {
                 var temp = {
@@ -214,79 +214,79 @@
                 title: '总计（元）',
                 align: 'right',
                 valign: 'middle',
-                sortable: 'false'
+                sortable: 'true'
             }, {
                 field: '一月',
                 title: '一月份',
                 align: 'right',
                 valign: 'middle',
-                sortable: 'false'
+                sortable: 'true'
             }, {
                 field: '二月',
                 title: '二月份',
                 align: 'right',
                 valign: 'middle',
-                sortable: 'false'
+                sortable: 'true'
             }, {
                 field: '三月',
                 title: '三月份',
                 align: 'right',
                 valign: 'middle',
-                sortable: 'false'
+                sortable: 'true'
             }, {
                 field: '四月',
                 title: '四月份',
                 align: 'right',
                 valign: 'middle',
-                sortable: 'false'
+                sortable: 'true'
             }, {
                 field: '五月',
                 title: '五月份',
                 align: 'right',
                 valign: 'middle',
-                sortable: 'false'
+                sortable: 'true'
             }, {
                 field: '六月',
                 title: '六月份',
                 align: 'right',
                 valign: 'middle',
-                sortable: 'false'
+                sortable: 'true'
             }, {
                 field: '七月',
                 title: '七月份',
                 align: 'right',
                 valign: 'middle',
-                sortable: 'false'
+                sortable: 'true'
             }, {
                 field: '八月',
                 title: '八月份',
                 align: 'right',
                 valign: 'middle',
-                sortable: 'false'
+                sortable: 'true'
             }, {
                 field: '九月',
                 title: '九月份',
                 align: 'right',
                 valign: 'middle',
-                sortable: 'false'
+                sortable: 'true'
             }, {
                 field: '十月',
                 title: '十月份',
                 align: 'right',
                 valign: 'middle',
-                sortable: 'false'
+                sortable: 'true'
             }, {
                 field: '十一月',
                 title: '十一月份',
                 align: 'right',
                 valign: 'middle',
-                sortable: 'false'
+                sortable: 'true'
             }, {
                 field: '十二月',
                 title: '十二月份',
                 align: 'right',
                 valign: 'middle',
-                sortable: 'false'
+                sortable: 'true'
             }],
             onLoadSuccess: function (result) {
 

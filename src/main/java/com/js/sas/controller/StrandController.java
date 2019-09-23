@@ -58,6 +58,12 @@ public class StrandController {
         } else {
             params.put("offset", "0");
         }
+        if (StringUtils.isNotBlank(request.getParameter("sort"))) {
+            params.put("sort", request.getParameter("sort").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("sortOrder"))) {
+            params.put("sortOrder", request.getParameter("sortOrder").trim());
+        }
         result.put("rows",strandService.getStrandSalesPage(params,year));
         result.put("total",strandService.getStrandSalesCount(params,year));
         return result;

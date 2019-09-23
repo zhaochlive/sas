@@ -62,6 +62,14 @@ public class StrandService {
             list.add(params.get("brand"));
         }
         sb.append(" GROUP BY brand,years)tb GROUP BY brand ");
+        if (StringUtils.isNotBlank(params.get("sort"))) {
+            if (StringUtils.isNotBlank(params.get("sortOrder"))&&"desc".equalsIgnoreCase(params.get("sortOrder"))) {
+                sb.append(" order by " + params.get("sort") + "  desc");
+            }else{
+                sb.append(" order by "+ params.get("sort") +" asc");
+            }
+        }
+
         if (StringUtils.isNotBlank(params.get("limit"))) {
             long limit = Long.parseLong(params.get("limit").trim());
             sb.append(" limit ? ");

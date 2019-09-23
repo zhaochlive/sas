@@ -63,7 +63,15 @@ public class SettlementCustomerService {
             list.add(params.get("invoiceheadup"));
             list.add(params.get("invoiceheadup"));
         }
-        sb.append(" )ta GROUP BY invoiceheadup,months )tb GROUP BY invoiceheadup");
+        sb.append(" )ta GROUP BY invoiceheadup,months )tb GROUP BY invoiceheadup ");
+        if (StringUtils.isNotBlank(params.get("sort"))) {
+            if (StringUtils.isNotBlank(params.get("sortOrder"))&&"desc".equalsIgnoreCase(params.get("sortOrder"))) {
+                sb.append(" order by " + params.get("sort") + "  desc");
+            }else{
+                sb.append(" order by "+ params.get("sort") +" asc");
+            }
+        }
+
         if (StringUtils.isNotBlank(params.get("limit"))) {
             long limit = Long.parseLong(params.get("limit").trim());
             sb.append(" limit ? ");
@@ -78,6 +86,7 @@ public class SettlementCustomerService {
         } else {
             sb.append(" offset 0 ;");
         }
+        System.out.println(sb.toString());
         return jdbcTemplate.queryForList(sb.toString(), list.toArray());
     }
 

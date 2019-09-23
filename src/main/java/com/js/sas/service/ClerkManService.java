@@ -60,6 +60,13 @@ public class ClerkManService {
             list.add(params.get("clerkname"));
         }
         sb.append(" GROUP BY clerkname,years )tb GROUP BY clerkname ");
+        if (StringUtils.isNotBlank(params.get("sort"))) {
+            if (StringUtils.isNotBlank(params.get("sortOrder"))&&"desc".equalsIgnoreCase(params.get("sortOrder"))) {
+                sb.append(" order by " + params.get("sort") + "  desc");
+            }else{
+                sb.append(" order by "+ params.get("sort") +" asc");
+            }
+        }
         if (StringUtils.isNotBlank(params.get("limit"))) {
             long limit = Long.parseLong(params.get("limit").trim());
             sb.append(" limit ? ");
