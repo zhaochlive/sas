@@ -77,6 +77,10 @@ public class SystemController {
     public String storeDetail() {
         return "pages/operations/storeDetail.html";
     }
+    @GetMapping("/storeInfo")
+    public String storeInfo() {
+        return "pages/operations/storeInfo.html";
+    }
 
     @Autowired
     private CouponStrategyService couponStrategyService;

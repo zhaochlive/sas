@@ -129,7 +129,6 @@ public class StoreDetailController {
             List<List<Object>> result = new ArrayList<>();
             List<Map<String,Object>> data = storeDetailService.getPage(requestMap);
             if(data==null){
-                System.out.println(123123);
                 return;
             }
             List<Object> objects =null;

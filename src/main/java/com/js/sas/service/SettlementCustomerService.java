@@ -6,9 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author daniel
@@ -29,12 +27,9 @@ public class SettlementCustomerService {
      */
     public List<Map<String ,Object>> getSettlementCustomerPage(Map<String ,String > params,String year){
         if(year==null) {
-            return null;
-        }else{
-            int ye = Integer.parseInt(year);
-            if(ye<2017||ye>2035){
-                return null;
-            }
+            Calendar now = Calendar.getInstance();
+            now.setTime(new Date());
+            year = now.getWeekYear()+"";
         }
         List<Object> list = new ArrayList<>();
         StringBuilder sb = new StringBuilder(" select invoiceheadup,");
@@ -86,7 +81,7 @@ public class SettlementCustomerService {
         } else {
             sb.append(" offset 0 ;");
         }
-        System.out.println(sb.toString());
+//        System.out.println(sb.toString());
         return jdbcTemplate.queryForList(sb.toString(), list.toArray());
     }
 

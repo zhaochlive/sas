@@ -2,6 +2,7 @@ package com.js.sas.controller;
 
 import com.js.sas.service.ClerkManService;
 import com.js.sas.service.SettlementCustomerService;
+import com.js.sas.utils.CommonUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,7 +11,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -65,5 +69,76 @@ public class SettlementCustomerController {
         result.put("rows",customerService.getSettlementCustomerPage(params,year));
         result.put("total",customerService.getSettlementCustomerCount(params,year));
         return result;
+    }
+
+    @PostMapping(value = "/download/excel")
+    public void download(HttpServletResponse response, HttpServletRequest request) {
+        Map<String, String> params = new HashMap<>();
+        params.put("limit", "9999999999");
+        params.put("offset", "0");
+        String year =null;
+        if (request.getParameter("years")!=null|| StringUtils.isNotBlank(request.getParameter("years"))){
+            year =request.getParameter("years");
+        }else{
+            response.setStatus(-1);
+            return ;
+        }
+        if (StringUtils.isNotBlank(request.getParameter("invoiceheadup"))){
+            params.put("invoiceheadup",request.getParameter("invoiceheadup").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
+            params.put("startDate", request.getParameter("startDate"));
+        }
+        if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
+            params.put("endDate", request.getParameter("endDate"));
+        }
+        params.put("sort", "desc");
+        params.put("sortOrder", "total");
+        List<String > columnNameList = new ArrayList<>();
+        columnNameList.add("品牌");
+        columnNameList.add("总计");
+        columnNameList.add("一月份");
+        columnNameList.add("二月份");
+        columnNameList.add("三月份");
+        columnNameList.add("四月份");
+        columnNameList.add("五月份");
+        columnNameList.add("六月份");
+        columnNameList.add("七月份");
+        columnNameList.add("八月份");
+        columnNameList.add("九月份");
+        columnNameList.add("十月份");
+        columnNameList.add("十一月份");
+        columnNameList.add("十二月份");
+
+        try {
+            List<List<Object>> result = new ArrayList<>();
+            List<Map<String,Object>> data = customerService.getSettlementCustomerPage(params,year);
+            if(data==null){
+                return;
+            }
+            List<Object> objects =null;
+            for (Map<String,Object> order : data) {
+                objects = new ArrayList<>();
+                objects.add(order.get("clerkname"));
+                objects.add(order.get("total"));
+                objects.add(order.get("一月"));
+                objects.add(order.get("二月"));
+                objects.add(order.get("三月"));
+                objects.add(order.get("四月"));
+                objects.add(order.get("五月"));
+                objects.add(order.get("六月"));
+                objects.add(order.get("七月"));
+                objects.add(order.get("八月"));
+                objects.add(order.get("九月"));
+                objects.add(order.get("十月"));
+                objects.add(order.get("十一月"));
+                objects.add(order.get("十二月"));
+
+                result.add(objects);
+            }
+            CommonUtils.exportByList(response, columnNameList, result, "客户结算统计");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

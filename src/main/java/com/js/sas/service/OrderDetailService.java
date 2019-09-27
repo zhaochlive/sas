@@ -344,6 +344,7 @@ public class OrderDetailService {
         } else {
             sb.append(" offset 0 ;");
         }
+        System.out.println(sb.toString());
         return jdbcTemplate.queryForList(sb.toString(),list.toArray());
     }
 

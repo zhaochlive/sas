@@ -234,8 +234,9 @@
                     var mTimes = new Date(date);
                     var endTimes = mTimes.valueOf()+8*60*60*1000;
                     mTimes.setTime(endTimes);
-                    return mTimes.getFullYear()+"-"+(mTimes.getMonth()+1)+"-"+(mTimes.getDay()+1)+" "+(mTimes.getHours())+":"+mTimes.getMinutes()+":"+mTimes.getSeconds();
+                    return mTimes.getFullYear()+"-"+(mTimes.getMonth()+1)+"-"+(mTimes.getDate())+" "+(mTimes.getHours())+":"+mTimes.getMinutes()+":"+mTimes.getSeconds();
                 }
+
             },{
                 field: 'orderno',
                 title: '订单编号',

@@ -6,9 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author daniel
@@ -30,12 +28,9 @@ public class StrandService {
      */
     public List<Map<String ,Object>> getStrandSalesPage(Map<String ,String > params,String year){
         if(year==null) {
-            return null;
-        }else{
-            int ye = Integer.parseInt(year);
-            if(ye<2017||ye>2035){
-                return null;
-            }
+            Calendar now = Calendar.getInstance();
+            now.setTime(new Date());
+            year = now.getWeekYear()+"";
         }
         List<Object> list = new ArrayList<>();
         StringBuilder sb = new StringBuilder(" select brand,");
