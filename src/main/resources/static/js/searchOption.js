@@ -170,7 +170,7 @@ $('.standard').typeahead({
     }
 });
 //买家公司名称填充
-$('.buyCompany').typeahead({
+$('.buyCompany ').typeahead({
     source: function (query, process) {
         $.ajax({
             type: 'POST',
@@ -188,4 +188,5 @@ $('.buyCompany').typeahead({
         });
     }
 });
+
 

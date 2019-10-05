@@ -71,26 +71,6 @@
                             </form>
                         </div>
                     </div>
-                    <table class="table table-bordere">
-                        <tr>
-                            <td id="allPayedOrders">商家订单总量：</td>
-                            <td id="allSentOrders">商家发货订单：</td>
-                            <td id="amountRate">订单金额环比|同比：</td>
-                            <td id="allPeoples">下单人数：</td>
-                            <td id="amountOfNew">新用户订单金额：</td>
-                            <td id="peopleOfNew">新用户下单人数：</td>
-                            <td id="sentInDay">当天发货：</td>
-                        </tr>
-                        <tr>
-                            <td id="unitPrice">客单价：</td>
-                            <td id="unitPriceRate">客单价环比|同比：</td>
-                            <td id="sendRate">商家发货率：</td>
-                            <td id="backRate">商家退货率：</td>
-                            <td id="partSendRate">商家部分发货比例：</td>
-                            <td id="violateRate">商家违约率：</td>
-                            <td id="ordersOfCancelRate">订单未付款超时取消比例：</td>
-                        </tr>
-                    </table>
                     <div class="ibox">
                         <div class="ibox-content">
                             <div class="row">
@@ -133,7 +113,7 @@
         $("#operations").addClass("active");
         $("#operations ul").addClass("in");
         $("#operations ul").attr("aria-expanded=\'true\'");
-        $("li[id='storeDetail']").addClass("active");
+        $("li[id='storeInfo']").addClass("active");
     });
     $('#header').load('header.html');
     $('#footer').load('footer.html');
@@ -175,16 +155,12 @@
         // 时间输入框置空判断
         $("#dateRange").on("input", function (e) {
             if ($.trim(e.delegateTarget.value) == "") {
-                // startDate = "";
-                // endDate = "";
             }
-            // console.log(startDate + new Date());
         });
 
     });
 
     $(document).ready(function () {
-        // alert(123);
         // 表单设置
         $("#dataTable table").bootstrapTable({
             method: "POST",
@@ -192,7 +168,7 @@
             cache: false,
             clickToSelect: true,
             pagination: true,
-            sortable: false,
+            sortable: true,
             pageNumber: 1,
             pageSize: 100,
             pageList: [10, 20, 50, 100],
@@ -202,9 +178,9 @@
             toggle: true,
             silent: true,
             sidePagination: "server",
-            // sortName: "name",
-            // sortOrder: "asc",
-            url: "/storeDetail/page",
+            sortName: "createdate",
+            sortOrder: "desc",
+            url: "/storeDetail/storeInfo",
             queryParams: function (params) {
                 var temp = {
                     shopname: $("input[name='shopname']").val(),
@@ -222,238 +198,67 @@
                 return temp;
             },
             columns: [{
-                field: 'shopname',
-                title: '商家名称',
-                align: 'left',
-                valign: 'middle',
-                sortable: 'false',
-                formatter: function (value, row, index){ // 单元格格式化函数
-                    var div = "<div style='width:200px;'>"+value+"</div>";//调列宽，在td中嵌套一个div，调整div大小
-                    return div;
-                }
-            }, {
-                field: '非关闭订单',
-                title: '有效订单数量',
+                field: 'createdate',
+                title: '创店时间',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'false'
+                sortable: 'true',
+                formatter: function (value, row, index) {
+                    var date = row.createdate;
+                    date = date.replace("T", " ");
+                        return date.substring(0, date.indexOf('.'));
+                    }
             }, {
-                field: '付款订单数量',
-                title: '付款订单数量',
+                field: 'companyname',
+                title: '商家公司名称',
                 align: 'center',
-                valign: 'middle',
-                sortable: 'false'
-            }, {
-                field: '发货订单数量',
-                title: '发货订单数量',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'false'
-            }, {
-                field: '下单金额',
-                title: '订单金额',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '下单金额同比',
-                title: '订单金额环比 | 同比',
-                align: 'left',
                 valign: 'middle',
                 formatter: function (value, row, index) {
-                    var tongbi = row.下单金额同比+'';
-                    var huanbi = row.下单金额环比+'';
-                    if(tongbi == null || tongbi == ''|| tongbi == 'null'){
-                        tongbi ='-';
-                    }else if(tongbi.indexOf('-') != -1){
-                        tongbi='<span style="color:#05c31b"></i>↓'+  tongbi.replace('-','')+'%'+'</span>';
+                    var date = row.createdate;
+                    var old = new Date(date);
+                    var nowdate = new Date();
+                    nowdate.setMonth(nowdate.getMonth()-1);
+                    if(old>nowdate){
+                        return value+' <img src = "../../icon/new.jpg" class="img-rounded"/>'
                     }else{
-                        tongbi='<span style="color:#ea2612"></i>↑'+ tongbi+'%'+'</span>';
+                        return value;
                     }
-                    if(huanbi == null || huanbi == ''|| huanbi == 'null'){
-                        huanbi ='-';
-                    }else if(huanbi.indexOf('-') != -1){
-                        huanbi='<span style="color:#05c31b"></i>↓'+ huanbi.replace('-','')+'%'+'</span>';
-                    }else{
-                        huanbi='<span style="color:#ea2612"></i>↑'+ huanbi+'%'+'</span>';
-                    }
-                    return huanbi+" | "+tongbi;
                 }
             }, {
-                field: '下单人数',
-                title: '下单人数',
+                field: 'shopname',
+                title: '商家店铺名称',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '首次下单金额',
-                title: '新用户订单金额',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '首次下单人数',
-                title: '新用户下单人数',
+            },{
+                field: 'cut',
+                title: '商家上架商品数量',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'true'
             },{
-                field: '客单价',
-                title: '客单价',
+                field: 'ordersize',
+                title: '商家已售订单个数',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'true'
             }, {
-                field: '同比客单价',
-                title: '&nbsp;&nbsp;&nbsp;客单价环比 | 同比&nbsp;&nbsp;&nbsp; ',
-                align: 'left',
-                valign: 'middle',
-                formatter: function (value, row, index) {
-                    var tongbi = row.同比客单价+'';
-                    var huanbi = row.环比客单价+'';
-                    if(tongbi == null || tongbi == ''|| tongbi == 'null'){
-                        tongbi ='-';
-                    }else if(tongbi.indexOf('-') != -1){
-                        tongbi='<span style="color:#05c31b"></i>↓'+  tongbi.replace('-','')+'%'+'</span>';
-                    }else{
-                        tongbi='<span style="color:#ea2612"></i>↑'+ tongbi+'%'+'</span>';
-                    }
-                    if(huanbi == null || huanbi == ''|| huanbi == 'null'){
-                        huanbi ='-';
-                    }else if(huanbi.indexOf('-') != -1){
-                        huanbi='<span style="color:#05c31b"></i>↓'+ huanbi.replace('-','')+'%'+'</span>';
-                    }else{
-                        huanbi='<span style="color:#ea2612"></i>↑'+ huanbi+'%'+'</span>';
-                    }
-                    return huanbi+" | "+tongbi;
-                }
-            }, {
-                field: '平均规格',
-                title: '订单平均规格数',
+                field: 'totalprice',
+                title: '商家已售订单总额（元）',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'true'
             }, {
-                field: '店铺发货率',
-                title: '商家部分发货比例',
+                field: 'waysalesman',
+                title: '业务员',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true',
-                formatter: function (value, row, index) { return value+" %"; }
             }, {
-                field: '店铺违约率',
-                title: '商家违约率',
+                field: 'clerkname',
+                title: '客服',
                 align: 'center',
                 valign: 'middle',
-                sortable: 'true',
-                formatter: function (value, row, index) { return value+" %"; }
-            }, {
-                field: '未付款超时取消订单',
-                title: '未付款超时取消订单比例',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true',
-                formatter: function (value, row, index) { return value+" %"; }
-            }, {
-                field: '店铺退货率',
-                title: '商家退货率',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true',
-                formatter: function (value, row, index) { return value+" %"; }
-            }, {
-                field: '当日发货',
-                title: '当日发货',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true',
-                formatter: function (value, row, index) { return value+" %"; }
-            }, {
-                field: '超时一天发货',
-                title: '超时一天发货',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true',
-                formatter: function (value, row, index) { return value+" %"; }
-            }, {
-                field: '超时两天发货',
-                title: '超时两天发货',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true',
-                formatter: function (value, row, index) { return value+" %"; }
-            }, {
-                field: '超时三天',
-                title: '超时三天',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true',
-                formatter: function (value, row, index) { return value+" %"; }
-            }, {
-                field: '低于500元订单',
-                title: '低于500元订单',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true',
-                formatter: function (value, row, index) { return value+" %"; }
-            }, {
-                field: '在500_800元订单',
-                title: '在500_800元订单',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true',
-                formatter: function (value, row, index) { return value+" %"; }
-            }, {
-                field: '在800_1200订单',
-                title: '在800_1200订单',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true',
-                formatter: function (value, row, index) { return value+" %"; }
-            }, {
-                field: '在1200_1500元订单',
-                title: '在1200_1500元订单',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true',
-                formatter: function (value, row, index) { return value+" %"; }
-            }, {
-                field: '在1500_2000元订单',
-                title: '在1500_2000元订单',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true',
-                formatter: function (value, row, index) { return value+" %"; }
-            }, {
-                field: '在2000_5000元订单',
-                title: '在2000_5000元订单',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true',
-                formatter: function (value, row, index) { return value+" %"; }
-            }, {
-                field: '在5000元以上订单',
-                title: '在5000元以上订单',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true',
-                formatter: function (value, row, index) { return value+" %"; }
             }],
             onLoadSuccess: function (result) {
-                $("#allPayedOrders").html("商家订单总量："+result.allPayedOrders);
-                $("#allSentOrders").html("商家已发货订单："+result.allSentOrders);
-                $("#amountRate").html("下单金额环比/同比："+result.amountRate);
-                $("#allPeoples").html("下单人数："+result.allPeoples);
-                $("#amountOfNew").html("新用户下单金额："+ (result.amountOfNew==null?0:result.amountOfNew));
-                $("#peopleOfNew").html("新用户下单人数："+ (result.peopleOfNew==null?0:result.peopleOfNew));
-                $("#sentInDay").html("平均发货完成率："+result.sentInDay);
-                $("#unitPrice").html("客单价："+result.unitPrice);
-                $("#unitPriceRate").html("客单价环比/同比："+result.unitPriceRate);
-                $("#sendRate").html("商家发货率："+result.sendRate);
-                $("#backRate").html("商家退货率："+result.backRate);
-                $("#partSendRate").html("商家部分发货比例："+result.partSendRate);
-                $("#violateRate").html("商家违约率："+result.violateRate);
-                $("#ordersOfCancelRate").html("订单未付款超时取消比例："+result.ordersOfCancelRate);
             },
             onLoadError: function (error) {
                 console.log(error);

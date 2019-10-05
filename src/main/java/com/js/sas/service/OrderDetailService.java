@@ -344,7 +344,6 @@ public class OrderDetailService {
         } else {
             sb.append(" offset 0 ;");
         }
-        System.out.println(sb.toString());
         return jdbcTemplate.queryForList(sb.toString(),list.toArray());
     }
 
@@ -414,7 +413,6 @@ public class OrderDetailService {
         if (params.containsKey("username")&&StringUtils.isNotBlank(params.get("username"))) {
             sb.append(" and mb.username =?");
             list.add(params.get("username").trim());
-            System.out.println(params.get("username").trim());
         }
         if (params.containsKey("waysalesman")&&StringUtils.isNotBlank(params.get("waysalesman"))) {
             sb.append(" and os.waysalesman =?");
@@ -477,7 +475,6 @@ public class OrderDetailService {
         if (params.containsKey("username")&&StringUtils.isNotBlank(params.get("username"))) {
             sb.append(" and mb.username =?");
             list.add(params.get("username").trim());
-            System.out.println(params.get("username").trim());
         }
         if (params.containsKey("waysalesman")&&StringUtils.isNotBlank(params.get("waysalesman"))) {
             sb.append(" and os.waysalesman =?");

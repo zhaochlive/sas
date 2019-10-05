@@ -41,7 +41,7 @@ public class StoreDetailController {
         Map<String, String> requestMap = new HashMap<>();
         Map<String, Object> result = new HashMap<>();
         if (request.getParameter("startDate")==null|| StringUtils.isBlank(request.getParameter("startDate"))){
-            requestMap.put("startDate",DateTimeUtils.convert(now,DateTimeUtils.DATE_FORMAT)+" 00:00:00" );
+            requestMap.put("startDate",DateTimeUtils.firstDayOfMonth(new Date()));
         }else{
             String startDate = request.getParameter("startDate");
             requestMap.put("startDate", DateTimeUtils.convert(DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT),DateTimeUtils.DATE_FORMAT)+" 00:00:00" );
@@ -168,5 +168,54 @@ public class StoreDetailController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 商家信息详情/商家详情
+     * @param request
+     * @return
+     */
+    @RequestMapping(value = "storeInfo",method = RequestMethod.POST)
+    @ResponseBody
+    public Object storeInfo(HttpServletRequest request) {
+        Date now = new Date();
+        Map<String, String> requestMap = new HashMap<>();
+        Map<String, Object> result = new HashMap<>();
+        //当天
+        if (request.getParameter("startDate")==null|| StringUtils.isBlank(request.getParameter("startDate"))){
+//            requestMap.put("startDate",DateTimeUtils.convert(DateTimeUtils.addTime(now,-1,DateTimeUtils.MONTH) ,DateTimeUtils.DATE_FORMAT)+" 00:00:00" );
+        }else{
+            String startDate = request.getParameter("startDate");
+            requestMap.put("startDate", DateTimeUtils.convert(DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT),DateTimeUtils.DATE_FORMAT)+" 00:00:00" );
+        }
+        if (request.getParameter("endDate")==null|| StringUtils.isBlank(request.getParameter("endDate"))){
+            requestMap.put("endDate",DateTimeUtils.convert(now,DateTimeUtils.DATE_FORMAT)+" 23:59:59" );
+        }else{
+            String startDate = request.getParameter("endDate");
+            requestMap.put("endDate", DateTimeUtils.convert(DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT),DateTimeUtils.DATE_FORMAT)+" 23:59:59" );
+        }
+        if (StringUtils.isNotBlank(request.getParameter("shopname"))){
+            requestMap.put("shopname",request.getParameter("shopname").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("sort"))) {
+            requestMap.put("sort", request.getParameter("sort").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("sortOrder"))) {
+            requestMap.put("sortOrder", request.getParameter("sortOrder").trim());
+        }
+        if (StringUtils.isNotBlank(request.getParameter("limit"))) {
+            requestMap.put("limit", request.getParameter("limit"));
+        } else {
+            requestMap.put("limit", "100");
+        }
+        if (StringUtils.isNotBlank(request.getParameter("offset"))) {
+            requestMap.put("offset", request.getParameter("offset"));
+        } else {
+            requestMap.put("offset", "0");
+        }
+        List<Map<String, Object>> page = storeDetailService.getStoreInfo(requestMap);
+        result.put("rows", page);
+        result.put("total", storeDetailService.getStoreInfoCount(requestMap));
+        return result;
     }
 }

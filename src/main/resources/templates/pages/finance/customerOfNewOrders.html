@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="../../css/style.css">
     <link rel="stylesheet" type="text/css" href="../../css/daterangepicker.css"/>
 
-    <title>统计分析系统 - 销售 -新下单客户统计</title>
+    <title>统计分析系统 - 销售 - 新下单客户统计</title>
 </head>
 <body>
 <div id="wrapper">
@@ -123,6 +123,7 @@
 <script src="../../js/daterangepicker.min.js"></script>
 <script src="../../js/typeahead.min.js"></script>
 <script src="../../js/searchOption.js"></script>
+<script src="../../js/common.js"></script>
 
 <script>
     // 设置展开和选中的菜单
@@ -142,8 +143,10 @@
     var endDate = "";
     // 时间选择插件
     $('input[name="dateRange"]').daterangepicker({
-        timePicker: false,
-        autoUpdateInput: false,
+        startDate:todaySt(),
+        endDate:todaySt(),
+        timePicker: true,
+        autoUpdateInput: true,
         showDropdowns: true,
         autoApply: true,
         locale: {
@@ -176,15 +179,18 @@
             if ($.trim(e.delegateTarget.value) == "") {
                 startDate = "";
                 endDate = "";
+            }else {
+                startDate = $("#startDate").val();
+                endDate = $("#endDate").val();
             }
-            // console.log(startDate + new Date());
         });
 
     });
 
 
     $(document).ready(function () {
-        // alert(123);
+        startDate = todaySt();
+        endDate = todaySt();
         // 表单设置
         $("#dataTable table").bootstrapTable({
             method: "POST",

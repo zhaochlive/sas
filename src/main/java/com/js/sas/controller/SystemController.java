@@ -60,6 +60,11 @@ public class SystemController {
         return "pages/operations/repurchaseRate.html";
     }
 
+    @GetMapping("/repurchaseRateImage")
+    public String repurchaseRateImage() {
+        return "pages/operations/repurchaseRateImage.html";
+    }
+
     @GetMapping("/customerOfNewOrders")
     public String customerOfNewOrders() {
         return "pages/finance/customerOfNewOrders.html";

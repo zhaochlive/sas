@@ -42,7 +42,7 @@ public class StoreDetailService {
 
             List<Object> list = new ArrayList<>();
             StringBuilder sb = new StringBuilder();
-            sb.append("SELECT ss.shopname,SUM (付款订单数量) 付款订单数量,sum(非关闭订单) 非关闭订单,SUM (发货订单数量) 发货订单数量,SUM (ss.下单金额) 下单金额,");
+            sb.append("SELECT ss.shopname,mm.waysalesman,mm.clerkname,SUM (付款订单数量) 付款订单数量,sum(非关闭订单) 非关闭订单,SUM (发货订单数量) 发货订单数量,SUM (ss.下单金额) 下单金额,");
             sb.append(" round((SUM(ss.下单金额)/Lastmonth.下单金额-1)* 100,2) 下单金额环比,Lastmonth.下单金额 上月下单金额,Lastyear.下单金额 去年下单金额,");
             sb.append(" round((SUM(ss.下单金额)/Lastyear.下单金额-1)* 100,2)  下单金额同比,");
             sb.append(" COUNT(ss.memberid) 下单人数, mi.首次下单金额,mi.首次下单人数,round(avg(ss.规格),4) 平均规格,sum(ss.当日发货) 当日发货量,");
@@ -67,10 +67,10 @@ public class StoreDetailService {
             sb.append(" (CASE WHEN SUM (付款订单数量) = 0 THEN 0 ELSE round(sum(in_1500_2000)/SUM (付款订单数量) * 100,2) END ) 在1500_2000元订单 ,");
             sb.append(" (CASE WHEN SUM (付款订单数量) = 0 THEN 0 ELSE round(sum(in_2000_5000)/SUM (付款订单数量) * 100,2) END ) 在2000_5000元订单 ,");
             sb.append(" (CASE WHEN SUM (付款订单数量) = 0 THEN 0 ELSE round(sum(more_5000)/SUM (付款订单数量) * 100,2) END ) 在5000元以上订单 ");
-            sb.append(" FROM (SELECT  os.shopname,");
+            sb.append(" FROM (SELECT  os.shopname,os.saleid,");
             sb.append(" SUM ( CASE WHEN os.orderstatus IN ( 0, 1, 3, 4, 5, 8, 9, 10 ) THEN 1 ELSE 0 END ) 非关闭订单,");
             sb.append(" SUM ( CASE WHEN os.orderstatus IN ( 1, 3, 4, 5, 8, 9, 10 ) THEN 1 ELSE 0 END ) 付款订单数量,");
-            sb.append(" SUM ( CASE WHEN os.orderstatus IN ( 1, 3, 4, 5 ) THEN 1 ELSE 0 END ) 发货订单数量,");
+            sb.append(" SUM ( CASE WHEN os.orderstatus IN ( 3, 4, 5 ) THEN 1 ELSE 0 END ) 发货订单数量,");
             sb.append(" SUM (CASE WHEN os.orderstatus IN ( 1, 3, 4, 5, 8, 9, 10 ) THEN os.totalprice ELSE 0 END ) 下单金额,");
             sb.append(" SUM ( CASE WHEN os.orderstatus = 10 THEN 1 ELSE 0 END ) 部分发货订单,");
             sb.append(" SUM ( CASE WHEN os.orderstatus = 7 THEN 1 ELSE 0 END ) 未付款超时取消订单,");
@@ -112,7 +112,7 @@ public class StoreDetailService {
             if(params.containsKey("shopname")){
                 sb.append( " and os.shopname ='"+params.get("shopname").trim()+"'");
             }
-            sb.append(" GROUP BY os.shopname,os.memberid ) ss ");
+            sb.append(" GROUP BY os.shopname,os.memberid ,os.saleid) ss ");
             //同比数据
             sb.append(" LEFT JOIN (select sum (下单金额) 下单金额,COUNT(memberid )下单人数,shopname from ( ");
             sb.append(" SELECT SUM(totalprice) 下单金额,memberid, COUNT(1) ordernum ,shopname FROM orders ");
@@ -127,7 +127,8 @@ public class StoreDetailService {
             sb.append(" LEFT JOIN (select count(1) 首次下单人数,shopname,sum(totalprice) 首次下单金额 from ( SELECT ID, totalprice, memberid, shopname, createtime firstTime, orderstatus  ");
             sb.append(" FROM orders WHERE ID IN ( SELECT MIN ( ID ) ID FROM orders GROUP BY memberid )  ");
             sb.append(" and createtime>='"+startDate+"' and createtime <='"+endDate+"')ss GROUP BY shopname) mi ON mi.shopname = ss.shopname ");
-            sb.append(" GROUP BY ss.shopname,Lastmonth.下单人数,Lastyear.下单人数,Lastmonth.下单金额,Lastyear.下单金额,mi.首次下单人数,mi.首次下单金额 ");
+            sb.append(" left JOIN member mm on mm.id = ss.saleid ");
+            sb.append(" GROUP BY ss.shopname,Lastmonth.下单人数,Lastyear.下单人数,Lastmonth.下单金额,Lastyear.下单金额,mi.首次下单人数,mi.首次下单金额,mm.waysalesman,mm.clerkname ");
             sb.append(" ORDER BY 付款订单数量 DESC ");
             if (StringUtils.isNotBlank(params.get("limit"))) {
                 long limit = Long.parseLong(params.get("limit").trim());
@@ -191,7 +192,7 @@ public class StoreDetailService {
             sb.append(" round(sum(total.退货订单总数)/sum(付款订单数量)*100,2)||'%' 总店铺退货率,");
             sb.append(" round(sum(total.超时取消订单总数)/sum(付款订单数量)*100,2)||'%' 总未付款超时取消订单,");
             sb.append(" round(sum(total.当日发货总数)/sum(发货订单数量)*100,2)||'%' 总当日发货总数率,");
-            sb.append(" sum(total.卖家违约订单总数),sum(total.付款订单数量) 付款订单总数,sum(total.发货订单数量) 发货订单总数,sum(total.下单人数)下单总人数, ");
+            sb.append(" sum(total.卖家违约订单总数),sum(total.付款订单数量) 付款订单总数,sum(total.发货订单数量) 发货订单总数,sum(total.下单人数)下单总人数,sum(总订单) 总订单, ");
             sb.append(" sum(total.首次下单人数) 新用户下单总人数,sum(total.首次下单金额) 新用户下单总金额 ");
 
             sb.append(" from ( SELECT ss.shopname,SUM (付款订单数量) 付款订单数量,SUM (发货订单数量) 发货订单数量,SUM (ss.下单金额) 下单金额,");
@@ -224,7 +225,7 @@ public class StoreDetailService {
             sb.append(" FROM (SELECT  os.shopname,");
             sb.append(" SUM ( CASE WHEN os.orderstatus IN ( 0, 1, 3, 4, 5, 8, 9, 10 ) THEN 1 ELSE 0 END ) 非关闭订单,");
             sb.append(" SUM ( CASE WHEN os.orderstatus IN ( 1, 3, 4, 5, 8, 9, 10 ) THEN 1 ELSE 0 END ) 付款订单数量,");
-            sb.append(" SUM ( CASE WHEN os.orderstatus IN ( 1, 3, 4, 5 ) THEN 1 ELSE 0 END ) 发货订单数量,");
+            sb.append(" SUM ( CASE WHEN os.orderstatus IN ( 3, 4, 5 ) THEN 1 ELSE 0 END ) 发货订单数量,");
             sb.append(" SUM (CASE WHEN os.orderstatus IN ( 1, 3, 4, 5, 8, 9, 10 ) THEN os.totalprice ELSE 0 END ) 下单金额,");
             sb.append(" SUM ( CASE WHEN os.orderstatus = 10 THEN 1 ELSE 0 END ) 部分发货订单,");
             sb.append(" SUM ( CASE WHEN os.orderstatus = 7 THEN 1 ELSE 0 END ) 未付款超时取消订单,");
@@ -281,12 +282,14 @@ public class StoreDetailService {
             sb.append(" LEFT JOIN (select count(1) 首次下单人数,shopname,sum(totalprice) 首次下单金额 from ( SELECT ID, totalprice, memberid, shopname, createtime firstTime, orderstatus  ");
             sb.append(" FROM orders WHERE ID IN ( SELECT MIN ( ID ) ID FROM orders GROUP BY memberid )  ");
             sb.append(" and createtime>='"+startDate+"' and createtime <='"+endDate+"')ss GROUP BY shopname) mi ON mi.shopname = ss.shopname ");
+
             sb.append(" GROUP BY ss.shopname,Lastmonth.下单人数,Lastyear.下单人数,Lastmonth.下单金额,Lastyear.下单金额,mi.首次下单人数,mi.首次下单金额 ");
             sb.append(" ORDER BY 付款订单数量 DESC )total; ");
 
             Map<String, Object> maps = jdbcTemplate.queryForMap(sb.toString());
             Map<String, Object> result = new HashMap<>();
-            result.put("allPayedOrders", maps.get("付款订单总数"));
+            result.put("allPayedOrders", maps.get("总订单"));
+//            result.put("allPayedOrders", maps.get("付款订单总数"));
             result.put("allSentOrders", maps.get("发货订单总数"));
             result.put("allPeoples", maps.get("下单总人数"));
             result.put("amountRate",  maps.get("环比金额")+"|"+maps.get("同比金额"));
@@ -303,5 +306,54 @@ public class StoreDetailService {
             return result;
         }
         return null;
+    }
+
+    public List<Map<String, Object>> getStoreInfo(Map<String, String> params) {
+
+        StringBuilder sb = new StringBuilder();
+        List<Object> list = new ArrayList<>();
+        sb.append("select sc.memberid,sc.id,sc.companyname,sc.shopname,sc.createdate,o.orderSize,o.totalprice,M.waysalesman,m.clerkname,count(p.*) cut");
+        sb.append(" from sellercompanyinfo sc left JOIN ProductInfo P on SC.memberid=P.memberid and P.type= 0 and p.pdstate = 4  ");
+        sb.append(" left join productStore S on P.id = S.pdid ");
+        sb.append(" left join (select count(1) orderSize, sum(totalprice) totalprice,saleid from orders where orderstatus !=7 GROUP BY saleid) o on o.saleid = p.memberid");
+        sb.append(" join member M on M.id = sc.memberid where sc.shopstate = 0 ");
+        sb.append(" ");
+        sb.append(" GROUP BY sc.memberid,sc.id,o.orderSize,o.totalprice,M.waysalesman,m.clerkname ");
+//        sb.append(" order by sc.createdate DESC ");
+        if (StringUtils.isNotBlank(params.get("sort"))) {
+            if (StringUtils.isNotBlank(params.get("sortOrder"))&&"desc".equalsIgnoreCase(params.get("sortOrder"))) {
+                sb.append(" order by " + params.get("sort") + "  desc");
+            }else{
+                sb.append(" order by "+ params.get("sort") +" asc");
+            }
+        }
+        if (StringUtils.isNotBlank(params.get("limit"))) {
+            long limit = Long.parseLong(params.get("limit").trim());
+            sb.append(" limit ? ");
+            list.add(limit);
+        } else {
+            sb.append(" limit 10 ");
+        }
+        if (StringUtils.isNotBlank(params.get("offset"))) {
+            long offset = Long.parseLong(params.get("offset").trim());
+            sb.append(" offset ? ;");
+            list.add(offset);
+        } else {
+            sb.append(" offset 0 ");
+        }
+        List<Map<String, Object>> maps = jdbcTemplate.queryForList(sb.toString(),list.toArray());
+        return maps;
+    }
+
+    public Long getStoreInfoCount(Map<String, String> params) {
+
+        StringBuilder sb = new StringBuilder();
+        List<Object> list = new ArrayList<>();
+        sb.append("select count(1) cut from (");
+        sb.append(" select sc.memberid from sellercompanyinfo sc Join member M on M.id=sc.memberid where 1=1 ");
+        sb.append(" ");
+        sb.append(" GROUP BY sc.memberid )tb");
+
+        return jdbcTemplate.queryForObject(sb.toString(),Long.class);
     }
 }

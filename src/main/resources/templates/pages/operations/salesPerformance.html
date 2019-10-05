@@ -295,11 +295,6 @@
                 sortable: 'false'
             }],
             onLoadSuccess: function (result) {
-                console.info(result.performance);
-                // 设置导出limit值
-                // if (result.total) {
-                //     $("#limit").val(result.total);
-                // }
                 $("#salesMan").html("业务员："+result.waysalesman);
                 $("#performance").html("业绩总额："+result.performance);
                 if(result.total==0){

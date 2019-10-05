@@ -28,7 +28,6 @@ function loadTable(){
         },
         dataType: "json",
         success: function (resultData) {
-            // console.info(resultData);
             keys=resultData;
             if(resultData){
                 $.each(resultData,function(index,value){
@@ -54,11 +53,10 @@ function initTable(colums,data){
         // sortOrder: "desc",     //排序方式
         sortName: "总下单量",
         sortOrder: "DESC",
-        // height: 580,
+        height: 580,
         pageNumber: 1,
         pageSize: 100,
         pageList: [10, 20, 50, 100],
-        clickToSelect: true,
         locale: "zh-CN",
         striped: true,
         toggle: true,

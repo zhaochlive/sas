@@ -10,7 +10,7 @@
     <link rel="stylesheet" type="text/css" href="../../css/daterangepicker.css"/>
     <link rel="stylesheet" href="../../css/style.css">
 
-    <title>统计分析系统 - 财务 - 客户对账单</title>
+    <title>统计分析系统 - 财务 - 线上客户对账单</title>
 </head>
 <body>
 <div id="wrapper">
@@ -28,7 +28,7 @@
                 <div class="col-lg-12">
                     <div class="ibox">
                         <div class="ibox-title">
-                            <h5>客户对账单</h5>
+                            <h5>线上客户对账单</h5>
                             <div class="ibox-tools">
                                 <a class="collapse-link">
                                     <i class="fa fa-chevron-up"></i>
@@ -71,7 +71,8 @@
                                         <div class="form-group row col-sm-4">
                                             <label class="col-sm-3 col-form-label">下单公司名称：</label>
                                             <div class="col-sm-9">
-                                                <input type="text" placeholder="下单公司名称" name="companyname" id="companyname" class="settlementName form-control"/>
+                                                <input type="text" placeholder="下单公司名称" name="companyname" id="companyname"
+                                                       class="buyCompany form-control"/>
                                             </div>
                                         </div>
                                     </div>
@@ -148,11 +149,13 @@
 <script src="../../js/bootstrap-table.min.js"></script>
 <script src="../../js/bootstrap-table-export.min.js"></script>
 <script src="../../js/bootstrap-table-zh-CN.min.js"></script>
+<script src="../../js/typeahead.min.js"></script>
 <script src="../../js/searchOption.js"></script>
-
+<script src="../../js/common.js"></script>
 <script type="text/javascript" src="../../js/moment.min.js"></script>
 <script type="text/javascript" src="../../js/daterangepicker.min.js"></script>
 <script type="text/javascript" src="../../js/typeahead.min.js"></script>
+
 <script>
     // 设置菜单
     $('#side-menu').load('left.html', function () {
@@ -169,8 +172,10 @@
     var endDate = "";
 
     $('input[name="dateRange"]').daterangepicker({
-        timePicker: false,
-        autoUpdateInput: false,
+        startDate:firstDayOfMonthSt(),
+        endDate:todaySt(),
+        timePicker: true,
+        autoUpdateInput: true,
         showDropdowns: true,
         autoApply: true,
         locale: {
@@ -199,11 +204,13 @@
 
         // 时间输入框置空判断
         $("#dateRange").on("input",function(e){
-            if($.trim(e.delegateTarget.value) == "") {
+            if ($.trim(e.delegateTarget.value) == "") {
                 startDate = "";
                 endDate = "";
+            }else {
+                startDate = $("#startDate").val();
+                endDate = $("#endDate").val();
             }
-            // console.log(startDate + new Date());
         });
     });
 
@@ -232,6 +239,9 @@
         if(date==null||date==''){
             startDate=null;
             endDate=null;
+        }else{
+            startDate = firstDayOfMonthSt();
+            endDate = todaySt();
         }
         var $dataTable = $("#dataTable table").bootstrapTable({
             method: "POST",
@@ -412,6 +422,5 @@
     });
 
 </script>
-
 
 </html>

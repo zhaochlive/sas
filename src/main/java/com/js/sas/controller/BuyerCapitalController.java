@@ -61,12 +61,12 @@ public class BuyerCapitalController {
         if (params.containsKey("companyname") && StringUtils.isNoneBlank(params.get("companyname"))) {
             b = true;
         }
-        if (params.containsKey("startDate") && StringUtils.isNoneBlank(params.get("startDate"))) {
-            b = true;
-        }
-        if (params.containsKey("endDate") && StringUtils.isNoneBlank(params.get("endDate"))) {
-            b = true;
-        }
+//        if (params.containsKey("startDate") && StringUtils.isNoneBlank(params.get("startDate"))) {
+//            b = true;
+//        }
+//        if (params.containsKey("endDate") && StringUtils.isNoneBlank(params.get("endDate"))) {
+//            b = true;
+//        }
         if (b) {
             return buyerCapitalService.getAccountsPayable(params);
         } else {

@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Service;
 
+import javax.validation.constraints.NotNull;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -59,7 +60,7 @@ public class RepurchaseRateService {
             return null;
         }
         StringBuilder groupBy = new StringBuilder();
-        StringBuilder sb = new StringBuilder("SELECT mb.realname,mb.mobile,bc.companyname ,od.waysalesman,mb.clerkname,count(1) 总下单量,min(createtime) firstTime,tb.* from orders od left join ( select ");
+        StringBuilder sb = new StringBuilder("SELECT mb.realname,mb.mobile,bc.companyname ,mb.waysalesman,mb.clerkname,count(1) 总下单量,min(createtime) firstTime,tb.* from orders od left join ( select ");
         List<String> colums = getColums(param);
         List<Object> list = new ArrayList<>();
         for (String colum : colums) {
@@ -98,7 +99,7 @@ public class RepurchaseRateService {
         }
         sb.append("  GROUP BY ");
         sb.append(groupBy);
-        sb.append(" tb.memberid,mb.realname,bc.companyname,mb.mobile,od.waysalesman,mb.clerkname  ");
+        sb.append(" tb.memberid,mb.realname,bc.companyname,mb.mobile,mb.waysalesman,mb.clerkname  ");
         if (StringUtils.isNotBlank(param.get("sort"))) {
             if (StringUtils.isNotBlank(param.get("sortOrder"))&&"desc".equalsIgnoreCase(param.get("sortOrder"))) {
                 sb.append(" order by " + param.get("sort") + "  desc");
@@ -108,8 +109,6 @@ public class RepurchaseRateService {
         }else {
             sb.append(" order by count(1) desc ");
         }
-
-
         if (StringUtils.isNotBlank(param.get("limit"))) {
             long limit = Long.parseLong(param.get("limit").trim());
             sb.append(" limit ? ");
@@ -181,5 +180,78 @@ public class RepurchaseRateService {
     public  List<Map<String, Object>> countGroup() {
         String  sql ="select count(1) cot ,cut from ( select count(1) cut ,memberid from orders GROUP BY memberid) ss GROUP BY cut ORDER BY cut desc;";
         return jdbcTemplate.queryForList(sql);
+    }
+
+    /**
+     * 查询复购次数
+     * @param param
+     * @return
+     */
+    public List<Map<String, Object>> repurchaseRate(Map<String, String> param) {
+        try {
+            List<Object> list = new ArrayList<>();
+            StringBuilder sb = new StringBuilder("select count(1) num,nam from ( select count(1) nam from orders where id not in (");
+            sb.append(" select min(id) from orders where orderstatus !=7 GROUP BY memberid ) and orderstatus !=7 ");
+            if (param.get("startDate") != null && StringUtils.isNotBlank(param.get("startDate"))) {
+                sb.append(" and createtime >= ?");
+                list.add(DateUtils.parseDate(param.get("startDate") + " 00:00:00","YYYY-MM-dd HH:mm:ss"));
+            }
+            if (param.get("endDate") != null && StringUtils.isNotBlank(param.get("endDate"))) {
+                sb.append(" and createtime <= ?");
+                list.add(DateUtils.parseDate(param.get("endDate") + " 23:59:59","YYYY-MM-dd HH:mm:ss"));
+            }
+            sb.append(" GROUP BY memberid ) tb GROUP BY nam");
+            return  jdbcTemplate.queryForList(sb.toString(),list.toArray());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     *
+     * @param type 计算类型 = / >= / <= / !=
+     * @param num 数量
+     * @param param
+     * @return
+     */
+    public Double getRepurchaseNum(String type,@NotNull int  num , Map<String, String> param){
+        List<Object> list = new ArrayList<>();
+        StringBuilder sb = new StringBuilder("select count(1) from( select count(1) cut from orders where orderstatus !=7 ");
+        try {
+            if (param.get("startDate") != null && StringUtils.isNotBlank(param.get("startDate"))) {
+                sb.append(" and createtime >= ?");
+                list.add(DateUtils.parseDate(param.get("startDate") + " 00:00:00","YYYY-MM-dd HH:mm:ss"));
+            }
+            if (param.get("endDate") != null && StringUtils.isNotBlank(param.get("endDate"))) {
+                sb.append(" and createtime <= ?");
+                list.add(DateUtils.parseDate(param.get("endDate") + " 23:59:59","YYYY-MM-dd HH:mm:ss"));
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        sb.append(" GROUP BY memberid )s WHERE 1=1");
+        if(type!=null||StringUtils.isNotBlank(type)){
+            if(type.equals("=")){
+                sb.append(" and cut = ?");
+                list.add(num);
+            }else if(type.equals(">=")){
+                sb.append(" and cut >= ?");
+                list.add(num);
+            }else if(type.equals("<=")){
+                sb.append(" and cut <= ?");
+                list.add(num);
+            }else if(type.equals("!=")){
+                sb.append(" and cut != ?");
+                list.add(num);
+            }else if(type.equals("<")){
+                sb.append(" and cut < ?");
+                list.add(num);
+            }else if(type.equals(">")){
+                sb.append(" and cut > ?");
+                list.add(num);
+            }
+        }
+        return jdbcTemplate.queryForObject(sb.toString(),list.toArray(),Double.class);
     }
 }

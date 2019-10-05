@@ -72,14 +72,14 @@ public class RepurchaseRateController {
         }
         if(StringUtils.isNotBlank(request.getParameter("startDate"))){
             map.put("startDate",request.getParameter("startDate"));
-        }else{
-            Calendar cal = Calendar.getInstance();
-            map.put("startDate",cal.get(Calendar.YEAR)+"-01-01");
+//        }else{
+//            Calendar cal = Calendar.getInstance();
+//            map.put("startDate",cal.get(Calendar.YEAR)+"-01-01");
         }
         if(StringUtils.isNotBlank(request.getParameter("endDate"))){
             map.put("endDate",request.getParameter("endDate"));
-        }else {
-            map.put("endDate",DateTimeUtils.convert(new Date(),DateTimeUtils.DATE_FORMAT));
+//        }else {
+//            map.put("endDate",DateTimeUtils.convert(new Date(),DateTimeUtils.DATE_FORMAT));
         }
         if (StringUtils.isNotBlank(request.getParameter("companyname"))) {
             map.put("companyname", request.getParameter("companyname").trim());
@@ -216,6 +216,35 @@ public class RepurchaseRateController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @GetMapping("repurchaseRateData")
+    @ResponseBody
+    public Object repurchaseRateData(HttpServletRequest request){
+        Map<String, String> params = new HashMap<>();
+        if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
+            params.put("startDate", request.getParameter("startDate"));
+        }
+        if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
+            params.put("endDate", request.getParameter("endDate"));
+        }
+        return repurchaseRateService.repurchaseRate(params);
+    }
+    @PostMapping("repurchaseRate")
+    @ResponseBody
+    public Object repurchaseRate(HttpServletRequest request){
+        Map<String, String> params = new HashMap<>();
+        if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
+            params.put("startDate", request.getParameter("startDate"));
+        }
+        if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
+            params.put("endDate", request.getParameter("endDate"));
+        }
+        Double moreThanOne = repurchaseRateService.getRepurchaseNum(">", 1, params);
+        Double all = repurchaseRateService.getRepurchaseNum(">=", 1, params);
+
+        System.out.println(moreThanOne  + ""+all);
+        return moreThanOne/all*100;
     }
 
 }

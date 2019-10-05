@@ -83,7 +83,7 @@
                         </tr>
                         <tr>
                             <td id="unitPrice">客单价：</td>
-                            <td id="unitPriceRate">客单价环比|同比：</td>
+                            <td id="unitPriceRate" >客单价环比|同比：</td>
                             <td id="sendRate">商家发货率：</td>
                             <td id="backRate">商家退货率：</td>
                             <td id="partSendRate">商家部分发货比例：</td>
@@ -124,6 +124,7 @@
 <script src="../../js/daterangepicker.min.js"></script>
 <script src="../../js/typeahead.min.js"></script>
 <script src="../../js/searchOption.js"></script>
+<script src="../../js/common.js"></script>
 
 <script>
     // 设置展开和选中的菜单
@@ -143,8 +144,10 @@
     var endDate = "";
     // 时间选择插件
     $('input[name="dateRange"]').daterangepicker({
-        timePicker: false,
-        autoUpdateInput: false,
+        startDate:firstDayOfMonthSt(),
+        endDate:todaySt(),
+        timePicker: true,
+        autoUpdateInput: true,
         showDropdowns: true,
         autoApply: true,
         locale: {
@@ -175,16 +178,20 @@
         // 时间输入框置空判断
         $("#dateRange").on("input", function (e) {
             if ($.trim(e.delegateTarget.value) == "") {
-                // startDate = "";
-                // endDate = "";
+                startDate = "";
+                endDate = "";
+            }else {
+                startDate = $("#startDate").val();
+                endDate = $("#endDate").val();
             }
-            // console.log(startDate + new Date());
         });
 
     });
 
     $(document).ready(function () {
-        // alert(123);
+        // alert($("#startDate").val());
+        startDate = firstDayOfMonthSt();
+        endDate = todaySt();
         // 表单设置
         $("#dataTable table").bootstrapTable({
             method: "POST",
@@ -229,6 +236,21 @@
                 sortable: 'false',
                 formatter: function (value, row, index){ // 单元格格式化函数
                     var div = "<div style='width:200px;'>"+value+"</div>";//调列宽，在td中嵌套一个div，调整div大小
+                    return div;
+                }
+            }, {
+                field: 'waysalesman',
+                title: '业务员',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'false'
+            }, {
+                field: 'clerkname',
+                title: '客服',
+                align: 'center',
+                valign: 'middle' ,
+                formatter: function (value, row, index){
+                    var div = "<div style='width:50px;'>"+(value==null?'':value)+"</div>";//调列宽，在td中嵌套一个div，调整div大小
                     return div;
                 }
             }, {
@@ -440,20 +462,20 @@
                 formatter: function (value, row, index) { return value+" %"; }
             }],
             onLoadSuccess: function (result) {
-                $("#allPayedOrders").html("商家订单总量："+result.allPayedOrders);
-                $("#allSentOrders").html("商家已发货订单："+result.allSentOrders);
-                $("#amountRate").html("下单金额环比/同比："+result.amountRate);
-                $("#allPeoples").html("下单人数："+result.allPeoples);
+                $("#allPayedOrders").html("商家订单总量："+(result.allPayedOrders==null?0:result.allPayedOrders));
+                $("#allSentOrders").html("商家已发货订单："+(result.allSentOrders==null?0:result.allSentOrders));
+                $("#amountRate").html("下单金额环比/同比："+(result.amountRate==null?"0%":result.amountRate));
+                $("#allPeoples").html("下单人数："+(result.allPeoples==null?0:result.allPeoples));
                 $("#amountOfNew").html("新用户下单金额："+ (result.amountOfNew==null?0:result.amountOfNew));
                 $("#peopleOfNew").html("新用户下单人数："+ (result.peopleOfNew==null?0:result.peopleOfNew));
-                $("#sentInDay").html("平均发货完成率："+result.sentInDay);
-                $("#unitPrice").html("客单价："+result.unitPrice);
-                $("#unitPriceRate").html("客单价环比/同比："+result.unitPriceRate);
-                $("#sendRate").html("商家发货率："+result.sendRate);
-                $("#backRate").html("商家退货率："+result.backRate);
-                $("#partSendRate").html("商家部分发货比例："+result.partSendRate);
-                $("#violateRate").html("商家违约率："+result.violateRate);
-                $("#ordersOfCancelRate").html("订单未付款超时取消比例："+result.ordersOfCancelRate);
+                $("#sentInDay").html("平均当天发货完成率："+(result.sentInDay==null?"0%":result.sentInDay));
+                $("#unitPrice").html("客单价："+(result.unitPrice==null?0:result.unitPrice));
+                $("#unitPriceRate").html("客单价环比/同比："+(result.unitPriceRate==null?"0%":result.unitPriceRate));
+                $("#sendRate").html("商家发货率："+(result.sendRate==null?"0%":result.sendRate));
+                $("#backRate").html("商家退货率："+(result.backRate==null?"0%":result.backRate));
+                $("#partSendRate").html("商家部分发货比例："+(result.partSendRate==null?"0%":result.partSendRate));
+                $("#violateRate").html("商家违约率："+(result.violateRate==null?"0%":result.violateRate));
+                $("#ordersOfCancelRate").html("订单未付款超时取消比例："+(result.ordersOfCancelRate==null?"0%":result.ordersOfCancelRate));
             },
             onLoadError: function (error) {
                 console.log(error);
