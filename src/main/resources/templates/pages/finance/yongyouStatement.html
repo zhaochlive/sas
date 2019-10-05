@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="../../css/style.css">
     <link rel="stylesheet" href="../../css/bootstrap-datetimepicker.min.css">
+    <link rel="stylesheet" href="../../plugins/toastr/toastr.min.css">
 
     <title>统计分析系统 - 财务 - 用友对账单</title>
 </head>
@@ -66,6 +67,14 @@
                                     </button>
                                     <button type="button" class="btn btn-default pull-right" id="refresh"
                                             style="margin-left:20px;">清 空
+                                    </button>
+                                    <button type="button" class="btn btn-default pull-right" id="export"
+                                            style="margin-left:20px;">
+                                        导出Excel
+                                    </button>
+                                    <button type="button" class="btn btn-default pull-right" id="exportAll"
+                                            style="margin-left:20px; float:right;">
+                                        导出全部对账单
                                     </button>
                                 </div>
                             </form>
@@ -232,6 +241,7 @@
 <script src="../../js/typeahead.min.js"></script>
 <script src="../../js/bootstrap-datetimepicker.min.js"></script>
 <script src="../../js/locales/bootstrap-datetimepicker.zh-CN.js"></script>
+<script src="../../plugins/toastr/toastr.min.js"></script>
 
 <script>
     // 设置菜单
@@ -246,6 +256,21 @@
     $('#footer').load('footer.html');
 
     $(document).ready(function () {
+        toastr.options = {
+            closeButton: true,
+            debug: false,
+            progressBar: false,
+            positionClass: "toast-top-center",
+            onclick: null,
+            showDuration: "300",
+            hideDuration: "1000",
+            timeOut: "5000",
+            extendedTimeOut: "1000",
+            showEasing: "swing",
+            hideEasing: "linear",
+            showMethod: "fadeIn",
+            hideMethod: "fadeOut"
+        };
 
         $('.form_datetime').datetimepicker({
             format: 'yyyy-mm',
@@ -259,6 +284,15 @@
 
         // 查询按钮
         $("button[id='search']").click(function () {
+
+            $("button[id='export']").attr('disabled',false);
+            $("button[id='exportAll']").attr('disabled',false);
+
+            if ($("input[name='period']").val() == '' || $("input[name='name']").val() == '') {
+                toastr.error('请填写 对账名称 和 账期');
+                return;
+            }
+
             $.ajax({
                 type: 'POST',
                 url: "/finance/findYonyouStatement",
@@ -274,142 +308,171 @@
                     var invoiceTotal = 0;
                     var invoiceBalanceTotal = 0;
 
-                    $.each(JSON.parse(result.data).reportContent, function (index, value) {
-                        if (value.explan == "线上") {
-                            $('#onlineSettlementName').html(value.settleCustomer + " - 线上");
-                            $('#onlineSettlementDate').html("日期：" + value.queryStartDate + " - " + value.queryEndDate);
+                    if (result.data != null) {
+                        $.each(JSON.parse(result.data).reportContent, function (index, value) {
+                            if (value.explan == "线上") {
+                                $('#onlineSettlementName').html(value.settleCustomer + " - 线上");
+                                $('#onlineSettlementDate').html("日期：" + value.queryStartDate + " - " + value.queryEndDate);
 
-                            $('#onlineDetail').html("");
-                            $('#onlineTotal').html("");
+                                $('#onlineDetail').html("");
+                                $('#onlineTotal').html("");
 
-                            // 期初
-                            $('#onlineDetail').append("<tr>\n" +
-                                "<td style=\"text-align: center; \">线上期初数据</td>\n" +
-                                "<td style=\"text-align: center; \">上期结转：</td>\n" +
-                                "<td style=\"text-align: center; \"></td>\n" +
-                                "<td style=\"text-align: center; \"></td>\n" +
-                                "<td style=\"text-align: center; \"></td>\n" +
-                                "<td style=\"text-align: center; \">" + value.initReceivableBanlance + "</td>\n" +
-                                "<td style=\"text-align: center; \"></td>\n" +
-                                "<td style=\"text-align: center; \">" + value.initInvoiceBanlance + "</td>\n" +
-                                "</tr>");
-
-                            $.each(value.arrDetail, function (detailIndex, detailValue) {
+                                // 期初
                                 $('#onlineDetail').append("<tr>\n" +
-                                    "<td style=\"text-align: center; \">" + detailValue.bookedDate + "</td>\n" +
-                                    "<td style=\"text-align: center; \">" + detailValue.summary + "</td>\n" +
-                                    "<td style=\"text-align: center; \">" + (detailValue.category != null ? detailValue.category : "") + "</td>\n" +
-                                    "<td style=\"text-align: center; \">" + detailValue.deliverAmount + "</td>\n" +
-                                    "<td style=\"text-align: center; \">" + detailValue.collectAmount + "</td>\n" +
-                                    "<td style=\"text-align: center; \">" + detailValue.receivableAmount + "</td>\n" +
-                                    "<td style=\"text-align: center; \">" + detailValue.invoiceAmount + "</td>\n" +
-                                    "<td style=\"text-align: center; \">" + detailValue.invoiceBalanceAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">线上期初数据</td>\n" +
+                                    "<td style=\"text-align: center; \">上期结转：</td>\n" +
+                                    "<td style=\"text-align: center; \"></td>\n" +
+                                    "<td style=\"text-align: center; \"></td>\n" +
+                                    "<td style=\"text-align: center; \"></td>\n" +
+                                    "<td style=\"text-align: center; \">" + value.initReceivableBanlance + "</td>\n" +
+                                    "<td style=\"text-align: center; \"></td>\n" +
+                                    "<td style=\"text-align: center; \">" + value.initInvoiceBanlance + "</td>\n" +
                                     "</tr>");
-                            });
 
-                            $('#onlineDetail').append("<tr>\n" +
-                                "<td style=\"text-align: center; \"></td>\n" +
-                                "<td style=\"text-align: center; \">本期线上结算：</td>\n" +
-                                "<td style=\"text-align: center; \"></td>\n" +
-                                "<td style=\"text-align: center; \">" + value.deliverTotalAmount + "</td>\n" +
-                                "<td style=\"text-align: center; \">" + value.collectTotalAmount + "</td>\n" +
-                                "<td style=\"text-align: center; \">" + value.receivableTotalAmount + "</td>\n" +
-                                "<td style=\"text-align: center; \">" + value.invoiceTotalAmount + "</td>\n" +
-                                "<td style=\"text-align: center; \">" + value.invoiceBalanceTotalAmount + "</td>\n" +
-                                "</tr>");
+                                $.each(value.arrDetail, function (detailIndex, detailValue) {
+                                    $('#onlineDetail').append("<tr>\n" +
+                                        "<td style=\"text-align: center; \">" + detailValue.bookedDate + "</td>\n" +
+                                        "<td style=\"text-align: center; \">" + detailValue.summary + "</td>\n" +
+                                        "<td style=\"text-align: center; \">" + (detailValue.category != null ? detailValue.category : "") + "</td>\n" +
+                                        "<td style=\"text-align: center; \">" + detailValue.deliverAmount + "</td>\n" +
+                                        "<td style=\"text-align: center; \">" + detailValue.collectAmount + "</td>\n" +
+                                        "<td style=\"text-align: center; \">" + detailValue.receivableAmount + "</td>\n" +
+                                        "<td style=\"text-align: center; \">" + detailValue.invoiceAmount + "</td>\n" +
+                                        "<td style=\"text-align: center; \">" + detailValue.invoiceBalanceAmount + "</td>\n" +
+                                        "</tr>");
+                                });
 
-                            $('#onlineTotal').append("<td style=\"text-align: center; \">本月小计 - 线上</td>\n" +
-                                "<td style=\"text-align: center; \">" + value.deliverTotalAmount + "</td>\n" +
-                                "<td style=\"text-align: center; \">" + value.collectTotalAmount + "</td>\n" +
-                                "<td style=\"text-align: center; \">" + value.receivableTotalAmount + "</td>\n" +
-                                "<td style=\"text-align: center; \">" + value.invoiceTotalAmount + "</td>\n" +
-                                "<td style=\"text-align: center; \">" + value.invoiceBalanceTotalAmount + "</td>");
+                                $('#onlineDetail').append("<tr>\n" +
+                                    "<td style=\"text-align: center; \"></td>\n" +
+                                    "<td style=\"text-align: center; \">本期线上结算：</td>\n" +
+                                    "<td style=\"text-align: center; \"></td>\n" +
+                                    "<td style=\"text-align: center; \">" + value.deliverTotalAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + value.collectTotalAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + value.receivableTotalAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + value.invoiceTotalAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + value.invoiceBalanceTotalAmount + "</td>\n" +
+                                    "</tr>");
+
+                                $('#onlineTotal').append("<td style=\"text-align: center; \">本月小计 - 线上</td>\n" +
+                                    "<td style=\"text-align: center; \">" + value.deliverTotalAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + value.collectTotalAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + value.receivableTotalAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + value.invoiceTotalAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + value.invoiceBalanceTotalAmount + "</td>");
 
 
-                            deliverTotal += value.deliverTotalAmount;
-                            collectTotal += value.collectTotalAmount;
-                            receivableTotal += value.receivableTotalAmount;
-                            invoiceTotal += value.invoiceTotalAmount;
-                            invoiceBalanceTotal += value.invoiceBalanceTotalAmount;
+                                deliverTotal += value.deliverTotalAmount;
+                                collectTotal += value.collectTotalAmount;
+                                receivableTotal += value.receivableTotalAmount;
+                                invoiceTotal += value.invoiceTotalAmount;
+                                invoiceBalanceTotal += value.invoiceBalanceTotalAmount;
 
-                        }else if (value.explan == "线下") {
-                            $('#offlineSettlementName').html(value.settleCustomer + " - 线下");
-                            $('#offlineSettlementDate').html("日期：" + value.queryStartDate + " - " + value.queryEndDate);
+                            }else if (value.explan == "线下") {
+                                $('#offlineSettlementName').html(value.settleCustomer + " - 线下");
+                                $('#offlineSettlementDate').html("日期：" + value.queryStartDate + " - " + value.queryEndDate);
 
-                            $('#offlineDetail').html("");
-                            $('#offlineTotal').html("");
+                                $('#offlineDetail').html("");
+                                $('#offlineTotal').html("");
 
-                            // 期初
-                            $('#offlineDetail').append("<tr>\n" +
-                                "<td style=\"text-align: center; \">线下期初数据</td>\n" +
-                                "<td style=\"text-align: center; \">上期结转：</td>\n" +
-                                "<td style=\"text-align: center; \"></td>\n" +
-                                "<td style=\"text-align: center; \"></td>\n" +
-                                "<td style=\"text-align: center; \"></td>\n" +
-                                "<td style=\"text-align: center; \">" + value.initReceivableBanlance + "</td>\n" +
-                                "<td style=\"text-align: center; \"></td>\n" +
-                                "<td style=\"text-align: center; \">" + value.initInvoiceBanlance + "</td>\n" +
-                                "</tr>");
-
-                            $.each(value.arrDetail, function (detailIndex, detailValue) {
+                                // 期初
                                 $('#offlineDetail').append("<tr>\n" +
-                                    "<td style=\"text-align: center; \">" + detailValue.bookedDate + "</td>\n" +
-                                    "<td style=\"text-align: center; \">" + detailValue.summary + "</td>\n" +
-                                    "<td style=\"text-align: center; \">" + (detailValue.category != null ? detailValue.category : "") + "</td>\n" +
-                                    "<td style=\"text-align: center; \">" + detailValue.deliverAmount + "</td>\n" +
-                                    "<td style=\"text-align: center; \">" + detailValue.collectAmount + "</td>\n" +
-                                    "<td style=\"text-align: center; \">" + detailValue.receivableAmount + "</td>\n" +
-                                    "<td style=\"text-align: center; \">" + detailValue.invoiceAmount + "</td>\n" +
-                                    "<td style=\"text-align: center; \">" + detailValue.invoiceBalanceAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">线下期初数据</td>\n" +
+                                    "<td style=\"text-align: center; \">上期结转：</td>\n" +
+                                    "<td style=\"text-align: center; \"></td>\n" +
+                                    "<td style=\"text-align: center; \"></td>\n" +
+                                    "<td style=\"text-align: center; \"></td>\n" +
+                                    "<td style=\"text-align: center; \">" + value.initReceivableBanlance + "</td>\n" +
+                                    "<td style=\"text-align: center; \"></td>\n" +
+                                    "<td style=\"text-align: center; \">" + value.initInvoiceBanlance + "</td>\n" +
                                     "</tr>");
-                            });
 
-                            $('#offlineDetail').append("<tr>\n" +
-                                "<td style=\"text-align: center; \"></td>\n" +
-                                "<td style=\"text-align: center; \">本期线下结算：</td>\n" +
-                                "<td style=\"text-align: center; \"></td>\n" +
-                                "<td style=\"text-align: center; \">" + value.deliverTotalAmount + "</td>\n" +
-                                "<td style=\"text-align: center; \">" + value.collectTotalAmount + "</td>\n" +
-                                "<td style=\"text-align: center; \">" + value.receivableTotalAmount + "</td>\n" +
-                                "<td style=\"text-align: center; \">" + value.invoiceTotalAmount + "</td>\n" +
-                                "<td style=\"text-align: center; \">" + value.invoiceBalanceTotalAmount + "</td>\n" +
-                                "</tr>");
+                                $.each(value.arrDetail, function (detailIndex, detailValue) {
+                                    $('#offlineDetail').append("<tr>\n" +
+                                        "<td style=\"text-align: center; \">" + detailValue.bookedDate + "</td>\n" +
+                                        "<td style=\"text-align: center; \">" + detailValue.summary + "</td>\n" +
+                                        "<td style=\"text-align: center; \">" + (detailValue.category != null ? detailValue.category : "") + "</td>\n" +
+                                        "<td style=\"text-align: center; \">" + detailValue.deliverAmount + "</td>\n" +
+                                        "<td style=\"text-align: center; \">" + detailValue.collectAmount + "</td>\n" +
+                                        "<td style=\"text-align: center; \">" + detailValue.receivableAmount + "</td>\n" +
+                                        "<td style=\"text-align: center; \">" + detailValue.invoiceAmount + "</td>\n" +
+                                        "<td style=\"text-align: center; \">" + detailValue.invoiceBalanceAmount + "</td>\n" +
+                                        "</tr>");
+                                });
 
-                            $('#offlineTotal').append("<td style=\"text-align: center; \">本月小计 - 线下</td>\n" +
-                                "<td style=\"text-align: center; \">" + value.deliverTotalAmount + "</td>\n" +
-                                "<td style=\"text-align: center; \">" + value.collectTotalAmount + "</td>\n" +
-                                "<td style=\"text-align: center; \">" + value.receivableTotalAmount + "</td>\n" +
-                                "<td style=\"text-align: center; \">" + value.invoiceTotalAmount + "</td>\n" +
-                                "<td style=\"text-align: center; \">" + value.invoiceBalanceTotalAmount + "</td>");
+                                $('#offlineDetail').append("<tr>\n" +
+                                    "<td style=\"text-align: center; \"></td>\n" +
+                                    "<td style=\"text-align: center; \">本期线下结算：</td>\n" +
+                                    "<td style=\"text-align: center; \"></td>\n" +
+                                    "<td style=\"text-align: center; \">" + value.deliverTotalAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + value.collectTotalAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + value.receivableTotalAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + value.invoiceTotalAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + value.invoiceBalanceTotalAmount + "</td>\n" +
+                                    "</tr>");
 
-                            deliverTotal += value.deliverTotalAmount;
-                            collectTotal += value.collectTotalAmount;
-                            receivableTotal += value.receivableTotalAmount;
-                            invoiceTotal += value.invoiceTotalAmount;
-                            invoiceBalanceTotal += value.invoiceBalanceTotalAmount;
+                                $('#offlineTotal').append("<td style=\"text-align: center; \">本月小计 - 线下</td>\n" +
+                                    "<td style=\"text-align: center; \">" + value.deliverTotalAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + value.collectTotalAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + value.receivableTotalAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + value.invoiceTotalAmount + "</td>\n" +
+                                    "<td style=\"text-align: center; \">" + value.invoiceBalanceTotalAmount + "</td>");
 
-                        }
-                    });
+                                deliverTotal += value.deliverTotalAmount;
+                                collectTotal += value.collectTotalAmount;
+                                receivableTotal += value.receivableTotalAmount;
+                                invoiceTotal += value.invoiceTotalAmount;
+                                invoiceBalanceTotal += value.invoiceBalanceTotalAmount;
 
-                    $('#total').html("<td style=\"text-align: center; \">本月累计</td>\n" +
-                        "<td style=\"text-align: center; \">"+deliverTotal.toFixed(2)+"</td>\n" +
-                        "<td style=\"text-align: center; \">"+collectTotal.toFixed(2)+"</td>\n" +
-                        "<td style=\"text-align: center; \">"+receivableTotal.toFixed(2)+"</td>\n" +
-                        "<td style=\"text-align: center; \">"+invoiceTotal.toFixed(2)+"</td>\n" +
-                        "<td style=\"text-align: center; \">"+invoiceBalanceTotal.toFixed(2)+"</td>");
+                            }
+                        });
 
+                        $('#total').html("<td style=\"text-align: center; \">本月累计</td>\n" +
+                            "<td style=\"text-align: center; \">"+deliverTotal.toFixed(2)+"</td>\n" +
+                            "<td style=\"text-align: center; \">"+collectTotal.toFixed(2)+"</td>\n" +
+                            "<td style=\"text-align: center; \">"+receivableTotal.toFixed(2)+"</td>\n" +
+                            "<td style=\"text-align: center; \">"+invoiceTotal.toFixed(2)+"</td>\n" +
+                            "<td style=\"text-align: center; \">"+invoiceBalanceTotal.toFixed(2)+"</td>");
+                    }
                 }, error: function (error) {
                     console.log(error);
                 }
             });
         });
 
+        // 刷新按钮
+        $("button[id='refresh']").click(function () {
+            $("input[name='name']").val("");
+            $("input[name='period']").val("");
 
-        // 现金导出按钮
-        $("button[id='exportCash']").click(function () {
-            $("#form1").attr('action', "");
-            $("#form1").attr('method', "POST");
-            $("#form1").submit();
+            $("button[id='export']").attr('disabled',false);
+            $("button[id='exportAll']").attr('disabled',false);
+
+            $("#dataTable table").bootstrapTable('refresh');
+        });
+
+
+        // 导出按钮
+        $("button[id='export']").click(function () {
+            if ($("input[name='period']").val() == '' || $("input[name='name']").val() == '') {
+                toastr.error('请填写 对账名称 和 账期');
+            } else {
+                $("button[id='export']").attr('disabled','disabled');
+                $("#form1").attr('action', "/finance/exportYonyouStatement");
+                $("#form1").attr('method', "POST");
+                $("#form1").submit();
+            }
+        });
+
+        // 全部导出按钮
+        $("button[id='exportAll']").click(function () {
+            if ($("input[name='period']").val() == '') {
+                toastr.error('请填写账期');
+            } else {
+                $("button[id='exportAll']").attr('disabled','disabled');
+                $("#form1").attr('action', "/finance/exportAllYonyouStatement");
+                $("#form1").attr('method', "POST");
+                $("#form1").submit();
+            }
         });
 
         // 自动补全
@@ -435,6 +498,9 @@
 
     // 回车搜索
     $(document).on("keydown", function (event) {
+        $("button[id='export']").attr('disabled',false);
+        $("button[id='exportAll']").attr('disabled',false);
+
         var e = event || window.event || arguments.callee.caller.arguments[0];
         if (e && e.keyCode == 13) {
             $("#search").trigger("click");

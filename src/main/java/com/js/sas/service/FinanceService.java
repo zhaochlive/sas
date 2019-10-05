@@ -68,6 +68,12 @@ public class FinanceService {
         return result;
     }
 
+    /**
+     * 逾期客户
+     *
+     * @param partner 逾期客户
+     * @return 逾期客户列表
+     */
     public Page findOverdue(OverdueDTO partner) {
         // 排序规则
         Sort.Direction sortDirection;

@@ -14,9 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.Tuple;
 import javax.servlet.http.HttpServletResponse;
@@ -49,6 +47,7 @@ public class SalesController {
      */
     @ApiOperation(value = "日销售额", notes = "数据来源：用友；数据截止日期：昨天")
     @PostMapping("/getSaleAmountByDay")
+    @CrossOrigin(origins = "http://localhost:9527", maxAge = 3600)
     public Result getSaleAmountByDay(int limit) {
         List<SaleAmountDTO> saleDeliveryList = salesService.getSaleAmountByDay(limit);
         return ResultUtils.getResult(ResultCode.成功, saleDeliveryList);

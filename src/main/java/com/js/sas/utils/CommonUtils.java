@@ -7,10 +7,14 @@ import com.alibaba.excel.support.ExcelTypeEnum;
 import org.springframework.boot.configurationprocessor.json.JSONArray;
 import org.springframework.http.*;
 import org.springframework.util.MultiValueMap;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -21,6 +25,8 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * @ClassName CommonUtils
@@ -255,13 +261,71 @@ public class CommonUtils {
 
     /**
      * 判断是否为数字格式不限制位数
-     * @param o
-     *     待校验参数
-     * @return
-     *     如果全为数字，返回true；否则，返回false
+     *
+     * @param o 待校验参数
+     * @return 如果全为数字，返回true；否则，返回false
      */
-    public static boolean isNumber(Object o){
-        return  (Pattern.compile("[0-9]*")).matcher(String.valueOf(o)).matches();
+    public static boolean isNumber(Object o) {
+        return (Pattern.compile("[0-9]*")).matcher(String.valueOf(o)).matches();
     }
+
+    public static Result checkParameter(BindingResult result) {
+        if (result.hasErrors()) {
+            LinkedHashMap<String, String> errorMap = new LinkedHashMap<>();
+            for (FieldError fieldError : result.getFieldErrors()) {
+                errorMap.put(fieldError.getCode(), fieldError.getDefaultMessage());
+            }
+            return ResultUtils.getResult(ResultCode.参数错误, errorMap);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * 递归压缩方法
+     *
+     * @param sourceFile 源文件
+     * @param zos        zip输出流
+     * @param name       压缩后的名称
+     * @param deleteFile 是否删除压缩前的文件
+     * @throws Exception
+     */
+    public static void compress(File sourceFile, ZipOutputStream zos, String name,
+                                boolean deleteFile) throws Exception {
+        byte[] buf = new byte[2 * 1024];
+        if (sourceFile.isFile()) {
+            // 向zip输出流中添加一个zip实体，构造器中name为zip实体的文件的名字
+            zos.putNextEntry(new ZipEntry(name));
+            // copy文件到zip输出流中
+            int len;
+            FileInputStream in = new FileInputStream(sourceFile);
+            while ((len = in.read(buf)) != -1) {
+                zos.write(buf, 0, len);
+            }
+            // Complete the entry
+            zos.closeEntry();
+            in.close();
+
+            // 删除文件
+            if (deleteFile) {
+                sourceFile.delete();
+            }
+        } else {
+            File[] listFiles = sourceFile.listFiles();
+            if (listFiles != null || listFiles.length != 0) {
+                for (File file : listFiles) {
+                    compress(file, zos, file.getName(), deleteFile);
+                    // 删除文件
+                    if (deleteFile) {
+                        file.delete();
+                    }
+                }
+            }
+            if (deleteFile) {
+                sourceFile.delete();
+            }
+        }
+    }
+
 
 }

@@ -1,10 +1,13 @@
 package com.js.sas.service;
 
 import com.js.sas.dto.PartnerNameDTO;
+import com.js.sas.entity.PartnerEntity;
 import com.js.sas.repository.PartnerRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * @ClassName PartnerService
@@ -37,6 +40,11 @@ public class PartnerService {
         Example example = Example.of(partner, matcher);
 
         return partnerRepository.findAll(example, pageRequest);
+    }
+
+    public List<PartnerEntity> findAllNameListOrderByName() {
+        Sort sort = new Sort(Sort.Direction.ASC, "name");
+        return partnerRepository.findAll(sort);
     }
 
 }
