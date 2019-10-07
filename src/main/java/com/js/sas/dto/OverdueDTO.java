@@ -1,6 +1,5 @@
 package com.js.sas.dto;
 
-import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.metadata.BaseRowModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -20,9 +19,8 @@ import java.math.BigDecimal;
  **/
 @Entity
 @Data
-@EqualsAndHashCode(callSuper = true)
 @Table(name = "YY_AA_Partner")
-public class OverdueDTO extends BaseRowModel implements Serializable {
+public class OverdueDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -31,15 +29,12 @@ public class OverdueDTO extends BaseRowModel implements Serializable {
 
     @ApiModelProperty(value = "客服", example = "1")
     @Column(name = "customer_service_staff", nullable = false)
-    @ExcelProperty(value = "业务员", index = 0)
     private String customerServiceStaff;
 
     @ApiModelProperty(value = "用友往来单位编码", example = "1")
-    @ExcelProperty(value = "用友往来单位编码", index = 0)
     private String code;
 
     @ApiModelProperty(value = "结算客户名称", example = "结算客户")
-    @ExcelProperty(value = "往来单位名称", index = 0)
     private String name;
 
     @ApiModelProperty(value = "逾期金额", example = "0")
@@ -58,7 +53,6 @@ public class OverdueDTO extends BaseRowModel implements Serializable {
 
     @ApiModelProperty(value = "截止昨日逾期金额", example = "0")
     @Column(name = "receivables_before_today", nullable = false)
-    @ExcelProperty(value = "逾期金额", index = 0)
     private BigDecimal receivablesBeforeToday;
 
     // 分页起始数量（偏移量）
@@ -85,4 +79,7 @@ public class OverdueDTO extends BaseRowModel implements Serializable {
     @Transient
     private String sortOrder;
 
+    @ApiModelProperty(value = "只显示逾期客户", example = "true")
+    @Transient
+    private String onlyOverdue;
 }

@@ -1,6 +1,9 @@
 package com.js.sas.entity;
 
+import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.metadata.BaseRowModel;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -18,7 +21,8 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "YY_AA_Partner")
 @Data
-public class PartnerEntity implements Serializable {
+@EqualsAndHashCode(callSuper = true)
+public class PartnerEntity extends BaseRowModel implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -31,6 +35,7 @@ public class PartnerEntity implements Serializable {
     private int index;
 
     // 用友往来单位编码
+    @ExcelProperty(value = "用友往来单位编码", index = 0)
     @Column(name = "code", nullable = false)
     private String code;
 
@@ -39,6 +44,7 @@ public class PartnerEntity implements Serializable {
     private String parentCode;
 
     // 往来单位名称
+    @ExcelProperty(value = "往来单位名称", index = 0)
     @Column(name = "name", nullable = false)
     private String name;
 
@@ -74,12 +80,14 @@ public class PartnerEntity implements Serializable {
     @Column(name = "amount_delivery", nullable = false)
     private BigDecimal amountDelivery;
 
+    @ExcelProperty(value = "业务员", index = 0)
     @Column(name = "customer_service_staff", nullable = false)
     private String customerServiceStaff;
 
     @Column(name = "amount_today", nullable = false)
     private BigDecimal amountToday;
 
+    @ExcelProperty(value = "逾期金额", index = 0)
     @Column(name = "receivables_before_today", nullable = false)
     private BigDecimal receivablesBeforeToday;
 

@@ -277,16 +277,16 @@
             autoclose: true,
             todayBtn: true,
             startView: 'year',
-            minView:'year',
-            maxView:'decade',
-            language:  'zh-CN'
+            minView: 'year',
+            maxView: 'decade',
+            language: 'zh-CN'
         });
 
         // 查询按钮
         $("button[id='search']").click(function () {
 
-            $("button[id='export']").attr('disabled',false);
-            $("button[id='exportAll']").attr('disabled',false);
+            $("button[id='export']").attr('disabled', false);
+            $("button[id='exportAll']").attr('disabled', false);
 
             if ($("input[name='period']").val() == '' || $("input[name='name']").val() == '') {
                 toastr.error('请填写 对账名称 和 账期');
@@ -367,7 +367,7 @@
                                 invoiceTotal += value.invoiceTotalAmount;
                                 invoiceBalanceTotal += value.invoiceBalanceTotalAmount;
 
-                            }else if (value.explan == "线下") {
+                            } else if (value.explan == "线下") {
                                 $('#offlineSettlementName').html(value.settleCustomer + " - 线下");
                                 $('#offlineSettlementDate').html("日期：" + value.queryStartDate + " - " + value.queryEndDate);
 
@@ -427,11 +427,11 @@
                         });
 
                         $('#total').html("<td style=\"text-align: center; \">本月累计</td>\n" +
-                            "<td style=\"text-align: center; \">"+deliverTotal.toFixed(2)+"</td>\n" +
-                            "<td style=\"text-align: center; \">"+collectTotal.toFixed(2)+"</td>\n" +
-                            "<td style=\"text-align: center; \">"+receivableTotal.toFixed(2)+"</td>\n" +
-                            "<td style=\"text-align: center; \">"+invoiceTotal.toFixed(2)+"</td>\n" +
-                            "<td style=\"text-align: center; \">"+invoiceBalanceTotal.toFixed(2)+"</td>");
+                            "<td style=\"text-align: center; \">" + deliverTotal.toFixed(2) + "</td>\n" +
+                            "<td style=\"text-align: center; \">" + collectTotal.toFixed(2) + "</td>\n" +
+                            "<td style=\"text-align: center; \">" + receivableTotal.toFixed(2) + "</td>\n" +
+                            "<td style=\"text-align: center; \">" + invoiceTotal.toFixed(2) + "</td>\n" +
+                            "<td style=\"text-align: center; \">" + invoiceBalanceTotal.toFixed(2) + "</td>");
                     }
                 }, error: function (error) {
                     console.log(error);
@@ -444,8 +444,8 @@
             $("input[name='name']").val("");
             $("input[name='period']").val("");
 
-            $("button[id='export']").attr('disabled',false);
-            $("button[id='exportAll']").attr('disabled',false);
+            $("button[id='export']").attr('disabled', false);
+            $("button[id='exportAll']").attr('disabled', false);
 
             $("#dataTable table").bootstrapTable('refresh');
         });
@@ -456,7 +456,6 @@
             if ($("input[name='period']").val() == '' || $("input[name='name']").val() == '') {
                 toastr.error('请填写 对账名称 和 账期');
             } else {
-                $("button[id='export']").attr('disabled','disabled');
                 $("#form1").attr('action', "/finance/exportYonyouStatement");
                 $("#form1").attr('method', "POST");
                 $("#form1").submit();
@@ -468,7 +467,9 @@
             if ($("input[name='period']").val() == '') {
                 toastr.error('请填写账期');
             } else {
-                $("button[id='exportAll']").attr('disabled','disabled');
+                toastr.success('正在导出，请稍后。');
+
+                $("button[id='exportAll']").attr('disabled', 'disabled');
                 $("#form1").attr('action', "/finance/exportAllYonyouStatement");
                 $("#form1").attr('method', "POST");
                 $("#form1").submit();
@@ -498,8 +499,8 @@
 
     // 回车搜索
     $(document).on("keydown", function (event) {
-        $("button[id='export']").attr('disabled',false);
-        $("button[id='exportAll']").attr('disabled',false);
+        $("button[id='export']").attr('disabled', false);
+        $("button[id='exportAll']").attr('disabled', false);
 
         var e = event || window.event || arguments.callee.caller.arguments[0];
         if (e && e.keyCode == 13) {

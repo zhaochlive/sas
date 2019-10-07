@@ -1,6 +1,8 @@
 package com.js.sas.utils;
 
 import com.alibaba.excel.event.WriteHandler;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.*;
 import java.util.List;
 
@@ -11,6 +13,9 @@ public class StyleExcelHandler implements WriteHandler {
 
     private List<Integer> boldList;
     private List<Integer> borderList;
+    private List<Integer> backgroundColorList;
+    private List<Integer> centerList;
+    private List<Integer> spacialBackgroundColorList;
 
     /**
      * 构造方法
@@ -18,9 +23,12 @@ public class StyleExcelHandler implements WriteHandler {
      * @param boldList 需要加粗的行数列表
      * @param borderList 需要加边框的行数列表
      */
-    public StyleExcelHandler(List<Integer> boldList, List<Integer> borderList) {
+    public StyleExcelHandler(List<Integer> boldList, List<Integer> borderList, List<Integer> backgroundColorList, List<Integer> centerList, List<Integer> spacialBackgroundColorList) {
         this.boldList = boldList;
         this.borderList = borderList;
+        this.backgroundColorList = backgroundColorList;
+        this.centerList = centerList;
+        this.spacialBackgroundColorList = spacialBackgroundColorList;
     }
 
     @Override
@@ -54,6 +62,23 @@ public class StyleExcelHandler implements WriteHandler {
             cellStyle.setBorderTop(BorderStyle.THIN);
             // 右边框
             cellStyle.setBorderRight(BorderStyle.THIN);
+        }
+
+        // 背景色
+        if (backgroundColorList.contains(cell.getRowIndex())) {
+            cellStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        }
+
+        // 背景色特殊处理
+        if (spacialBackgroundColorList.contains(cell.getRowIndex()) && cell.getColumnIndex() == 0 ) {
+            cellStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        }
+
+        // 居中
+        if (centerList.contains(cell.getRowIndex())) {
+            cellStyle.setAlignment(HorizontalAlignment.CENTER);
         }
 
         cell.getRow().getCell(i).setCellStyle(cellStyle);

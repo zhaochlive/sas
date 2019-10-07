@@ -5,11 +5,15 @@ import com.js.sas.repository.PartnerRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.StoredProcedureQuery;
+import javax.persistence.criteria.Predicate;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,20 +96,26 @@ public class FinanceService {
         }
 
         Sort sort = new Sort(sortDirection, partner.getSort());
-        PageRequest pageRequest = PageRequest.of(partner.getOffset() / partner.getLimit(), partner.getLimit(), sort);
+        Pageable pageable = PageRequest.of(partner.getOffset() / partner.getLimit(), partner.getLimit(), sort);
 
-        // 查询条件
-        ExampleMatcher matcher = ExampleMatcher.matching()
-                .withIgnorePaths("id")
-                .withIgnorePaths("receivablesBeforeToday")
-                .withIgnorePaths("offset")
-                .withIgnorePaths("limit")
-                .withIgnorePaths("sort")
-                .withIgnorePaths("sortOrder");
+        Specification<OverdueDTO> specification = (Specification<OverdueDTO>) (root, criteriaQuery, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            if (StringUtils.isNotBlank(partner.getCode())) {
+                predicates.add(criteriaBuilder.equal(root.<String>get("code"), partner.getCode()));
+            }
+            if (StringUtils.isNotBlank(partner.getName())) {
+                predicates.add(criteriaBuilder.equal(root.<String>get("name"), partner.getName()));
+            }
+            if (StringUtils.isNotBlank(partner.getOnlyOverdue()) && "true".equals(partner.getOnlyOverdue())) {
+                predicates.add(criteriaBuilder.greaterThan(root.<BigDecimal>get("receivablesBeforeToday"), new BigDecimal(0)));
+            }
+            predicates.add(criteriaBuilder.equal(root.<String>get("status"), '0'));
+            predicates.add(criteriaBuilder.equal(root.<String>get("settlementType"), 1));
+            predicates.add(criteriaBuilder.equal(root.<String>get("parentCode"), "0"));
+            return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
 
-        Example example = Example.of(partner, matcher);
-
-        return partnerRepository.findAll(example, pageRequest);
+        return partnerRepository.findAll(specification, pageable);
     }
 
 }
