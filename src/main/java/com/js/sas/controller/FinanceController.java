@@ -90,6 +90,16 @@ public class FinanceController {
                 settlementSummasryDTO.getSortOrder());
     }
 
+    /**
+     * 下载结算客户对账单
+     *
+     * @param name                结算客户名称
+     * @param channel             渠道
+     * @param startDate           开始时间
+     * @param endDate             结束时间
+     * @param limit               数量
+     * @param httpServletResponse httpServletResponse
+     */
     @ApiIgnore
     @PostMapping("/settlementSummary/download/excel")
     public void downloadSettlementSummary(String name, String channel, String startDate, String endDate, String limit, HttpServletResponse httpServletResponse) {
@@ -132,6 +142,7 @@ public class FinanceController {
     /**
      * 逾期现金客户导出
      *
+     * @param limit               数量
      * @param httpServletResponse httpServletResponse
      */
     @ApiIgnore
@@ -147,7 +158,7 @@ public class FinanceController {
 
         List overdueList = financeService.findOverdue(overdueDTO).getContent();
         try {
-            CommonUtils.export(httpServletResponse, overdueList, "现金客户逾期统计", new OverdueDTO());
+            CommonUtils.export(httpServletResponse, overdueList, "现金客户逾期统计", new PartnerEntity());
         } catch (IOException e) {
             log.error("下载现金客户逾期统计异常：{}", e);
             e.printStackTrace();
@@ -422,7 +433,7 @@ public class FinanceController {
      * 用友对账单
      *
      * @param period 账期
-     * @param name 对账单位名称
+     * @param name   对账单位名称
      * @return Result
      */
     @PostMapping("/findYonyouStatement")
@@ -466,6 +477,13 @@ public class FinanceController {
 
     }
 
+    /**
+     * 导出用友对账单
+     *
+     * @param response HttpServletResponse
+     * @param period   账期
+     * @param name     对账单位名称
+     */
     @ApiIgnore
     @PostMapping("/exportYonyouStatement")
     public void exportYonyouStatement(HttpServletResponse response, String period, String name) {
@@ -489,7 +507,30 @@ public class FinanceController {
         // 写入数据
         ExcelWriter writer = new ExcelWriter(null, out, ExcelTypeEnum.XLSX, true, handler);
         writer.write1((List) enumMap.get(ExcelPropertyEnum.ROWLIST), (Sheet) enumMap.get(ExcelPropertyEnum.SHEET));
+        // 合并单元格
+        writer.merge(1, 1, 0, 2);
+        writer.merge(1, 1, 3, 4);
+        writer.merge(1, 1, 5, 6);
+        writer.merge(2, 2, 0, 2);
+        writer.merge(2, 2, 3, 4);
+        writer.merge(2, 2, 5, 6);
+        writer.merge(4, 4, 0, 7);
+        List<Integer> mergeRowNumList = (List<Integer>) enumMap.get(ExcelPropertyEnum.MERGE);
+        for (int index : mergeRowNumList) {
+            writer.merge(index, index, 0, 2);
+        }
+        if (!mergeRowNumList.isEmpty()) {
+            int index = mergeRowNumList.get(mergeRowNumList.size() - 1);
+            writer.merge(index + 4, index + 4, 0, 2);
+            writer.merge(index + 5, index + 5, 0, 2);
+            writer.merge(index + 6, index + 6, 0, 2);
+            writer.merge(index + 7, index + 7, 0, 2);
+            writer.merge(index + 3, index + 3, 0, 7);
 
+            int first = mergeRowNumList.get(0);
+            writer.merge(first + 3, first + 3, 0, 7);
+        }
+        // 关闭
         writer.finish();
         try {
             if (out != null) {
@@ -534,17 +575,41 @@ public class FinanceController {
         for (PartnerEntity partner : partnerList) {
             EnumMap<ExcelPropertyEnum, Object> enumMap = getYonyouStatementExcel(period, partner.getName());
             if (enumMap == null) {
-                //log.info("获取接口数据错误，单位名称：" + partner.getName() + "，账期：" + period);
+                log.info("获取接口数据错误，单位名称：" + partner.getName() + "，账期：" + period);
                 continue;
             }
             try {
-                out = new FileOutputStream(sourceFile.getPath() + "/"+ enumMap.get(ExcelPropertyEnum.FILENAME).toString() + ".xlsx");
+                out = new FileOutputStream(sourceFile.getPath() + "/" + enumMap.get(ExcelPropertyEnum.FILENAME).toString() + ".xlsx");
             } catch (IOException e) {
                 e.printStackTrace();
             }
             // 写入数据
             ExcelWriter writer = new ExcelWriter(null, out, ExcelTypeEnum.XLSX, true, (StyleExcelHandler) enumMap.get(ExcelPropertyEnum.HANDLER));
             writer.write1((List) enumMap.get(ExcelPropertyEnum.ROWLIST), (Sheet) enumMap.get(ExcelPropertyEnum.SHEET));
+            // 合并单元格
+            writer.merge(1, 1, 0, 2);
+            writer.merge(1, 1, 3, 4);
+            writer.merge(1, 1, 5, 6);
+            writer.merge(2, 2, 0, 2);
+            writer.merge(2, 2, 3, 4);
+            writer.merge(2, 2, 5, 6);
+            writer.merge(4, 4, 0, 7);
+            List<Integer> mergeRowNumList = (List<Integer>) enumMap.get(ExcelPropertyEnum.MERGE);
+            for (int index : mergeRowNumList) {
+                writer.merge(index, index, 0, 2);
+            }
+            if (!mergeRowNumList.isEmpty()) {
+                int index = mergeRowNumList.get(mergeRowNumList.size() - 1);
+                writer.merge(index + 4, index + 4, 0, 2);
+                writer.merge(index + 5, index + 5, 0, 2);
+                writer.merge(index + 6, index + 6, 0, 2);
+                writer.merge(index + 7, index + 7, 0, 2);
+                writer.merge(index + 3, index + 3, 0, 7);
+
+                int first = mergeRowNumList.get(0);
+                writer.merge(first + 3, first + 3, 0, 7);
+            }
+            // 关闭
             writer.finish();
             try {
                 if (out != null) {
@@ -554,11 +619,11 @@ public class FinanceController {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-           // log.info("单位名称：" + partner.getName() + "，账期：" + period);
+            // log.info("单位名称：" + partner.getName() + "，账期：" + period);
         }
 
         response.setContentType("application/zip");
-        response.setHeader("Content-Disposition", "attachment; filename="+zipFileName+".zip");
+        response.setHeader("Content-Disposition", "attachment; filename=" + zipFileName + ".zip");
 
         // 压缩
         ServletOutputStream servletOutputStream = null;
@@ -600,6 +665,8 @@ public class FinanceController {
         if (StringUtils.isBlank(period) || StringUtils.isBlank(name)) {
             return null;
         }
+        // 需要合并的行
+        List<Integer> mergeRowNumList = new ArrayList<>();
         // 开始时间
         String startDate;
         // 结束时间
@@ -647,6 +714,10 @@ public class FinanceController {
         List<Integer> boldList = new ArrayList<>();
         // 需要加边框行号List
         List<Integer> borderList = new ArrayList<>();
+        // 背景色行
+        List<Integer> backgroundColorList = new ArrayList<>();
+        // 居中行
+        List<Integer> centerList = new ArrayList<>();
         // 处理数据
         if (dataJSONArray.size() > 0) {
             BigDecimal deliverTotal = new BigDecimal(0);
@@ -682,12 +753,10 @@ public class FinanceController {
             for (int index = 0; index < dataJSONArray.getJSONObject(0).getJSONArray("reportContent").size(); index++) {
                 // 线上、线下标题
                 dataList = new ArrayList<>();
-                dataList.add("");
-                dataList.add("");
-                dataList.add("");
                 dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getString("settleCustomer") + " - " + dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getString("explan"));
                 rowList.add(dataList);
                 boldList.add(rowList.size());
+                centerList.add(rowList.size());
                 // 时间行
                 dataList = new ArrayList<>();
                 dataList.add("日期：" + dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getString("queryStartDate") + " _ " + dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getString("queryEndDate"));
@@ -706,6 +775,8 @@ public class FinanceController {
                 rowList.add(dataList);
                 boldList.add(rowList.size());
                 borderList.add(rowList.size());
+                backgroundColorList.add(rowList.size());
+                centerList.add(rowList.size());
                 // 期初数据行
                 dataList = new ArrayList<>();
                 dataList.add("线上期初数据");
@@ -724,10 +795,10 @@ public class FinanceController {
                     dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getString("bookedDate"));
                     dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getString("summary"));
                     dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getString("category"));
-                    dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("deliverAmount"));
-                    dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("collectAmount"));
-                    dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("receivableAmount"));
-                    dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("invoiceAmount"));
+                    dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("deliverAmount").compareTo(new BigDecimal(0)) == 0 ? "" : dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("deliverAmount"));
+                    dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("collectAmount").compareTo(new BigDecimal(0)) == 0 ? "" : dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("collectAmount"));
+                    dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("receivableAmount").compareTo(new BigDecimal(0)) == 0 ? "" : dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("receivableAmount"));
+                    dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("invoiceAmount").compareTo(new BigDecimal(0)) == 0 ? "" : dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("invoiceAmount"));
                     dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("invoiceBalanceAmount"));
                     rowList.add(dataList);
                     borderList.add(rowList.size());
@@ -744,6 +815,10 @@ public class FinanceController {
                 dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getBigDecimal("invoiceBalanceTotalAmount"));
                 rowList.add(dataList);
                 borderList.add(rowList.size());
+                boldList.add(rowList.size());
+                mergeRowNumList.add(rowList.size());
+                centerList.add(rowList.size());
+                backgroundColorList.add(rowList.size());
                 // 备注行
                 dataList = new ArrayList<>();
                 dataList.add("备注：本月" + dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getString("explan") + "销售、收款、开票如上表所示");
@@ -772,13 +847,14 @@ public class FinanceController {
             }
             // 月汇总
             dataList = new ArrayList<>();
-            dataList.add("综上所述,本月汇总如下:");
+            dataList.add("综上所述,本月汇总如下");
             rowList.add(dataList);
             boldList.add(rowList.size());
+            centerList.add(rowList.size());
             // 月汇总标题行
             dataList = new ArrayList<>();
-            dataList.add("日期");
-            dataList.add("合同编号");
+            dataList.add("合计");
+            dataList.add("");
             dataList.add("");
             dataList.add("发货金额");
             dataList.add("收款金额");
@@ -788,12 +864,16 @@ public class FinanceController {
             rowList.add(dataList);
             boldList.add(rowList.size());
             borderList.add(rowList.size());
+            centerList.add(rowList.size());
+            backgroundColorList.add(rowList.size());
             // 线上、线下汇总
             rowList.addAll(totalRowList);
             boldList.add(rowList.size());
             borderList.add(rowList.size());
             boldList.add(rowList.size() - 1);
             borderList.add(rowList.size() - 1);
+            centerList.add(rowList.size());
+            centerList.add(rowList.size() - 1);
             // 月累计行
             dataList = new ArrayList<>();
             dataList.add("本月累计：");
@@ -807,6 +887,8 @@ public class FinanceController {
             rowList.add(dataList);
             boldList.add(rowList.size());
             borderList.add(rowList.size());
+            centerList.add(rowList.size());
+            backgroundColorList.add(rowList.size());
             // 其他信息行
             dataList = new ArrayList<>();
             dataList.add("1、此对账单的截止日期为上述发出日期。");
@@ -854,17 +936,24 @@ public class FinanceController {
         sheet1.setSheetName(fileName);
         sheet1.setAutoWidth(Boolean.TRUE);
         // 样式
-        StyleExcelHandler handler = new StyleExcelHandler(boldList, borderList);
+        List<Integer> spacialBackgroundColorList = new ArrayList<>();
+        if (!backgroundColorList.isEmpty()) {
+            spacialBackgroundColorList.add(mergeRowNumList.get(mergeRowNumList.size() - 1) + 5);
+            spacialBackgroundColorList.add(mergeRowNumList.get(mergeRowNumList.size() - 1) + 6);
+        }
+        StyleExcelHandler handler = new StyleExcelHandler(boldList, borderList, backgroundColorList, centerList, spacialBackgroundColorList);
         // 返回值
         EnumMap<ExcelPropertyEnum, Object> reusltEnumMap = new EnumMap<>(ExcelPropertyEnum.class);
         reusltEnumMap.put(ExcelPropertyEnum.HANDLER, handler);
         reusltEnumMap.put(ExcelPropertyEnum.ROWLIST, rowList);
         reusltEnumMap.put(ExcelPropertyEnum.SHEET, sheet1);
         reusltEnumMap.put(ExcelPropertyEnum.FILENAME, fileName + df.format(new Date()));
+        reusltEnumMap.put(ExcelPropertyEnum.MERGE, mergeRowNumList);
+
         return reusltEnumMap;
     }
 
     enum ExcelPropertyEnum {
-        HANDLER, ROWLIST, SHEET, FILENAME
+        HANDLER, ROWLIST, SHEET, FILENAME, MERGE
     }
 }
