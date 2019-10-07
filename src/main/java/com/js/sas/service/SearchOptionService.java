@@ -81,4 +81,9 @@ public class SearchOptionService {
         String sql = "SELECT companyname from ( select companyname from buyercompanyinfo GROUP BY companyname )ss where companyname ilike '%" + name + "%'";
         return jdbcTemplate.queryForList(sql, String.class);
     }
+    //商家，店铺公司名称
+    public List<String> getInvoiceHeadUp(String name) {
+        String sql = "SELECT invoiceheadup from ( select invoiceheadup from billingrecord GROUP BY invoiceheadup )ss where invoiceheadup ilike '%" + name + "%'";
+        return jdbcTemplate.queryForList(sql, String.class);
+    }
 }

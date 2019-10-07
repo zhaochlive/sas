@@ -144,6 +144,7 @@ public class StoreDetailService {
             } else {
                 sb.append(" offset 0 ;");
             }
+            System.out.println(sb.toString());
             List<Map<String, Object>> maps = jdbcTemplate.queryForList(sb.toString(),list.toArray());
             return maps;
         }

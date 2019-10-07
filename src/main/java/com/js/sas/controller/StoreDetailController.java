@@ -164,7 +164,7 @@ public class StoreDetailController {
 
                 result.add(objects);
             }
-            CommonUtils.exportByList(response, columnNameList, result, "店铺详情统计");
+            CommonUtils.exportByList(response, columnNameList, result, "商家经营详情");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -217,5 +217,65 @@ public class StoreDetailController {
         result.put("rows", page);
         result.put("total", storeDetailService.getStoreInfoCount(requestMap));
         return result;
+    }
+
+    @PostMapping(value = "/download/storeInfo")
+    public void downloadStoreInfo(HttpServletResponse response, HttpServletRequest request) {
+        Map<String, String> requestMap = new HashMap<>();
+        requestMap.put("limit", "9999999999");
+        requestMap.put("offset", "0");
+        if (request.getParameter("startDate")==null|| StringUtils.isBlank(request.getParameter("startDate"))){
+            String firstDayOfMonth = DateTimeUtils.firstDayOfMonth(new Date());
+            requestMap.put("startDate",firstDayOfMonth);
+        }else{
+            String startDate = request.getParameter("startDate");
+            DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT);
+            requestMap.put("startDate", DateTimeUtils.convert(DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT),DateTimeUtils.DATE_FORMAT)+" 00:00:00" );
+        }
+        if (request.getParameter("endDate")==null|| StringUtils.isBlank(request.getParameter("endDate"))){
+            String firstDayOfMonth = DateTimeUtils.lastDayOfMonth(new Date());
+            requestMap.put("endDate",firstDayOfMonth);
+        }else{
+            String startDate = request.getParameter("endDate");
+            DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT);
+            requestMap.put("endDate", DateTimeUtils.convert(DateTimeUtils.convert(startDate,DateTimeUtils.DATE_FORMAT),DateTimeUtils.DATE_FORMAT)+" 23:59:59" );
+        }
+        if (StringUtils.isNotBlank(request.getParameter("shopname"))){
+            requestMap.put("shopname",request.getParameter("shopname").trim());
+        }
+        List<String > columnNameList = new ArrayList<>();
+        columnNameList.add("创店时间");
+        columnNameList.add("商家公司名称");
+        columnNameList.add("商家店铺名称");
+        columnNameList.add("商家上架商品数量");
+        columnNameList.add("商家已售订单个数");
+        columnNameList.add("商家已售订单总额（元）");
+        columnNameList.add("业务员");
+        columnNameList.add("客服");
+
+        try {
+            List<List<Object>> result = new ArrayList<>();
+            List<Map<String,Object>> data = storeDetailService.getStoreInfo(requestMap);
+            if(data==null){
+                return;
+            }
+            List<Object> objects =null;
+            for (Map<String,Object> order : data) {
+                objects = new ArrayList<>();
+                objects.add(order.get("createdate"));
+                objects.add(order.get("companyname"));
+                objects.add(order.get("shopname"));
+                objects.add(order.get("cut"));
+                objects.add(order.get("ordersize"));
+                objects.add(order.get("totalprice"));
+                objects.add(order.get("waysalesman"));
+                objects.add(order.get("clerkname"));
+
+                result.add(objects);
+            }
+            CommonUtils.exportByList(response, columnNameList, result, "商家信息");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

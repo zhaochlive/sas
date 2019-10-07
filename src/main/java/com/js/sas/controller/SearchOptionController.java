@@ -115,13 +115,22 @@ public class SearchOptionController {
         return new Result("200", "success", searchOptionService.getSellerCompanyname(name));
     }
     /**
-     * 商家公司名称
+     * 买家公司名称
      * @param name
      * @return
      */
     @PostMapping("/getBuyerCompanyname")
     public Result getBuyerCompanyname(@Param("name")String name ){
         return new Result("200", "success", searchOptionService.getBuyerCompanyname(name));
+    }
+    /**
+     * 买家公司名称
+     * @param name
+     * @return
+     */
+    @PostMapping("/getInvoiceHeadUp")
+    public Result getInvoiceHeadUp(@Param("name")String name ){
+        return new Result("200", "success", searchOptionService.getInvoiceHeadUp(name));
     }
 
 

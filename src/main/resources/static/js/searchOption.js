@@ -98,7 +98,7 @@ $('.clerkname').typeahead({
     source: function (query, process) {
         $.ajax({
             type: 'POST',
-            url: "search/clerkMan",
+            url: "search/SaleMan",
             data: {
                 name: query,
                 limit: "8"
@@ -175,6 +175,25 @@ $('.buyCompany ').typeahead({
         $.ajax({
             type: 'POST',
             url: "search/getBuyerCompanyname",
+            data: {
+                name: query,
+                limit: "8"
+            },
+            dataType: "json",
+            success: function (result) {
+                return process(result.data);
+            }, error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+});
+//买家公司名称填充
+$('.InvoiceHeadUp ').typeahead({
+    source: function (query, process) {
+        $.ajax({
+            type: 'POST',
+            url: "search/getInvoiceHeadUp",
             data: {
                 name: query,
                 limit: "8"
