@@ -21,7 +21,6 @@ function loadTable(){
         url: "repurchase/getColums",
         type: "post",
         async: false,
-        // data: data,
         data: {
             startDate: startDate,
             endDate: endDate
@@ -31,7 +30,18 @@ function loadTable(){
             keys=resultData;
             if(resultData){
                 $.each(resultData,function(index,value){
-                    colums.push({field:value,title:value,sortable: true ,align: 'center'});
+                    // console.info(index+'=='+value);//19==下单金额_201901
+                    if(index<resultData.length-2){
+                        colums.push({field:value,title:value,sortable: true ,align: 'center',formatter:function (values, row, indexs){
+                                var lastMonth = eval('row.'+resultData[index+2]);
+                                var thisMonth = eval('row.'+resultData[index]);
+                                // console.info(eval('row.'+resultData[index])+'---------0');
+                                // console.info(eval('row.'+resultData[index-2])+'---------2');
+                                return '本月数据：'+thisMonth+'</br>'+'环比上月增长：'+(thisMonth-lastMonth).toFixed(2);
+                            } });
+                    }else {
+                        colums.push({field:value,title:value,sortable: true ,align: 'center'});
+                    }
                 });
             }
         },
