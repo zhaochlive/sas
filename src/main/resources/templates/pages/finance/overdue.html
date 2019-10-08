@@ -222,8 +222,15 @@
                     return pageSize * (pageNumber - 1) + index + 1;
                 }
             }, {
-                field: 'customerServiceStaff',
+                field: 'salesman',
                 title: '业务员',
+                align: 'center',
+                valign: 'middle',
+                sortable: 'true',
+                width: '10%'
+            }, {
+                field: 'customerServiceStaff',
+                title: '客服',
                 align: 'center',
                 valign: 'middle',
                 sortable: 'true',
@@ -241,7 +248,7 @@
                 align: 'center',
                 valign: 'middle',
                 sortable: 'true',
-                width: '50%'
+                width: '40%'
             }, {
                 field: 'receivablesBeforeToday',
                 title: '（现金）逾期金额',

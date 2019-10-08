@@ -575,7 +575,7 @@ public class FinanceController {
         for (PartnerEntity partner : partnerList) {
             EnumMap<ExcelPropertyEnum, Object> enumMap = getYonyouStatementExcel(period, partner.getName());
             if (enumMap == null) {
-                log.info("获取接口数据错误，单位名称：" + partner.getName() + "，账期：" + period);
+                //log.info("获取接口数据错误，单位名称：" + partner.getName() + "，账期：" + period);
                 continue;
             }
             try {
@@ -665,8 +665,6 @@ public class FinanceController {
         if (StringUtils.isBlank(period) || StringUtils.isBlank(name)) {
             return null;
         }
-        // 需要合并的行
-        List<Integer> mergeRowNumList = new ArrayList<>();
         // 开始时间
         String startDate;
         // 结束时间
@@ -697,11 +695,9 @@ public class FinanceController {
         multiValueMap.add("endDate", endDate);
         multiValueMap.add("settleCustomer", name);
         ResponseEntity responseEntity = CommonUtils.sendPostRequest(url, multiValueMap);
-
         if (responseEntity.getBody() == null) {
             return null;
         }
-
         // 格式化JSONArray
         JSONArray dataJSONArray = JSONArray.parseArray("[" + responseEntity.getBody() + "]");
         // 每行数据List
@@ -718,6 +714,8 @@ public class FinanceController {
         List<Integer> backgroundColorList = new ArrayList<>();
         // 居中行
         List<Integer> centerList = new ArrayList<>();
+        // 需要合并的行
+        List<Integer> mergeRowNumList = new ArrayList<>();
         // 处理数据
         if (dataJSONArray.size() > 0) {
             BigDecimal deliverTotal = new BigDecimal(0);
@@ -847,7 +845,7 @@ public class FinanceController {
             }
             // 月汇总
             dataList = new ArrayList<>();
-            dataList.add("综上所述,本月汇总如下");
+            dataList.add("综上所述，本月汇总如下");
             rowList.add(dataList);
             boldList.add(rowList.size());
             centerList.add(rowList.size());

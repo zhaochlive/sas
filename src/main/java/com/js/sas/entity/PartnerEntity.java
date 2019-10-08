@@ -80,9 +80,14 @@ public class PartnerEntity extends BaseRowModel implements Serializable {
     @Column(name = "amount_delivery", nullable = false)
     private BigDecimal amountDelivery;
 
+    // 客服，导出是业务员
     @ExcelProperty(value = "业务员", index = 0)
     @Column(name = "customer_service_staff", nullable = false)
     private String customerServiceStaff;
+
+    // 业务员
+    @Column(name = "salesman", nullable = false)
+    private String salesman;
 
     @Column(name = "amount_today", nullable = false)
     private BigDecimal amountToday;
