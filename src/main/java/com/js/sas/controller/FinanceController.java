@@ -714,6 +714,8 @@ public class FinanceController {
         List<Integer> backgroundColorList = new ArrayList<>();
         // 居中行
         List<Integer> centerList = new ArrayList<>();
+        // 明细居中行
+        List<Integer> centerDetailList = new ArrayList<>();
         // 需要合并的行
         List<Integer> mergeRowNumList = new ArrayList<>();
         // 处理数据
@@ -787,6 +789,7 @@ public class FinanceController {
                 dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getBigDecimal("initInvoiceBanlance"));
                 rowList.add(dataList);
                 borderList.add(rowList.size());
+                centerDetailList.add(rowList.size());
                 // 明细
                 for (int innerIndex = 0; innerIndex < dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").size(); innerIndex++) {
                     dataList = new ArrayList<>();
@@ -800,6 +803,7 @@ public class FinanceController {
                     dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("invoiceBalanceAmount"));
                     rowList.add(dataList);
                     borderList.add(rowList.size());
+                    centerDetailList.add(rowList.size());
                 }
                 // 汇总信息
                 dataList = new ArrayList<>();
@@ -939,7 +943,7 @@ public class FinanceController {
             spacialBackgroundColorList.add(mergeRowNumList.get(mergeRowNumList.size() - 1) + 5);
             spacialBackgroundColorList.add(mergeRowNumList.get(mergeRowNumList.size() - 1) + 6);
         }
-        StyleExcelHandler handler = new StyleExcelHandler(boldList, borderList, backgroundColorList, centerList, spacialBackgroundColorList);
+        StyleExcelHandler handler = new StyleExcelHandler(boldList, borderList, backgroundColorList, centerList, spacialBackgroundColorList, centerDetailList);
         // 返回值
         EnumMap<ExcelPropertyEnum, Object> reusltEnumMap = new EnumMap<>(ExcelPropertyEnum.class);
         reusltEnumMap.put(ExcelPropertyEnum.HANDLER, handler);

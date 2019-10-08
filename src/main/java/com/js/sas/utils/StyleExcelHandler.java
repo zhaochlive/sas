@@ -1,7 +1,9 @@
 package com.js.sas.utils;
 
 import com.alibaba.excel.event.WriteHandler;
+import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.*;
 import java.util.List;
@@ -16,6 +18,7 @@ public class StyleExcelHandler implements WriteHandler {
     private List<Integer> backgroundColorList;
     private List<Integer> centerList;
     private List<Integer> spacialBackgroundColorList;
+    private List<Integer> centerDetailList;
 
     /**
      * 构造方法
@@ -23,16 +26,24 @@ public class StyleExcelHandler implements WriteHandler {
      * @param boldList 需要加粗的行数列表
      * @param borderList 需要加边框的行数列表
      */
-    public StyleExcelHandler(List<Integer> boldList, List<Integer> borderList, List<Integer> backgroundColorList, List<Integer> centerList, List<Integer> spacialBackgroundColorList) {
+    public StyleExcelHandler(List<Integer> boldList, List<Integer> borderList, List<Integer> backgroundColorList, List<Integer> centerList, List<Integer> spacialBackgroundColorList, List<Integer> centerDetailList) {
         this.boldList = boldList;
         this.borderList = borderList;
         this.backgroundColorList = backgroundColorList;
         this.centerList = centerList;
         this.spacialBackgroundColorList = spacialBackgroundColorList;
+        this.centerDetailList = centerDetailList;
     }
 
     @Override
     public void sheet(int i, Sheet sheet) {
+        sheet.setColumnWidth(0, 15*256);
+        sheet.setColumnWidth(2, 15*256);
+        sheet.setColumnWidth(3, 15*256);
+        sheet.setColumnWidth(4, 15*256);
+        sheet.setColumnWidth(5, 15*256);
+        sheet.setColumnWidth(6, 15*256);
+        sheet.setColumnWidth(7, 15*256);
     }
 
     @Override
@@ -43,7 +54,7 @@ public class StyleExcelHandler implements WriteHandler {
     public void cell(int i, Cell cell) {
         // 从第二行开始设置格式，第一行是表头
         Workbook workbook = cell.getSheet().getWorkbook();
-        CellStyle cellStyle = createStyle(workbook);
+        CellStyle cellStyle = workbook.createCellStyle();
 
         // 加粗
         if (boldList.contains(cell.getRowIndex())) {
@@ -81,18 +92,12 @@ public class StyleExcelHandler implements WriteHandler {
             cellStyle.setAlignment(HorizontalAlignment.CENTER);
         }
 
+        // 明细居中特殊处理
+        if (centerDetailList.contains(cell.getRowIndex()) && cell.getColumnIndex() > 2 ) {
+            cellStyle.setAlignment(HorizontalAlignment.CENTER);
+        }
+
         cell.getRow().getCell(i).setCellStyle(cellStyle);
     }
 
-    /**
-     * 实际中如果直接获取原单元格的样式进行修改, 最后发现是改了整行的样式, 因此这里是新建一个样式
-     */
-    private CellStyle createStyle(Workbook workbook) {
-        CellStyle cellStyle = workbook.createCellStyle();
-        // 水平对齐方式
-        cellStyle.setAlignment(HorizontalAlignment.LEFT);
-        // 垂直对齐方式
-        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-        return cellStyle;
-    }
 }
