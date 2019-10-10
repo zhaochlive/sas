@@ -73,17 +73,77 @@ public class SearchOptionService {
 
     //商家，店铺公司名称
     public List<String> getSellerCompanyname(String name) {
-        String sql = "SELECT companyname from ( SELECT companyname from sellercompanyinfo GROUP BY companyname  )ss where companyname ilike '%" + name + "%'";
+        String sql = "SELECT distinct(companyname) from sellercompanyinfo where companyname ilike '%" + name + "%'";
         return jdbcTemplate.queryForList(sql, String.class);
     }
     //商家，店铺公司名称
     public List<String> getBuyerCompanyname(String name) {
-        String sql = "SELECT companyname from ( select companyname from buyercompanyinfo GROUP BY companyname )ss where companyname ilike '%" + name + "%'";
+        String sql = "SELECT distinct(companyname) from  buyercompanyinfo where companyname ilike '%" + name + "%'";
         return jdbcTemplate.queryForList(sql, String.class);
     }
-    //商家，店铺公司名称
+    //发票抬头
     public List<String> getInvoiceHeadUp(String name) {
-        String sql = "SELECT invoiceheadup from ( select invoiceheadup from billingrecord GROUP BY invoiceheadup )ss where invoiceheadup ilike '%" + name + "%'";
+        String sql = "SELECT distinct(invoiceheadup) from  billingrecord  where invoiceheadup ilike '%" + name + "%'";
         return jdbcTemplate.queryForList(sql, String.class);
     }
+    //仓库名称
+    public List<String> getStore(String name) {
+        String sql = "SELECT storename from orderproduct where storename ilike '%" + name + "%' group by storename";
+        return jdbcTemplate.queryForList(sql, String.class);
+    }
+
+    public  List<String> getProductName(String name) {
+        String sql = "SELECT distinct(productname) from productinfo where productname ilike '%" + name + "%'";
+        return jdbcTemplate.queryForList(sql, String.class);
+    }
+    public  List<String> getBrand(String name) {
+        String sql = "SELECT distinct(brand) from productinfo where brand ilike '%" + name + "%'";
+        return jdbcTemplate.queryForList(sql, String.class);
+    }
+    public  List<String> getMark(String name) {
+        String sql = "SELECT distinct(mark) from productinfo where mark ilike '%" + name + "%'";
+        return jdbcTemplate.queryForList(sql, String.class);
+    }
+    public  List<String> getMaterial(String name) {
+        String sql = "SELECT distinct(Material) from productinfo where Material ilike '%" + name + "%'";
+        return jdbcTemplate.queryForList(sql, String.class);
+    }
+    public  List<String> getGrade(String name) {
+        String sql = "SELECT distinct(cardnum) from productinfo where cardnum ilike '%" + name + "%'";
+        return jdbcTemplate.queryForList(sql, String.class);
+    }
+    public  List<String> getSurface(String name) {
+        String sql = "SELECT distinct(surfacetreatment) from productinfo where surfacetreatment ilike '%" + name + "%'";
+        return jdbcTemplate.queryForList(sql, String.class);
+    }
+    public  List<String> getNominalDiameter(String name) {
+        String sql = "SELECT distinct(value) from productattr where attribute ='公称直径' and value ilike '%" + name + "%'";
+        return jdbcTemplate.queryForList(sql, String.class);
+    }
+    public  List<String> getPitch(String name) {
+        String sql = "SELECT distinct(value) from productattr where attribute ='牙距' and value ilike '%" + name + "%'";
+        return jdbcTemplate.queryForList(sql, String.class);
+    }
+    public  List<String> getExtent(String name) {
+        String sql = "SELECT distinct(value) from productattr where attribute ='长度' and value ilike '%" + name + "%'";
+        return jdbcTemplate.queryForList(sql, String.class);
+    }
+    public  List<String> getOuterDiameter(String name) {
+        String sql = "SELECT distinct(value) from productattr where attribute ='外径' and value ilike '%" + name + "%'";
+        return jdbcTemplate.queryForList(sql, String.class);
+    }
+    public  List<String> getThickness(String name) {
+        String sql = "SELECT distinct(value) from productattr where attribute ='厚度' and value ilike '%" + name + "%'";
+        return jdbcTemplate.queryForList(sql, String.class);
+    }
+    public  List<String> getLevelOne(String name) {
+        String sql = "SELECT distinct(level1) from productinfo where level1 ilike '%" + name + "%'";
+        return jdbcTemplate.queryForList(sql, String.class);
+    }
+    public  List<String> getLevelTwo(String name) {
+        String sql = "SELECT distinct(level2) from productinfo where level2 ilike '%" + name + "%'";
+        return jdbcTemplate.queryForList(sql, String.class);
+    }
+
+
 }

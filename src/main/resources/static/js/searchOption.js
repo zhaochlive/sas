@@ -207,5 +207,272 @@ $('.InvoiceHeadUp ').typeahead({
         });
     }
 });
+//仓库
+$('.store ').typeahead({
+    source: function (query, process) {
+        $.ajax({
+            type: 'POST',
+            url: "search/getStore",
+            data: {
+                name: query,
+                limit: "8"
+            },
+            dataType: "json",
+            success: function (result) {
+                return process(result.data);
+            }, error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+});
 
+
+//商品名称
+$('.productName ').typeahead({
+    source: function (query, process) {
+        $.ajax({
+            type: 'POST',
+            url: "search/getProductName",
+            data: {
+                name: query,
+                limit: "8"
+            },
+            dataType: "json",
+            success: function (result) {
+                return process(result.data);
+            }, error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+});
+//品牌
+$('.brand ').typeahead({
+    source: function (query, process) {
+        $.ajax({
+            type: 'POST',
+            url: "search/getBrand",
+            data: {
+                name: query,
+                limit: "8"
+            },
+            dataType: "json",
+            success: function (result) {
+                return process(result.data);
+            }, error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+});
+//印记
+$('.mark ').typeahead({
+    source: function (query, process) {
+        $.ajax({
+            type: 'POST',
+            url: "search/getMark",
+            data: {
+                name: query,
+                limit: "8"
+            },
+            dataType: "json",
+            success: function (result) {
+                return process(result.data);
+            }, error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+});
+//材质
+$('.material ').typeahead({
+    source: function (query, process) {
+        $.ajax({
+            type: 'POST',
+            url: "search/getMaterial",
+            data: {
+                name: query,
+                limit: "8"
+            },
+            dataType: "json",
+            success: function (result) {
+                return process(result.data);
+            }, error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+});
+//牌号
+$('.grade ').typeahead({
+    source: function (query, process) {
+        $.ajax({
+            type: 'POST',
+            url: "search/getGrade",
+            data: {
+                name: query,
+                limit: "8"
+            },
+            dataType: "json",
+            success: function (result) {
+                return process(result.data);
+            }, error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+});
+//表面处理
+$('.surface ').typeahead({
+    source: function (query, process) {
+        $.ajax({
+            type: 'POST',
+            url: "search/getSurface",
+            data: {
+                name: query,
+                limit: "8"
+            },
+            dataType: "json",
+            success: function (result) {
+                return process(result.data);
+            }, error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+});
+//公称直径
+$('.nominalDiameter ').typeahead({
+    source: function (query, process) {
+        $.ajax({
+            type: 'POST',
+            url: "search/getNominalDiameter",
+            data: {
+                name: query,
+                limit: "8"
+            },
+            dataType: "json",
+            success: function (result) {
+                return process(result.data);
+            }, error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+});
+//牙距
+$('.pitch ').typeahead({
+    source: function (query, process) {
+        $.ajax({
+            type: 'POST',
+            url: "search/getPitch",
+            data: {
+                name: query,
+                limit: "8"
+            },
+            dataType: "json",
+            success: function (result) {
+                return process(result.data);
+            }, error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+});
+//长度
+$('.extent ').typeahead({
+    source: function (query, process) {
+        $.ajax({
+            type: 'POST',
+            url: "search/getExtent",
+            data: {
+                name: query,
+                limit: "8"
+            },
+            dataType: "json",
+            success: function (result) {
+                return process(result.data);
+            }, error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+});
+//外径
+$('.outerDiameter ').typeahead({
+    source: function (query, process) {
+        $.ajax({
+            type: 'POST',
+            url: "search/getOuterDiameter",
+            data: {
+                name: query,
+                limit: "8"
+            },
+            dataType: "json",
+            success: function (result) {
+                return process(result.data);
+            }, error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+});
+//厚度
+$('.thickness ').typeahead({
+    source: function (query, process) {
+        $.ajax({
+            type: 'POST',
+            url: "search/getThickness",
+            data: {
+                name: query,
+                limit: "8"
+            },
+            dataType: "json",
+            success: function (result) {
+                return process(result.data);
+            }, error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+});
+//一级分类
+$('.classOne ').typeahead({
+    source: function (query, process) {
+        $.ajax({
+            type: 'POST',
+            url: "search/getLevelOne",
+            data: {
+                name: query,
+                limit: "8"
+            },
+            dataType: "json",
+            success: function (result) {
+                return process(result.data);
+            }, error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+});
+//二级分类
+$('.classTwo ').typeahead({
+    source: function (query, process) {
+        $.ajax({
+            type: 'POST',
+            url: "search/getLevelTwo",
+            data: {
+                name: query,
+                limit: "8"
+            },
+            dataType: "json",
+            success: function (result) {
+                return process(result.data);
+            }, error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+});
 

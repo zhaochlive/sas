@@ -17,6 +17,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.Tuple;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -181,5 +182,83 @@ public class SalesController {
     @PostMapping(value = "/findOrderAreas")
     public Object findOrderAreas(String startDate, String endDate, String province, String city, int offset, int limit) {
         return salesService.findOrderAreas(startDate, endDate, province, city, offset, limit);
+    }
+    @PostMapping(value = "/getAmount")
+    public Object getAmount(HttpServletRequest request){
+        Map<String, String> params = new HashMap<String, String>();
+        if(request.getParameter("productName")!=null&&StringUtils.isNotBlank(request.getParameter("productName"))){
+            params.put("productName",request.getParameter("productName"));
+        }
+        if(request.getParameter("classOne")!=null&&StringUtils.isNotBlank(request.getParameter("classOne"))){
+            params.put("classOne",request.getParameter("classOne"));
+        }
+        if(request.getParameter("classTwo")!=null&&StringUtils.isNotBlank(request.getParameter("classTwo"))){
+            params.put("classTwo",request.getParameter("classTwo"));
+        }
+        if(request.getParameter("classify")!=null&&StringUtils.isNotBlank(request.getParameter("classify"))){
+            params.put("classify",request.getParameter("classify"));
+        }
+        if(request.getParameter("standard")!=null&&StringUtils.isNotBlank(request.getParameter("standard"))){
+            params.put("standard",request.getParameter("standard"));
+        }
+        if(request.getParameter("brand")!=null&&StringUtils.isNotBlank(request.getParameter("brand"))){
+            params.put("brand",request.getParameter("brand"));
+        }
+        if(request.getParameter("mark")!=null&&StringUtils.isNotBlank(request.getParameter("mark"))){
+            params.put("mark",request.getParameter("mark"));
+        }
+        if(request.getParameter("material")!=null&&StringUtils.isNotBlank(request.getParameter("material"))){
+            params.put("material",request.getParameter("material"));
+        }
+        if(request.getParameter("grade")!=null&&StringUtils.isNotBlank(request.getParameter("grade"))){
+            params.put("grade",request.getParameter("grade"));
+        }
+        if(request.getParameter("surface")!=null&&StringUtils.isNotBlank(request.getParameter("surface"))){
+            params.put("surface",request.getParameter("surface"));
+        }
+        if(request.getParameter("nominalDiameter")!=null&&StringUtils.isNotBlank(request.getParameter("nominalDiameter"))){
+            params.put("nominalDiameter",request.getParameter("nominalDiameter"));
+        }
+        if(request.getParameter("pitch")!=null&&StringUtils.isNotBlank(request.getParameter("pitch"))){
+            params.put("pitch",request.getParameter("pitch"));
+        }
+        if(request.getParameter("extent")!=null&&StringUtils.isNotBlank(request.getParameter("extent"))){
+            params.put("extent",request.getParameter("extent"));
+        }
+        if(request.getParameter("extent")!=null&&StringUtils.isNotBlank(request.getParameter("extent"))){
+            params.put("extent",request.getParameter("extent"));
+        }
+        if(request.getParameter("outerDiameter")!=null&&StringUtils.isNotBlank(request.getParameter("outerDiameter"))){
+            params.put("outerDiameter",request.getParameter("outerDiameter"));
+        }
+        if(request.getParameter("thickness")!=null&&StringUtils.isNotBlank(request.getParameter("thickness"))){
+            params.put("thickness",request.getParameter("thickness"));
+        }
+        if(request.getParameter("store")!=null&&StringUtils.isNotBlank(request.getParameter("store"))){
+            params.put("store",request.getParameter("store"));
+        }
+        if(request.getParameter("startCreateTime")!=null&&StringUtils.isNotBlank(request.getParameter("startCreateTime"))){
+            params.put("startCreateTime",request.getParameter("startCreateTime"));
+        }
+        if(request.getParameter("endCreateTime")!=null&&StringUtils.isNotBlank(request.getParameter("endCreateTime"))){
+            params.put("endCreateTime",request.getParameter("endCreateTime"));
+        }
+        List<Map<String, Object>> list = salesService.getSaleAmount(params);
+
+//        request.getParameter("");
+//        request.getParameter("standard");
+//        request.getParameter("brand");
+//        request.getParameter("mark");
+//        request.getParameter("material");
+//        request.getParameter("grade");
+//        request.getParameter("surface");
+//        request.getParameter("nominalDiameter");
+//        request.getParameter("pitch");
+//        request.getParameter("extent");
+//        request.getParameter("outerDiameter");
+//        request.getParameter("thickness");
+//        request.getParameter("store");
+
+        return list;
     }
 }

@@ -78,7 +78,7 @@ public class SearchOptionController {
         return new Result("200", "success", searchOptionService.getCustomerMan(name));
     }
     /**
-     * 分类、标准
+     * 一级分类、标准
      * @param name
      * @return
      */
@@ -131,6 +131,133 @@ public class SearchOptionController {
     @PostMapping("/getInvoiceHeadUp")
     public Result getInvoiceHeadUp(@Param("name")String name ){
         return new Result("200", "success", searchOptionService.getInvoiceHeadUp(name));
+    }
+
+    /**
+     * 仓库名称
+     * @param name
+     * @return
+     */
+    @PostMapping("/getStore")
+    public Result getStore(@Param("name")String name ){
+        return new Result("200", "success", searchOptionService.getStore(name));
+    }
+    /**
+     * 商品名称
+     * @param name
+     * @return
+     */
+    @PostMapping("/getProductName")
+    public Result getProuctName(@Param("name")String name ){
+        return new Result("200", "success", searchOptionService.getProductName(name));
+    }
+    /**
+     * 品牌
+     * @param name
+     * @return
+     */
+    @PostMapping("/getBrand")
+    public Result getBrand(@Param("name")String name ){
+        return new Result("200", "success", searchOptionService.getBrand(name));
+    }
+    /**
+     * 印记
+     * @param name
+     * @return
+     */
+    @PostMapping("/getMark")
+    public Result getMark(@Param("name")String name ){
+        return new Result("200", "success", searchOptionService.getMark(name));
+    }
+    /**
+     * 材质
+     * @param name
+     * @return
+     */
+    @PostMapping("/getMaterial")
+    public Result getMaterial(@Param("name")String name ){
+        return new Result("200", "success", searchOptionService.getMaterial(name));
+    }
+    /**
+     * 牌号
+     * @param name
+     * @return
+     */
+    @PostMapping("/getGrade")
+    public Result getGrade(@Param("name")String name ){
+        return new Result("200", "success", searchOptionService.getGrade(name));
+    }
+    /**
+     * 表面处理
+     * @param name
+     * @return
+     */
+    @PostMapping("/getSurface")
+    public Result getSurface(@Param("name")String name ){
+        return new Result("200", "success", searchOptionService.getSurface(name));
+    }
+    /**
+     * 公称直径
+     * @param name
+     * @return
+     */
+    @PostMapping("/getNominalDiameter")
+    public Result getNominalDiameter(@Param("name")String name ){
+        return new Result("200", "success", searchOptionService.getNominalDiameter(name));
+    }
+    /**
+     * 牙距
+     * @param name
+     * @return
+     */
+    @PostMapping("/getPitch")
+    public Result getPitch(@Param("name")String name ){
+        return new Result("200", "success", searchOptionService.getPitch(name));
+    }
+    /**
+     * 长度
+     * @param name
+     * @return
+     */
+    @PostMapping("/getExtent")
+    public Result getExtent(@Param("name")String name ){
+        return new Result("200", "success", searchOptionService.getExtent(name));
+    }
+    /**
+     * 外径
+     * @param name
+     * @return
+     */
+    @PostMapping("/getOuterDiameter")
+    public Result getOuterDiameter(@Param("name")String name ){
+        return new Result("200", "success", searchOptionService.getOuterDiameter(name));
+    }
+    /**
+     * 厚度
+     * @param name
+     * @return
+     */
+    @PostMapping("/getThickness")
+    public Result getThickness(@Param("name")String name ){
+        return new Result("200", "success", searchOptionService.getThickness(name));
+    }
+    /**
+     * 一级分类
+     * @param name
+     * @return
+     */
+    @PostMapping("/getLevelOne")
+    public Result getLevelOne(@Param("name")String name ){
+        return new Result("200", "success", searchOptionService.getLevelOne(name));
+    }
+    /**
+     * 二级分类
+     * @param name
+     * @return
+     */
+    @PostMapping("/getLevelTwo")
+    public Result getLevelTwo(@Param("name")String name ){
+        return new Result("200", "success", searchOptionService.getLevelTwo(name));
     }
 
 
