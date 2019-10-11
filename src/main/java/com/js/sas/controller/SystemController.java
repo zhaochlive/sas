@@ -221,4 +221,10 @@ public class SystemController {
     public String settlementCustomer() {
         return "pages/sales/settlementCustomer.html";
     }
+
+    @GetMapping("/monthlySalesAmount")
+    public String monthlySalesAmount() {
+        return "pages/sales/monthlySalesAmount.html";
+    }
+
 }

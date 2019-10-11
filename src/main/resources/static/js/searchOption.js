@@ -55,6 +55,25 @@ $('.username').typeahead({
         });
     }
 });
+// 紧商网用户名username自动填充
+$('.usernameJS').typeahead({
+    source: function (query, process) {
+        $.ajax({
+            type: 'POST',
+            url: "search/username",
+            data: {
+                name: query,
+                limit: "8"
+            },
+            dataType: "json",
+            success: function (result) {
+                return process(result.data);
+            }, error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+});
 //商家公司名称自动填充
 $('.SellerCompany').typeahead({
     source: function (query, process) {

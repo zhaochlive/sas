@@ -407,7 +407,7 @@ public class FinanceController {
      */
     @PostMapping("/refreshOverdueData")
     public Result refreshOverdueData() {
-        String result = new RemoteShellExecutor("192.168.8.65", 22, "root", "xQL=Q)*rV=hV_i@VFhP2", "sudo /usr/local/kettle/data-integration/cronjobs/001.sh").exec();
+        String result = new RemoteShellExecutor("192.168.8.164", 22, "root", "root", "sudo /usr/local/pentaho/cronjobs/001.sh").exec();
         return ResultUtils.getResult(ResultCode.成功, result);
     }
 

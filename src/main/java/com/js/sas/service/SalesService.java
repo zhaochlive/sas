@@ -8,6 +8,12 @@ import com.js.sas.repository.JsOrdersRepository;
 import com.js.sas.repository.SaleAmountRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowCountCallbackHandler;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.jdbc.support.rowset.SqlRowSetMetaData;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -15,9 +21,9 @@ import javax.persistence.StoredProcedureQuery;
 import javax.persistence.Tuple;
 import javax.persistence.criteria.*;
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * @ClassName SalesService
@@ -40,6 +46,10 @@ public class SalesService {
         this.jsOrdersRepository = jsOrdersRepository;
         this.entityManager = entityManager;
     }
+
+    @Autowired
+    @Qualifier(value = "secodJdbcTemplate")
+    private JdbcTemplate jdbcTemplate;
 
     /**
      * 日销售额列表
@@ -182,5 +192,150 @@ public class SalesService {
         return result;
     }
 
+
+    public Map<String, Object> findMonthlySalesAmount(String startMonth, String endMonth, String username, String staff, int limit, int offset, String sort, String sortOrder) {
+        // 格式化月份
+        String[] startArray = startMonth.split("-");
+        String[] endArray = endMonth.split("-");
+
+        Calendar startCalendar = Calendar.getInstance();
+        startCalendar.set(Integer.parseInt(startArray[0]), Integer.parseInt(startArray[1]) - 1, 1);
+
+        Calendar endCalendar = Calendar.getInstance();
+        endCalendar.set(Integer.parseInt(endArray[0]), Integer.parseInt(endArray[1]) - 1, 1);
+
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM");
+
+        // 参数List
+        List paras = new ArrayList<>();
+        // 拼接sql
+        StringBuilder sb = new StringBuilder("SELECT tm.username, MAX(tm.invoice_head) AS invoice_head, tm.customer_service_staff, MAX(tm.address) AS address,");
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(2017, 12, 31, 0, 0, 0);
+        while (!endCalendar.before(startCalendar)) {
+            sb.append(" SUM ( CASE WHEN tm.months = '" + simpleDateFormat.format(endCalendar.getTime()) + "' THEN tm.monthly_amount ELSE 0 END ) AS \"" + simpleDateFormat.format(endCalendar.getTime()) + "\",");
+            if (endCalendar.before(calendar)) {
+                break;
+            }
+            // 减一个月
+            endCalendar.add(Calendar.MONTH, -1);
+        }
+        if (sb.toString().endsWith(",")) {
+            // 去掉最后一位的逗号
+            sb.deleteCharAt(sb.length() - 1);
+        }
+        sb.append(" FROM(SELECT TO_CHAR( os.createtime, 'YYYY-MM' ) AS months,mb.username, MAX(bc.invoiceheadup) as invoice_head, mb.clerkname AS customer_service_staff, MAX(bc.address) AS address, SUM ( os.totalprice ) AS monthly_amount FROM orders os ");
+        sb.append(" LEFT JOIN MEMBER mb ON os.memberid = mb.ID LEFT JOIN billingrecord bc ON cast(os.id as varchar) = bc.orderno WHERE os.orderstatus <> 7 AND os.createtime >= ? ");
+
+        paras.add(Timestamp.valueOf(simpleDateFormat.format(startCalendar.getTime()) + "-01 00:00:00"));
+
+        if (StringUtils.isNotBlank(username)) {
+            sb.append(" AND mb.username = ? ");
+            paras.add(username);
+        }
+        if (StringUtils.isNotBlank(staff)) {
+            sb.append(" AND mb.clerkname = ? ");
+            paras.add(staff);
+        }
+        sb.append(" GROUP BY months, mb.username, customer_service_staff) tm GROUP BY tm.username, tm.customer_service_staff ORDER BY tm.username limit ? offset ? ");
+
+        paras.add(limit);
+        paras.add(offset);
+
+        List dataList = jdbcTemplate.queryForList(sb.toString(), paras.toArray());
+
+        // 总数
+        paras = new ArrayList();
+        StringBuilder countSql = new StringBuilder("SELECT COUNT(1) FROM ( SELECT tm.username FROM ( SELECT TO_CHAR( os.createtime, 'YYYY-MM' ) AS months, mb.username, MAX ( bc.invoiceheadup ) AS invoice_head, mb.clerkname AS customer_service_staff, MAX ( bc.address ) AS address, SUM ( os.totalprice ) AS monthly_amount FROM orders os LEFT JOIN MEMBER mb ON os.memberid = mb.ID LEFT JOIN billingrecord bc ON CAST ( os.ID AS VARCHAR ) = bc.orderno WHERE os.orderstatus <> 7 AND os.createtime >= ? ");
+        paras.add(Timestamp.valueOf(simpleDateFormat.format(startCalendar.getTime()) + "-01 00:00:00"));
+        if (StringUtils.isNotBlank(username)) {
+            countSql.append(" AND mb.username = ? ");
+            paras.add(username);
+        }
+        if (StringUtils.isNotBlank(staff)) {
+            countSql.append(" AND mb.clerkname = ? ");
+            paras.add(staff);
+        }
+        countSql.append("GROUP BY months, mb.username, customer_service_staff ) tm GROUP BY tm.username, tm.customer_service_staff ) t");
+
+        int total = jdbcTemplate.queryForObject(countSql.toString(), Integer.class, paras.toArray());
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        result.put("rows", dataList);
+        result.put("total", total);
+
+        return result;
+    }
+
+    public Map<String, Object> findMonthlySalesAmountAll(String startMonth, String endMonth, String username, String staff) {
+        // 格式化月份
+        String[] startArray = startMonth.split("-");
+        String[] endArray = endMonth.split("-");
+
+        Calendar startCalendar = Calendar.getInstance();
+        startCalendar.set(Integer.parseInt(startArray[0]), Integer.parseInt(startArray[1]) - 1, 1);
+
+        Calendar endCalendar = Calendar.getInstance();
+        endCalendar.set(Integer.parseInt(endArray[0]), Integer.parseInt(endArray[1]) - 1, 1);
+
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM");
+
+        // 参数List
+        List paras = new ArrayList<>();
+        // 拼接sql
+        StringBuilder sb = new StringBuilder("SELECT tm.username AS 客户名称, MAX(tm.invoice_head) AS 开票名称, tm.customer_service_staff AS 客服, MAX(tm.address) AS 地址,");
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(2017, 12, 31, 0, 0, 0);
+        while (!endCalendar.before(startCalendar)) {
+            sb.append(" SUM ( CASE WHEN tm.months = '" + simpleDateFormat.format(endCalendar.getTime()) + "' THEN tm.monthly_amount ELSE 0 END ) AS \"" + simpleDateFormat.format(endCalendar.getTime()) + "\",");
+            if (endCalendar.before(calendar)) {
+                break;
+            }
+            // 减一个月
+            endCalendar.add(Calendar.MONTH, -1);
+        }
+        if (sb.toString().endsWith(",")) {
+            // 去掉最后一位的逗号
+            sb.deleteCharAt(sb.length() - 1);
+        }
+        sb.append(" FROM(SELECT TO_CHAR( os.createtime, 'YYYY-MM' ) AS months,mb.username, MAX(bc.invoiceheadup) as invoice_head, mb.clerkname AS customer_service_staff, MAX(bc.address) AS address, SUM ( os.totalprice ) AS monthly_amount FROM orders os ");
+        sb.append(" LEFT JOIN MEMBER mb ON os.memberid = mb.ID LEFT JOIN billingrecord bc ON cast(os.id as varchar) = bc.orderno WHERE os.orderstatus <> 7 AND os.createtime >= ? ");
+
+        paras.add(Timestamp.valueOf(simpleDateFormat.format(startCalendar.getTime()) + "-01 00:00:00"));
+
+        if (StringUtils.isNotBlank(username)) {
+            sb.append(" AND mb.username = ? ");
+            paras.add(username);
+        }
+        if (StringUtils.isNotBlank(staff)) {
+            sb.append(" AND mb.clerkname = ? ");
+            paras.add(staff);
+        }
+        sb.append(" GROUP BY months, mb.username, customer_service_staff) tm GROUP BY tm.username, tm.customer_service_staff ORDER BY tm.username ");
+
+        // 列名List
+        List<String> columnNameList = new ArrayList<>();
+        List<List<Object>> dataList = new ArrayList<>();
+
+        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sb.toString(), paras.toArray());
+        SqlRowSetMetaData metaData = sqlRowSet.getMetaData();
+        for (int i = 1; i <= metaData.getColumnCount(); i++) {
+            columnNameList.add(metaData.getColumnName(i));
+        }
+        while(sqlRowSet.next()) {
+            List<Object> rowList = new ArrayList<>();
+            for (int i = 1; i <= metaData.getColumnCount(); i++) {
+                rowList.add(sqlRowSet.getObject(i));
+            }
+            dataList.add(rowList);
+        }
+        // 返回Map
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("columnNameList", columnNameList);
+        result.put("dataList", dataList);
+
+        return result;
+    }
 
 }

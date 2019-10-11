@@ -59,6 +59,12 @@ public class SearchOptionService {
         return jdbcTemplate.queryForList(sql, String.class);
     }
 
+    //紧商网用户名
+    public List<String> getUsername(String name) {
+        String sql = "select username from ( SELECT username from member GROUP BY username  )ss where username ilike '%" + name + "%'";
+        return jdbcTemplate.queryForList(sql, String.class);
+    }
+
     //客户名称
     public List<String> getCustomerMan(String name) {
         String sql = "select realname from ( SELECT realname from member GROUP BY realname  )ss where realname ilike '%" + name + "%'";
