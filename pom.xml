@@ -134,7 +134,7 @@
                 </executions>
                 <configuration>
                     <imageName>${project.artifactId}:${project.version}</imageName>
-                    <dockerHost>http://192.168.8.65:2375</dockerHost>
+                    <dockerHost>http://192.168.8.164:2375</dockerHost>
                     <baseImage>java:8</baseImage>
                     <entryPoint>["java", "-jar","-Dspring.profiles.active=prod","/${project.build.finalName}.jar"]</entryPoint>
                     <resources>

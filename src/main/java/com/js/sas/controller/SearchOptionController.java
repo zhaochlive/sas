@@ -69,6 +69,15 @@ public class SearchOptionController {
         return new Result("200", "success", searchOptionService.getShopName(name));
     }
     /**
+     * 紧商网用户名username
+     * @param name
+     * @return
+     */
+    @PostMapping("/username")
+    public Result getUsername(@Param("name")String name ){
+        return new Result("200", "success", searchOptionService.getUsername(name));
+    }
+    /**
      * 客户名称
      * @param name
      * @return
