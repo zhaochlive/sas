@@ -26,6 +26,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -192,6 +193,10 @@ public class SalesController {
     public Object findOrderAreas(String startDate, String endDate, String province, String city, int offset, int limit) {
         return salesService.findOrderAreas(startDate, endDate, province, city, offset, limit);
     }
+    /**
+     * 商品销售额
+     * @return Result，商品销售总额
+     */
 
     /**
      * 客户、开票名称、客服、地址，月销售统计
@@ -368,22 +373,65 @@ public class SalesController {
         if(request.getParameter("endCreateTime")!=null&&StringUtils.isNotBlank(request.getParameter("endCreateTime"))){
             params.put("endCreateTime",request.getParameter("endCreateTime"));
         }
+        if (StringUtils.isNotBlank(request.getParameter("limit"))) {
+            params.put("limit", request.getParameter("limit"));
+        } else {
+            params.put("limit", "10");
+        }
+        if (StringUtils.isNotBlank(request.getParameter("offset"))) {
+            params.put("offset", request.getParameter("offset"));
+        } else {
+            params.put("offset", "0");
+        }
         List<Map<String, Object>> list = salesService.getSaleAmount(params);
-
-//        request.getParameter("");
-//        request.getParameter("standard");
-//        request.getParameter("brand");
-//        request.getParameter("mark");
-//        request.getParameter("material");
-//        request.getParameter("grade");
-//        request.getParameter("surface");
-//        request.getParameter("nominalDiameter");
-//        request.getParameter("pitch");
-//        request.getParameter("extent");
-//        request.getParameter("outerDiameter");
-//        request.getParameter("thickness");
-//        request.getParameter("store");
 
         return list;
     }
+
+    /**
+     * 商品类别销售情况
+     * @param request
+     * @return getCategorySalesPage
+     */
+    @PostMapping(value = "/productCategory")
+    public Object productCategory(HttpServletRequest request){
+        Map<String, String> params = new HashMap<String, String>();
+        Map<String, Object> result = new HashMap<>();
+        String year =null;
+        if (request.getParameter("year")!=null|| StringUtils.isNotBlank(request.getParameter("year"))){
+            year =request.getParameter("year");
+        }else{
+            result.put("304","缺少年份参数year，例如：year = 2018");
+            return result;
+        }
+        if(request.getParameter("level")!=null&&StringUtils.isNotBlank(request.getParameter("level"))){
+            params.put("level",request.getParameter("level"));
+        }
+        if(request.getParameter("parentid")!=null&&StringUtils.isNotBlank(request.getParameter("parentid"))){
+            params.put("parentid",request.getParameter("parentid"));
+        }else {
+            params.put("parentid","0");
+        }
+        if (StringUtils.isNotBlank(request.getParameter("limit"))) {
+            params.put("limit", request.getParameter("limit"));
+        } else {
+            params.put("limit", "100");
+        }
+        if (StringUtils.isNotBlank(request.getParameter("offset"))) {
+            params.put("offset", request.getParameter("offset"));
+        } else {
+            params.put("offset", "0");
+        }
+        List<Map<String, Object>> list = salesService.getCategorySalesPage(params,year);
+        for (Map<String, Object> map : list) {
+            map.put("sss",map.get("sss")+"");
+        }
+        result.put("rows",list);
+        result.put("total",salesService.getCategorySalesCount(params,year));
+        return result;
+    }
+
+
+
+
 }

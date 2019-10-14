@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class SearchOptionService {
@@ -149,6 +150,16 @@ public class SearchOptionService {
     public  List<String> getLevelTwo(String name) {
         String sql = "SELECT distinct(level2) from productinfo where level2 ilike '%" + name + "%'";
         return jdbcTemplate.queryForList(sql, String.class);
+    }
+
+    /**
+     * 根据父类id 查询子类商品分类结果集
+     * @param id
+     * @return
+     */
+    public List<Map<String ,Object>> getCategoryById(int id){
+        String sql ="SELECT id,name from categories where parentid = "+id +"order by sort";
+        return jdbcTemplate.queryForList(sql);
     }
 
 

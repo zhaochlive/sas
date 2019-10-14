@@ -1,6 +1,7 @@
 package com.js.sas.controller;
 
 import com.js.sas.service.CouponStrategyService;
+import com.js.sas.service.SearchOptionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -9,6 +10,7 @@ import org.springframework.web.servlet.ModelAndView;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @ClassName SystemController
@@ -20,6 +22,8 @@ import javax.servlet.http.HttpServletRequest;
 @ApiIgnore
 public class SystemController {
 
+    @Autowired
+    private SearchOptionService searchOptionService;
     @GetMapping("/")
     public String index() {
         return "index";
@@ -227,4 +231,13 @@ public class SystemController {
         return "pages/sales/monthlySalesAmount.html";
     }
 
+
+    // 商品类别销售情况
+    @GetMapping("/productCategory")
+    public String category(HttpServletRequest request, Model model) {
+
+        model.addAttribute("category",searchOptionService.getCategoryById(0));
+
+        return "pages/sales/productCategory.html";
+    }
 }
