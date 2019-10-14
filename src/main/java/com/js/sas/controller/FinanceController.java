@@ -930,9 +930,9 @@ public class FinanceController {
             return null;
         }
         // 导出时间格式化
-        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
+        SimpleDateFormat df = new SimpleDateFormat("(yyyyMMdd)");
         // 名称
-        String fileName = name + "-用友对账单";
+        String fileName = name;
         // sheet页
         Sheet sheet1 = new Sheet(1, 0);
         sheet1.setSheetName(fileName);
