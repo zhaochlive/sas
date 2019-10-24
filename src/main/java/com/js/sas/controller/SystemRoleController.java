@@ -59,7 +59,6 @@ public class SystemRoleController {
     @RequestMapping(value = "role/addRole",method = RequestMethod.POST)
     @ResponseBody
     public Object addUser(SystemRole systemRole )throws IOException {
-        System.out.println(systemRole.toString());
         if (systemRole!=null&&StringUtils.isNotBlank(systemRole.getName())){
             Assert.hasText(systemRole.getName(),"角色名称不存在");
             SystemRole byName = systemRoleService.getByName(systemRole.getName());
@@ -84,7 +83,6 @@ public class SystemRoleController {
         List<SystemRoleMenu> roleMenus = systemRoleService.getRoleMenuByRoleId(roleId);
         List<Long> list = new ArrayList<>();
         roleMenus.forEach(roleMenu -> list.add(roleMenu.getMenu().getMenuId()));
-        roleMenus.forEach(roleMenu -> System.out.println(roleMenu));
         for (SystemMenu systemMenu : systemMenus) {
             if (systemMenu.getPid().equals(0L)){
                 parentMenu.add(systemMenu);
