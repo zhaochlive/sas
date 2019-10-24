@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="../../css/bootstrap-4.3.1.min.css">
+    <link rel="stylesheet" href="../../css/bootstrap-table.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" type="text/css" href="../../css/daterangepicker.css"/>
+
+    <title>统计分析系统 - 销售 - 角色菜单</title>
+</head>
+<body>
+<div id="wrapper">
+    <!-- 菜单 -->
+    <nav class="navbar-default navbar-static-side" role="navigation">
+        <div class="sidebar-collapse">
+            <ul class="nav metismenu" id="side-menu"></ul>
+        </div>
+    </nav>
+    <div id="page-wrapper" class="gray-bg dashbard-1">
+        <!-- 顶部 -->
+        <div class="row border-bottom" id="header"></div>
+        <!-- 内容 -->
+        <div class="wrapper wrapper-content">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="ibox">
+                        <div class="ibox-title">
+                            <h5>角色菜单</h5>
+                            <div class="ibox-tools">
+                                <a class="collapse-link">
+                                    <i class="fa fa-chevron-up"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="ibox-content">
+                            <form id="form1" class="form-horizontal">
+                                <div class="box-body">
+                                    <div class="row">
+                                        <div class="form-group row col-sm-4">
+                                            <label class=" col-form-label" style="margin-left: 20px; font-size: 24px"
+                                                   th:text="'角色名称：' + ${role.name}"></label>
+                                            <input name="roleId" id="roleId" hidden="hidden" th:value="${role.roleId}">
+                                        </div>
+                                    </div>
+                                    <div class=" form-group" th:each="pMenu:${pMenus}">
+                                        <div class="form-group row " style="margin-left: 0px;">
+                                            <!--                                            <tr th:text="${pMenu.name +':'}" style="font-size: 24px;margin-top:5px;margin-left:20px"></tr>-->
+                                            <label class="form-inline"
+                                                   style="font-size: 20px;margin-top:5px;margin-left:20px"
+                                                   th:text="${pMenu.name+':'}"></label>
+                                        </div>
+
+                                        <div class="form-group row " style="margin-left: 20px;">
+                                            <tr th:each="menu:${menus}" th:if="${pMenu.menuId==menu.pid}">
+                                                <div class="row " style="margin-left: 10px">
+                                                    <label class="form-inline form-group"
+                                                           style="font-size: 18px;margin-top:0px;margin-left:20px"
+                                                           th:text="${menu.name}"></label>
+                                                    <input name="menuIds" type="checkbox" class="form-group "
+                                                           style="width: 30px;height:25px; margin-top:5px; margin-left:5px"
+                                                           th:value="${menu.menuId}"
+                                                           th:checked="${roleMenus.contains(menu.menuId)?'checked':fasle}"
+                                                           th:title="${menu.name}"/>
+                                                </div>
+                                            <tr>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="box-footer">
+                                            <input type="hidden" id="startDate" name="startDate"/>
+                                            <input type="hidden" id="endDate" name="endDate"/>
+                                            <input type="hidden" id="limit" name="limit" value=""/>
+                                            <button type="button" class="btn btn-primary pull-right" id="save"
+                                                    style="margin-left:20px;">保存
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 底部 -->
+        <div class="footer" id="footer"></div>
+    </div>
+</div>
+</body>
+
+<script src="../../js/jquery-3.3.1.min.js"></script>
+<script src="../../js/popper.min.js"></script>
+<script src="../../js/bootstrap-4.3.1.min.js"></script>
+<script src="../../plugins/slimscroll/jquery.slimscroll.min.js"></script>
+<script src="../../js/inspinia.js"></script>
+<script src="../../plugins/metisMenu/jquery.metisMenu.js"></script>
+<script src="../../js/tableExport.min.js"></script>
+<script src="../../js/bootstrap-table.min.js"></script>
+<script src="../../js/bootstrap-table-export.min.js"></script>
+<script src="../../js/bootstrap-table-zh-CN.min.js"></script>
+<script src="../../js/moment.min.js"></script>
+<script src="../../js/daterangepicker.min.js"></script>
+<script src="../../js/typeahead.min.js"></script>
+<!--<script src="../../js/searchOption.js"></script>-->
+
+<script>
+    // 设置展开和选中的菜单
+    $('#side-menu').load('left.html', function () {
+        $("#home").removeClass("active");
+        $("#manage").addClass("active");
+        $("#manage ul").addClass("in");
+        $("#manage ul").attr("aria-expanded=\'true\'");
+        $("#roleManage").addClass("active");
+    });
+    $('#header').load('header.html');
+    $('#footer').load('footer.html');
+
+    $(document).ready(function () {
+
+
+        //清空按钮
+        $("button[id='refresh']").click(function () {
+            $("input[name='username']").val("");
+            $("input[name='dateRange']").val("");
+            $("input[name='orderno']").val("");
+            $("input[name='sellCompany']").val("");
+            $("input[name='buyCompany']").val("");
+            $("#startDate").val('');
+            $("#endDate").val('');
+        });
+
+        $("#save").click(function () {
+            registPost();
+            event.preventDefault();
+        });
+
+        function registPost() {
+            $.ajax({
+                type: "post",
+                url: "/role/saveRoleMenus",
+                data: $('#form1').serialize(),
+                success: function (data) {
+                    if (data.code == 200) {
+                        window.location.href = "/modifyMenu?roleId="+$("#roleId").val();
+                    } else {
+                        alert(data.message);
+                    }
+                }
+            })
+        }
+    });
+
+</script>
+
+</html>

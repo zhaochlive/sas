@@ -5,9 +5,9 @@
 			<span class="text-muted text-xs block">紧商科技 <b class="caret"></b></span>
 		</a>
 		<ul class="dropdown-menu animated fadeInRight m-t-xs">
-			<li><a class="dropdown-item" href="#">修改密码</a></li>
+			<li><a class="dropdown-item" id = "modify" href="modifyPwd">修改密码</a></li>
 			<li class="dropdown-divider"></li>
-			<li><a class="dropdown-item" href="#">注销</a></li>
+			<li><a class="dropdown-item" href="/login_out">注销</a></li>
 		</ul>
 	</div>
 	<div class="logo-element">
@@ -15,10 +15,13 @@
 	</div>
 </li>
 <li class="active" id="home">
-	<a href="/"><i class="fa fa-home"></i> <span class="nav-label">首页</span></a>
+	<a href="/index">
+		<i class="fa fa-home"></i> <span class="nav-label">首页</span></a>
 </li>
+
 <li id="finance" class="">
-	<a href="/"><i class="fa fa-calculator"></i> <span class="nav-label">财务</span> <span class="fa arrow"></span></a>
+	<a href="/settlementCustomerSummary">
+		<i class="fa fa-calculator"></i> <span class="nav-label">财务</span><span class="fa arrow"></span></a>
 	<ul class="nav nav-second-level collapse">
 		<li id="settlementCustomerSummary"><a href="/settlementCustomerSummary">结算客户（线上、线下）</a></li>
 		<li id="customerStatement"><a href="/customerStatement">线上客户对账单</a></li>
@@ -27,7 +30,8 @@
 	</ul>
 </li>
 <li id="operations" class="">
-	<a href="/"><i class="fa fa-tasks"></i> <span class="nav-label">运营</span><span class="fa arrow"></span></a>
+	<a href="/salesPerformance">
+		<i class="fa fa-tasks"></i> <span class="nav-label">运营</span><span class="fa arrow"></span></a>
 	<ul class="nav nav-second-level collapse">
 		<li id="salesPerformance"><a href="/salesPerformance">业务员业绩详情</a></li>
 		<li id="salesPerformanceCollect"><a href="/salesPerformanceCollect">业务员业绩汇总</a></li>
@@ -54,7 +58,8 @@
 	</ul>
 </li>
 <li id="sales" class="">
-	<a href="/"><i class="fa fa-yen-sign"></i> <span class="nav-label">销售</span><span class="fa arrow"></span></a>
+	<a href="/productValueOfSales">
+		<i class="fa fa-yen-sign"></i> <span class="nav-label">销售</span><span class="fa arrow"></span></a>
 	<ul class="nav nav-second-level collapse">
 		<li id="productValueOfSales"><a href="/productValueOfSales">商品销售额统计</a></li>
 		<li id="ordersInfo"><a href="/ordersInfo">紧商订单信息</a></li>
@@ -63,7 +68,37 @@
 		<li id="clerkManSales"><a href="/clerkManSales">客服业绩统计</a></li>
 		<li id="settlementCustomer"><a href="/settlementCustomer">客户结算统计</a></li>
 		<li id="productCategory"><a href="/productCategory">商品分类销售额统计</a></li>
-<!--		<li id="yyOrdersInfo"><a href="/yyOrdersInfo">用友订单信息</a></li>-->
+		<!--		<li id="yyOrdersInfo"><a href="/yyOrdersInfo">用友订单信息</a></li>-->
 		<li id="monthlySalesAmount"><a href="/monthlySalesAmount">紧商客户月销售统计</a></li>
 	</ul>
 </li>
+<li id="manage" class="">
+	<a href="/humanCenter">
+		<i class="fa fa-cog"></i> <span class="nav-label">系统管理</span><span class="fa arrow"></span></a>
+	<ul class="nav nav-second-level collapse">
+		<li id="humanCenter"><a href="/humanCenter">个人中心</a></li>
+		<li id="human"><a href="/human">人员管理</a></li>
+		<li id="roleManage"><a href="/roleManage">角色管理</a></li>
+<!--		<li id="humanRole"><a href="/humanRole">人员角色</a></li>-->
+		<li id="menuList"><a href="/menuList">菜单列表</a></li>
+<!--		<li id="roleMenu"><a href="/roleMenu">角色菜单</a></li>-->
+	</ul>
+</li>
+
+<script>
+
+	$(document).ready(function () {
+		$.ajax({
+			url: "/getMenu",
+			method: "get",
+			success: function (data) {
+				if (data.code==200){
+					for (i in data.data){
+						document.getElementById(data.data[i]).remove() ;
+					}
+				}
+			}
+		})
+	})
+
+</script>

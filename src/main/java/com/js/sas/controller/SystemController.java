@@ -1,16 +1,17 @@
 package com.js.sas.controller;
 
+import com.js.sas.entity.SystemUser;
 import com.js.sas.service.CouponStrategyService;
 import com.js.sas.service.SearchOptionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.ModelAndView;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * @ClassName SystemController
@@ -24,7 +25,7 @@ public class SystemController {
 
     @Autowired
     private SearchOptionService searchOptionService;
-    @GetMapping("/")
+    @GetMapping("/index")
     public String index() {
         return "index";
     }
@@ -240,4 +241,34 @@ public class SystemController {
 
         return "pages/sales/productCategory.html";
     }
+
+    @GetMapping("/")
+    public String login() {
+        return "pages/login_in";
+    }
+
+    @GetMapping("/human")
+    public String orderList(){
+        return "pages/systemManage/userList";
+    }
+    @GetMapping("/roleManage")
+    public String roleManage(){
+        return "pages/systemManage/roleList";
+    }
+    @GetMapping("/humanRole")
+    public String humanRole(){
+        return "pages/systemManage/humanRole";
+    }
+    @GetMapping("/menuList")
+    public String menuManage(){
+        return "pages/systemManage/menuList";
+    }
+    @GetMapping("/humanCenter")
+    public String humanCenter(HttpServletRequest request,Model model){
+        SystemUser systemUser=(SystemUser)request.getSession().getAttribute(LoginController.SYSTEM_USER);
+        model.addAttribute("systemUser",model);
+        return "pages/systemManage/humanCenter";
+    }
+
+
 }
