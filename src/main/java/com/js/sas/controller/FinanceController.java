@@ -33,6 +33,7 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.sql.*;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
@@ -689,6 +690,22 @@ public class FinanceController {
         } else {
             return null;
         }
+
+        // 比较结束日期，如果大于今天，显示今天。
+        SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd");
+        Date date = null;
+        try {
+            date = sdf.parse(endDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        if (date.after(new Date())) {
+            endDate = sdf.format(new Date());
+        }
+
+        System.out.println("endDate:"+endDate);
+
         // 调用接口获取对账单数据
         MultiValueMap<String, String> multiValueMap = new LinkedMultiValueMap<>();
         multiValueMap.add("startDate", startDate);
@@ -929,8 +946,6 @@ public class FinanceController {
         } else {
             return null;
         }
-        // 导出时间格式化
-        SimpleDateFormat df = new SimpleDateFormat("(yyyyMMdd)");
         // 名称
         String fileName = name;
         // sheet页
@@ -949,7 +964,7 @@ public class FinanceController {
         reusltEnumMap.put(ExcelPropertyEnum.HANDLER, handler);
         reusltEnumMap.put(ExcelPropertyEnum.ROWLIST, rowList);
         reusltEnumMap.put(ExcelPropertyEnum.SHEET, sheet1);
-        reusltEnumMap.put(ExcelPropertyEnum.FILENAME, fileName + df.format(new Date()));
+        reusltEnumMap.put(ExcelPropertyEnum.FILENAME, fileName + "(" + startDate + "_" + endDate + ")");
         reusltEnumMap.put(ExcelPropertyEnum.MERGE, mergeRowNumList);
 
         return reusltEnumMap;
