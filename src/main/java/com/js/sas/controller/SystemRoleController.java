@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.*;
@@ -36,23 +37,34 @@ public class SystemRoleController {
     public String addRole(){
         return "pages/systemManage/addRole";
     }
+
     @RequestMapping(value = "role/getRoleList")
     @ResponseBody
-    public Object getRoleList(@Param("name")String name){
-
-        systemRoleService.findAll();
+    public Object getRoleList(@Param("name")String name, HttpServletRequest request){
+        SystemUser manage = (SystemUser)request.getSession().getAttribute(LoginController.SYSTEM_USER);
 
         Map<String, Object> resultMap = new HashMap<>();
-        List<SystemRole> systemUsers = new ArrayList<>();
+        List<SystemRole> systemRoles = new ArrayList<>();
         if (StringUtils.isNotBlank(name)){
-            SystemRole systemRole = systemRoleService.getByName(name);
-            systemUsers.add(systemRole);
+            systemRoles.add(systemRoleService.getByName(name));
         }else {
-            systemUsers.addAll(systemRoleService.findAll());
+            List<SystemRole> systemRoleAll = systemRoleService.findAll();
+            if (manage.getId()==1000){
+                systemRoles.addAll(systemRoleAll);
+            }else {
+                Iterator<SystemRole> iterator = systemRoleAll.iterator();
+                while (iterator.hasNext()){
+                    if (iterator.next().getRoleId()==1000){
+                        iterator.remove();
+                        break;
+                    }
+                }
+                systemRoles.addAll(systemRoleAll);
+            }
         }
 
-        resultMap.put("total",systemUsers.size());
-        resultMap.put("rows",systemUsers);
+        resultMap.put("total",systemRoles.size());
+        resultMap.put("rows",systemRoles);
         return resultMap;
     }
 

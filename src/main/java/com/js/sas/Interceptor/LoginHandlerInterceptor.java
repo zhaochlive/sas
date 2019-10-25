@@ -27,10 +27,11 @@ public class LoginHandlerInterceptor implements HandlerInterceptor {
         if (user == null || user.equals(""))  {
 //            System.err.println(request.getRequestURI());
             response.sendRedirect("/login_err");
-
             return false;
         }else {
-//            System.out.println(user.toString());
+            Cookie cookie = new Cookie("jsUserName", user.getNickName());
+            cookie.setMaxAge(-1);
+            response.addCookie(cookie);
         }
         return true;
     }

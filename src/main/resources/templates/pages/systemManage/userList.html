@@ -41,22 +41,9 @@
                             <form id="form1" class="form-horizontal">
                                 <div class="box-body">
                                     <div class="row">
-<!--                                        <div class="form-group row col-sm-4">-->
-<!--                                            <label class="col-sm-3 col-form-label">账号：</label>-->
-<!--                                            <div class="col-sm-9">-->
-<!--                                                <input id="username" name="username" type="text" placeholder="用户名" class="settlementName form-control"/>-->
-<!--                                            </div>-->
-<!--                                        </div>-->
                                         <div class="box-footer">
-<!--                                            <input type="hidden" id="startDate" name="startDate" />-->
-<!--                                            <input type="hidden" id="endDate" name="endDate" />-->
-<!--                                            <input type="hidden" id="limit" name="limit" value=""/>-->
-<!--                                            <button type="button" class="btn btn-primary pull-right" id="search"-->
-<!--                                                    style="margin-left:20px;">搜 索</button>-->
                                             <button type="button" class="btn btn-primary pull-right" id="add"
                                                     style="margin-left:20px;">添 加</button>
-<!--                                            <button type="button" class="btn btn-default pull-right" id="refresh"-->
-<!--                                                    style="margin-left:20px;">清 空</button>-->
                                         </div>
                                     </div>
 
@@ -129,8 +116,6 @@
             toggle: true,
             silent: true,
             sidePagination: "server",
-            // sortName: "name",
-            // sortOrder: "asc",
             url: "/user/getUserList",
             queryParams: function (params) {
                 var temp = {
@@ -191,6 +176,19 @@
                 events:window.actionEvent={
                     'click .btngroup': function (e, value, row, index) {
                         window.location.href="modifyRole?userId="+row.id;
+                    },
+                    'click .resetPwd': function (e, value, row, index) {
+                        $.ajax({
+                            url: "user/resetPassword?userId="+row.id,
+                            method: "post",
+                            success: function (data) {
+                                if (data.code==200){
+                                    alert(data.message);
+                                }else {
+                                    alert(data.message);
+                                }
+                            }
+                        })
                     }
                 },
                 formatter: AddFunctionAlty
@@ -210,37 +208,14 @@
         function AddFunctionAlty(value,row,index){
             return [
                 '<button id = "TableEditor" type="button" class = "btn btn-info btngroup" data-target:"#myModal" >设置角色</button>',
-                // '<button id = "TableDelete" type="button" class = "btn btn-info btngroup"  data-target:"#myModal">删除</button>',
+                '<button id = "TableDelete" style="margin-left: 10px" type="button" class = "btn btn-info resetPwd"  data-target:"#myModal">重置密码</button>',
             ].join('');
         }
-        //清空按钮
-        $("button[id='refresh']").click(function () {
-            $("input[name='username']").val("");
-            $("input[name='dateRange']").val("");
-            $("input[name='orderno']").val("");
-            $("input[name='sellCompany']").val("");
-            $("input[name='buyCompany']").val("");
-            $("#startDate").val('');
-            $("#endDate").val('');
-            startDate = '';
-            endDate ='';
-        });
 
         //跳转到添加用户页面
         $("button[id='add']").click(function () {
             window.location.href="addUser";
         });
-        // function operateFormatter(value, row, index) {
-        //     return [
-        //         '<input type="submit" value="删除" class="RoleOfedit btn btn-primary  btn-sm" data-toggle="modal"  style="display:inline">',
-        //     ].join('');
-        // }
-        // window.operateEvents = {
-        //     'click .RoleOfedit': function (e, value, row, index) {
-        //         alert(row.qxxh);
-        //         $("#upload").modal('show');
-        //     }
-        // };
     });
 
 </script>

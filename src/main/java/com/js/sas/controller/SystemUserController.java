@@ -51,14 +51,28 @@ public class SystemUserController {
      */
     @RequestMapping("user/getUserList")
     @ResponseBody
-    public Object getUserList(@Param("username")String username){
+    public Object getUserList(@Param("username")String username,HttpServletRequest request){
+        SystemUser manage = (SystemUser)request.getSession().getAttribute(LoginController.SYSTEM_USER);
+
         Map<String, Object> resultMap = new HashMap<>();
         List<SystemUser> systemUsers = new ArrayList<>();
         if (StringUtils.isNotBlank(username)){
             SystemUser user = systemUserService.getUserByUserName(username);
             systemUsers.add(user);
         }else {
-            systemUsers.addAll(systemUserService.getAllSystemUser());
+            List<SystemUser> allSystemUser = systemUserService.getAllSystemUser();
+            if (manage.getId()==1000){
+                systemUsers.addAll(allSystemUser);
+            }else {
+                Iterator<SystemUser> iterator = allSystemUser.iterator();
+                while (iterator.hasNext()){
+                    if (iterator.next().getId()==1000){
+                        iterator.remove();
+                        break;
+                    }
+                }
+                systemUsers.addAll(allSystemUser);
+            }
         }
 
         resultMap.put("total",systemUsers.size());
@@ -107,13 +121,12 @@ public class SystemUserController {
      */
     @RequestMapping("user/modifyPassword")
     @ResponseBody
-    public Result modifyPassword(String oldPassword, String newPassword, HttpServletRequest request){
+    public Result modifyPassword(@Param("oldPassword") String oldPassword,@Param("password")  String newPassword, HttpServletRequest request){
 
         SystemUser systemUser = (SystemUser)request.getSession().getAttribute(LoginController.SYSTEM_USER);
         if(systemUser==null||systemUser.getId()==null){
             return new Result("400","未获取到登录用户信息，请登录后再修改密码",null);
         }
-        String userName = systemUser.getUserName();
         String password = systemUser.getPassword();
         //系统记录的密码和旧密码比较
         if (!MD5Util.verify(oldPassword,password)){
@@ -131,7 +144,7 @@ public class SystemUserController {
         List<SystemRole> all = systemRoleService.findAll();
         List<SystemUserRole> userRoles = systemUserService.getUserRoleByUserId(systemUser.getId());
         ArrayList<Long> list = new ArrayList<>();
-//        userRoles.forEach(userRole -> list.add(userRole.getRole().getRoleId()));
+
         userRoles.stream().forEach(systemUserRole -> list.add(systemUserRole.getRole().getRoleId()));
         model.addObject("user",systemUser);
         model.addObject("roles",all);
@@ -149,6 +162,21 @@ public class SystemUserController {
             return new Result("400","用户不存在",null);
         }
         int saveUserRole = systemUserService.saveUserRole(systemUser, roles);
+        return new Result("200","success",null);
+    }
+
+    @RequestMapping(value = "user/resetPassword",method= RequestMethod.POST)
+    @ResponseBody
+    public Object resetPassword(@RequestParam(value ="userId",required = true)Long userId
+           ,HttpServletRequest request){
+        SystemUser systemUser = (SystemUser)request.getSession().getAttribute(LoginController.SYSTEM_USER);
+        if(systemUser==null||systemUser.getId()==null){
+            return new Result("400","未获取到登录用户信息，请登录后再修改密码",null);
+        }
+
+        //生成新的加密
+        systemUser.setPassword(MD5Util.generate("123456"));
+        systemUserService.upDatePassword(systemUser);
         return new Result("200","success",null);
     }
 

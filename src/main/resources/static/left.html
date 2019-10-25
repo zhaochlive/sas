@@ -1,8 +1,8 @@
 <li class="nav-header">
 	<div class="dropdown profile-element">
-		<a data-toggle="dropdown" class="dropdown-toggle" href="#">
-			<span class="block m-t-xs font-bold">管理员</span>
-			<span class="text-muted text-xs block">紧商科技 <b class="caret"></b></span>
+		<a data-toggle="dropdown" class="dropdown-toggle" href="#" >
+			<span class="block m-t-xs font-bold" >修改密码</span>
+			<span class="text-muted text-xs block" >紧商科技 <b class="caret" ></b></span>
 		</a>
 		<ul class="dropdown-menu animated fadeInRight m-t-xs">
 			<li><a class="dropdown-item" id = "modify" href="modifyPwd">修改密码</a></li>
@@ -88,6 +88,15 @@
 <script>
 
 	$(document).ready(function () {
+		// setName();
+		// function setName(){
+		// 	var systemuser = getCookie("jsUserName");
+		// 	console.info(systemuser);
+		// 	$("#usermingzi").innerText=systemuser.username;
+		// 	$("#usermingzi").html(systemuser.username);
+		// 	$("#usermingzi").val(systemuser.username);
+		// }
+
 		$.ajax({
 			url: "/getMenu",
 			method: "get",
@@ -99,6 +108,18 @@
 				}
 			}
 		})
+
+		function getCookie(name) {
+			var cookies = document.cookie;
+			var list = cookies.split("; ");          // 解析出名/值对列表
+
+			for (var i = 0; i < list.length; i++) {
+				var arr = list[i].split("=");          // 解析出名和值
+				if (arr[0] == name)
+					return decodeURIComponent(arr[1]);   // 对cookie值解码
+			}
+			return "";
+		}
 	})
 
 </script>
