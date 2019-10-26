@@ -25,7 +25,6 @@ public class LoginHandlerInterceptor implements HandlerInterceptor {
         SystemUser user = (SystemUser)request.getSession().getAttribute(LoginController.SYSTEM_USER);
 
         if (user == null || user.equals(""))  {
-//            System.err.println(request.getRequestURI());
             response.sendRedirect("/login_err");
             return false;
         }else {

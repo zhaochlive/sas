@@ -139,13 +139,24 @@ public class SystemUserController {
     }
 
     @RequestMapping("modifyRole")
-    public ModelAndView modifyUserRole(@Param("userId")Long userId, ModelAndView model){
+    public ModelAndView modifyUserRole(@Param("userId")Long userId, ModelAndView model,HttpServletRequest request){
+        SystemUser loginUser = (SystemUser)request.getSession().getAttribute(LoginController.SYSTEM_USER);
+
+
         SystemUser systemUser = systemUserService.getUserByUserId(userId);
         List<SystemRole> all = systemRoleService.findAll();
         List<SystemUserRole> userRoles = systemUserService.getUserRoleByUserId(systemUser.getId());
         ArrayList<Long> list = new ArrayList<>();
 
         userRoles.stream().forEach(systemUserRole -> list.add(systemUserRole.getRole().getRoleId()));
+        if(loginUser.getId()!=1000){
+            Iterator<SystemRole> iterator = all.iterator();
+            while (iterator.hasNext()){
+                if (iterator.next().getRoleId()==1000){
+                    iterator.remove();
+                }
+            }
+        }
         model.addObject("user",systemUser);
         model.addObject("roles",all);
         model.addObject("userRoles",list);

@@ -54,7 +54,7 @@
                                                        style="font-size: 18px;margin-top:5px;margin-left:20px"
                                                        th:text="${role.name}"></label>
                                                 <input name="roleIds" type="checkbox" class="form-control"
-                                                       style="width: 20px; margin-left:20px"
+                                                       style="width: 20px; margin-left:5px"
                                                        th:value="${role.roleId}"
                                                        th:checked="${userRoles.contains(role.roleId)?'checked':fasle}"
                                                        th:title="${role.name}"/>
