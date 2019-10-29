@@ -208,7 +208,7 @@ public class SalesController {
      */
     @ApiOperation(value = "客户、开票名称、客服、地址，月销售统计", notes = "数据来源：紧商网；数据截止日期：实时")
     @PostMapping(value = "/findMonthlySalesAmount")
-    public Object findMonthlySalesAmount(String startMonth, String endMonth, String username, String staff, String limit, String offset, String sort, String sortOrder) {
+    public Object findMonthlySalesAmount(String startMonth, String endMonth, String username, String staff, String address, String limit, String offset, String sort, String sortOrder) {
         // 参数不能为空
         if (StringUtils.isBlank(startMonth) || StringUtils.isBlank(endMonth) || StringUtils.isBlank(limit) || StringUtils.isBlank(offset)) {
             return ResultUtils.getResult(ResultCode.参数错误);
@@ -229,14 +229,13 @@ public class SalesController {
         Matcher matcherStart = pattern.matcher(startMonth);
         Matcher matcherEnd = pattern.matcher(endMonth);
         if (matcherStart.find() && matcherEnd.find()) {
-            return salesService.findMonthlySalesAmount(startMonth, endMonth, username, staff, limitInt, offsetInt, sort, sortOrder);
+            return salesService.findMonthlySalesAmount(startMonth, endMonth, username, staff, address, limitInt, offsetInt, sort, sortOrder);
         } else {
             return ResultUtils.getResult(ResultCode.参数错误);
         }
     }
 
     /**
-     *
      * @param response
      * @param startMonth
      * @param endMonth
@@ -245,7 +244,7 @@ public class SalesController {
      */
     @ApiIgnore
     @PostMapping("/exportMonthlySalesAmount")
-    private void exportMonthlySalesAmount(HttpServletResponse response, String startMonth, String endMonth, String username, String staff) {
+    private void exportMonthlySalesAmount(HttpServletResponse response, String startMonth, String endMonth, String username, String staff, String address) {
         // 参数不能为空
         if (StringUtils.isBlank(startMonth) || StringUtils.isBlank(endMonth)) {
             return;
@@ -261,7 +260,7 @@ public class SalesController {
         List<String> columnNameList = new ArrayList();
 
         if (matcherStart.find() && matcherEnd.find()) {
-            result = salesService.findMonthlySalesAmountAll(startMonth, endMonth, username, staff);
+            result = salesService.findMonthlySalesAmountAll(startMonth, endMonth, username, staff, address);
             columnNameList = (List) result.get("columnNameList");
             dataList = (List) result.get("dataList");
         } else {
@@ -300,7 +299,7 @@ public class SalesController {
         writer.write1(dataList, sheet1);
         writer.finish();
 
-        if(out != null) {
+        if (out != null) {
             try {
                 out.flush();
                 out.close();
@@ -314,64 +313,64 @@ public class SalesController {
 
 
     @PostMapping(value = "/getAmount")
-    public Object getAmount(HttpServletRequest request){
+    public Object getAmount(HttpServletRequest request) {
         Map<String, String> params = new HashMap<String, String>();
-        if(request.getParameter("productName")!=null&&StringUtils.isNotBlank(request.getParameter("productName"))){
-            params.put("productName",request.getParameter("productName"));
+        if (request.getParameter("productName") != null && StringUtils.isNotBlank(request.getParameter("productName"))) {
+            params.put("productName", request.getParameter("productName"));
         }
-        if(request.getParameter("classOne")!=null&&StringUtils.isNotBlank(request.getParameter("classOne"))){
-            params.put("classOne",request.getParameter("classOne"));
+        if (request.getParameter("classOne") != null && StringUtils.isNotBlank(request.getParameter("classOne"))) {
+            params.put("classOne", request.getParameter("classOne"));
         }
-        if(request.getParameter("classTwo")!=null&&StringUtils.isNotBlank(request.getParameter("classTwo"))){
-            params.put("classTwo",request.getParameter("classTwo"));
+        if (request.getParameter("classTwo") != null && StringUtils.isNotBlank(request.getParameter("classTwo"))) {
+            params.put("classTwo", request.getParameter("classTwo"));
         }
-        if(request.getParameter("classify")!=null&&StringUtils.isNotBlank(request.getParameter("classify"))){
-            params.put("classify",request.getParameter("classify"));
+        if (request.getParameter("classify") != null && StringUtils.isNotBlank(request.getParameter("classify"))) {
+            params.put("classify", request.getParameter("classify"));
         }
-        if(request.getParameter("standard")!=null&&StringUtils.isNotBlank(request.getParameter("standard"))){
-            params.put("standard",request.getParameter("standard"));
+        if (request.getParameter("standard") != null && StringUtils.isNotBlank(request.getParameter("standard"))) {
+            params.put("standard", request.getParameter("standard"));
         }
-        if(request.getParameter("brand")!=null&&StringUtils.isNotBlank(request.getParameter("brand"))){
-            params.put("brand",request.getParameter("brand"));
+        if (request.getParameter("brand") != null && StringUtils.isNotBlank(request.getParameter("brand"))) {
+            params.put("brand", request.getParameter("brand"));
         }
-        if(request.getParameter("mark")!=null&&StringUtils.isNotBlank(request.getParameter("mark"))){
-            params.put("mark",request.getParameter("mark"));
+        if (request.getParameter("mark") != null && StringUtils.isNotBlank(request.getParameter("mark"))) {
+            params.put("mark", request.getParameter("mark"));
         }
-        if(request.getParameter("material")!=null&&StringUtils.isNotBlank(request.getParameter("material"))){
-            params.put("material",request.getParameter("material"));
+        if (request.getParameter("material") != null && StringUtils.isNotBlank(request.getParameter("material"))) {
+            params.put("material", request.getParameter("material"));
         }
-        if(request.getParameter("grade")!=null&&StringUtils.isNotBlank(request.getParameter("grade"))){
-            params.put("grade",request.getParameter("grade"));
+        if (request.getParameter("grade") != null && StringUtils.isNotBlank(request.getParameter("grade"))) {
+            params.put("grade", request.getParameter("grade"));
         }
-        if(request.getParameter("surface")!=null&&StringUtils.isNotBlank(request.getParameter("surface"))){
-            params.put("surface",request.getParameter("surface"));
+        if (request.getParameter("surface") != null && StringUtils.isNotBlank(request.getParameter("surface"))) {
+            params.put("surface", request.getParameter("surface"));
         }
-        if(request.getParameter("nominalDiameter")!=null&&StringUtils.isNotBlank(request.getParameter("nominalDiameter"))){
-            params.put("nominalDiameter",request.getParameter("nominalDiameter"));
+        if (request.getParameter("nominalDiameter") != null && StringUtils.isNotBlank(request.getParameter("nominalDiameter"))) {
+            params.put("nominalDiameter", request.getParameter("nominalDiameter"));
         }
-        if(request.getParameter("pitch")!=null&&StringUtils.isNotBlank(request.getParameter("pitch"))){
-            params.put("pitch",request.getParameter("pitch"));
+        if (request.getParameter("pitch") != null && StringUtils.isNotBlank(request.getParameter("pitch"))) {
+            params.put("pitch", request.getParameter("pitch"));
         }
-        if(request.getParameter("extent")!=null&&StringUtils.isNotBlank(request.getParameter("extent"))){
-            params.put("extent",request.getParameter("extent"));
+        if (request.getParameter("extent") != null && StringUtils.isNotBlank(request.getParameter("extent"))) {
+            params.put("extent", request.getParameter("extent"));
         }
-        if(request.getParameter("extent")!=null&&StringUtils.isNotBlank(request.getParameter("extent"))){
-            params.put("extent",request.getParameter("extent"));
+        if (request.getParameter("extent") != null && StringUtils.isNotBlank(request.getParameter("extent"))) {
+            params.put("extent", request.getParameter("extent"));
         }
-        if(request.getParameter("outerDiameter")!=null&&StringUtils.isNotBlank(request.getParameter("outerDiameter"))){
-            params.put("outerDiameter",request.getParameter("outerDiameter"));
+        if (request.getParameter("outerDiameter") != null && StringUtils.isNotBlank(request.getParameter("outerDiameter"))) {
+            params.put("outerDiameter", request.getParameter("outerDiameter"));
         }
-        if(request.getParameter("thickness")!=null&&StringUtils.isNotBlank(request.getParameter("thickness"))){
-            params.put("thickness",request.getParameter("thickness"));
+        if (request.getParameter("thickness") != null && StringUtils.isNotBlank(request.getParameter("thickness"))) {
+            params.put("thickness", request.getParameter("thickness"));
         }
-        if(request.getParameter("store")!=null&&StringUtils.isNotBlank(request.getParameter("store"))){
-            params.put("store",request.getParameter("store"));
+        if (request.getParameter("store") != null && StringUtils.isNotBlank(request.getParameter("store"))) {
+            params.put("store", request.getParameter("store"));
         }
-        if(request.getParameter("startCreateTime")!=null&&StringUtils.isNotBlank(request.getParameter("startCreateTime"))){
-            params.put("startCreateTime",request.getParameter("startCreateTime"));
+        if (request.getParameter("startCreateTime") != null && StringUtils.isNotBlank(request.getParameter("startCreateTime"))) {
+            params.put("startCreateTime", request.getParameter("startCreateTime"));
         }
-        if(request.getParameter("endCreateTime")!=null&&StringUtils.isNotBlank(request.getParameter("endCreateTime"))){
-            params.put("endCreateTime",request.getParameter("endCreateTime"));
+        if (request.getParameter("endCreateTime") != null && StringUtils.isNotBlank(request.getParameter("endCreateTime"))) {
+            params.put("endCreateTime", request.getParameter("endCreateTime"));
         }
         if (StringUtils.isNotBlank(request.getParameter("limit"))) {
             params.put("limit", request.getParameter("limit"));
@@ -390,27 +389,28 @@ public class SalesController {
 
     /**
      * 商品类别销售情况
+     *
      * @param request
      * @return getCategorySalesPage
      */
     @PostMapping(value = "/productCategory")
-    public Object productCategory(HttpServletRequest request){
+    public Object productCategory(HttpServletRequest request) {
         Map<String, String> params = new HashMap<String, String>();
         Map<String, Object> result = new HashMap<>();
-        String year =null;
-        if (request.getParameter("year")!=null|| StringUtils.isNotBlank(request.getParameter("year"))){
-            year =request.getParameter("year");
-        }else{
-            result.put("304","缺少年份参数year，例如：year = 2018");
+        String year = null;
+        if (request.getParameter("year") != null || StringUtils.isNotBlank(request.getParameter("year"))) {
+            year = request.getParameter("year");
+        } else {
+            result.put("304", "缺少年份参数year，例如：year = 2018");
             return result;
         }
-        if(request.getParameter("level")!=null&&StringUtils.isNotBlank(request.getParameter("level"))){
-            params.put("level",request.getParameter("level"));
+        if (request.getParameter("level") != null && StringUtils.isNotBlank(request.getParameter("level"))) {
+            params.put("level", request.getParameter("level"));
         }
-        if(request.getParameter("parentid")!=null&&StringUtils.isNotBlank(request.getParameter("parentid"))){
-            params.put("parentid",request.getParameter("parentid"));
-        }else {
-            params.put("parentid","0");
+        if (request.getParameter("parentid") != null && StringUtils.isNotBlank(request.getParameter("parentid"))) {
+            params.put("parentid", request.getParameter("parentid"));
+        } else {
+            params.put("parentid", "0");
         }
         if (StringUtils.isNotBlank(request.getParameter("limit"))) {
             params.put("limit", request.getParameter("limit"));
@@ -422,16 +422,14 @@ public class SalesController {
         } else {
             params.put("offset", "0");
         }
-        List<Map<String, Object>> list = salesService.getCategorySalesPage(params,year);
+        List<Map<String, Object>> list = salesService.getCategorySalesPage(params, year);
         for (Map<String, Object> map : list) {
-            map.put("sss",map.get("sss")+"");
+            map.put("sss", map.get("sss") + "");
         }
-        result.put("rows",list);
-        result.put("total",salesService.getCategorySalesCount(params,year));
+        result.put("rows", list);
+        result.put("total", salesService.getCategorySalesCount(params, year));
         return result;
     }
-
-
 
 
 }

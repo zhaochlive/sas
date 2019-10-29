@@ -202,7 +202,7 @@ public class SalesService {
     }
 
 
-    public Map<String, Object> findMonthlySalesAmount(String startMonth, String endMonth, String username, String staff, int limit, int offset, String sort, String sortOrder) {
+    public Map<String, Object> findMonthlySalesAmount(String startMonth, String endMonth, String username, String staff, String address, int limit, int offset, String sort, String sortOrder) {
         // 格式化月份
         String[] startArray = startMonth.split("-");
         String[] endArray = endMonth.split("-");
@@ -246,6 +246,10 @@ public class SalesService {
             sb.append(" AND mb.clerkname = ? ");
             paras.add(staff);
         }
+        if (StringUtils.isNotBlank(address)) {
+            sb.append(" AND bc.address ilike ? ");
+            paras.add("%"+address+"%");
+        }
         sb.append(" GROUP BY months, mb.username, customer_service_staff) tm GROUP BY tm.username, tm.customer_service_staff ORDER BY tm.username limit ? offset ? ");
 
         paras.add(limit);
@@ -265,6 +269,10 @@ public class SalesService {
             countSql.append(" AND mb.clerkname = ? ");
             paras.add(staff);
         }
+        if (StringUtils.isNotBlank(address)) {
+            countSql.append(" AND bc.address like ? ");
+            paras.add("%"+address+"%");
+        }
         countSql.append("GROUP BY months, mb.username, customer_service_staff ) tm GROUP BY tm.username, tm.customer_service_staff ) t");
 
         int total = jdbcTemplate.queryForObject(countSql.toString(), Integer.class, paras.toArray());
@@ -277,7 +285,7 @@ public class SalesService {
         return result;
     }
 
-    public Map<String, Object> findMonthlySalesAmountAll(String startMonth, String endMonth, String username, String staff) {
+    public Map<String, Object> findMonthlySalesAmountAll(String startMonth, String endMonth, String username, String staff, String address) {
         // 格式化月份
         String[] startArray = startMonth.split("-");
         String[] endArray = endMonth.split("-");
@@ -320,6 +328,10 @@ public class SalesService {
         if (StringUtils.isNotBlank(staff)) {
             sb.append(" AND mb.clerkname = ? ");
             paras.add(staff);
+        }
+        if (StringUtils.isNotBlank(address)) {
+            sb.append(" AND bc.address like ? ");
+            paras.add("%"+address+"%");
         }
         sb.append(" GROUP BY months, mb.username, customer_service_staff) tm GROUP BY tm.username, tm.customer_service_staff ORDER BY tm.username ");
 
