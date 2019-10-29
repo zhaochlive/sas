@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -269,6 +270,17 @@ public class SystemController {
         model.addAttribute("systemUser",model);
         return "pages/systemManage/humanCenter";
     }
+
+    @GetMapping("addUser")
+    public ModelAndView addUser(ModelAndView modelAndView){
+        modelAndView.setViewName("pages/systemManage/addUser.html");
+        return modelAndView;
+    }
+    @GetMapping("modifyPwd")
+    public String modifyPwd(){
+        return "pages/systemManage/modifyPwd.html";
+    }
+
 
 
 }

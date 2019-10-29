@@ -77,6 +77,7 @@ public class LoginController {
                 response.addCookie(jinshang_pwd);
             }
             session.setAttribute(SYSTEM_USER,user);
+            session.setMaxInactiveInterval(12*60*60*60);
 
             request.getRequestDispatcher("index");
         } catch (Exception e) {

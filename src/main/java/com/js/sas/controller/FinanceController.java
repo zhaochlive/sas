@@ -704,8 +704,6 @@ public class FinanceController {
             endDate = sdf.format(new Date());
         }
 
-        System.out.println("endDate:"+endDate);
-
         // 调用接口获取对账单数据
         MultiValueMap<String, String> multiValueMap = new LinkedMultiValueMap<>();
         multiValueMap.add("startDate", startDate);

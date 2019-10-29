@@ -23,11 +23,11 @@ public class LoginHandlerInterceptor implements HandlerInterceptor {
                              HttpServletResponse response, Object handler) throws Exception {
 
         SystemUser user = (SystemUser)request.getSession().getAttribute(LoginController.SYSTEM_USER);
-
         if (user == null || user.equals(""))  {
             response.sendRedirect("/login_err");
             return false;
         }else {
+            request.getSession().setMaxInactiveInterval(6*60*60*60);
             Cookie cookie = new Cookie("jsUserName", user.getNickName());
             cookie.setMaxAge(-1);
             response.addCookie(cookie);

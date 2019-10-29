@@ -81,14 +81,6 @@ public class SystemUserController {
 
     }
 
-    @RequestMapping("addUser")
-    public String addUser(){
-        return "/pages/systemManage/addUser.html";
-    }
-    @RequestMapping("modifyPwd")
-    public String modifyPwd(){
-        return "/pages/systemManage/modifyPwd.html";
-    }
 
     @RequestMapping("/user/addUser")
     @ResponseBody
