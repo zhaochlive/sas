@@ -56,6 +56,7 @@ public class SalesService {
         this.jsOrdersRepository = jsOrdersRepository;
         this.entityManager = entityManager;
     }
+
     @Autowired
     @Qualifier(value = "secodJdbcTemplate")
     private JdbcTemplate jdbcTemplate;
@@ -248,7 +249,7 @@ public class SalesService {
         }
         if (StringUtils.isNotBlank(address)) {
             sb.append(" AND bc.address ilike ? ");
-            paras.add("%"+address+"%");
+            paras.add("%" + address + "%");
         }
         sb.append(" GROUP BY months, mb.username, customer_service_staff) tm GROUP BY tm.username, tm.customer_service_staff ORDER BY tm.username limit ? offset ? ");
 
@@ -271,7 +272,7 @@ public class SalesService {
         }
         if (StringUtils.isNotBlank(address)) {
             countSql.append(" AND bc.address like ? ");
-            paras.add("%"+address+"%");
+            paras.add("%" + address + "%");
         }
         countSql.append("GROUP BY months, mb.username, customer_service_staff ) tm GROUP BY tm.username, tm.customer_service_staff ) t");
 
@@ -331,7 +332,7 @@ public class SalesService {
         }
         if (StringUtils.isNotBlank(address)) {
             sb.append(" AND bc.address like ? ");
-            paras.add("%"+address+"%");
+            paras.add("%" + address + "%");
         }
         sb.append(" GROUP BY months, mb.username, customer_service_staff) tm GROUP BY tm.username, tm.customer_service_staff ORDER BY tm.username ");
 
@@ -344,7 +345,7 @@ public class SalesService {
         for (int i = 1; i <= metaData.getColumnCount(); i++) {
             columnNameList.add(metaData.getColumnName(i));
         }
-        while(sqlRowSet.next()) {
+        while (sqlRowSet.next()) {
             List<Object> rowList = new ArrayList<>();
             for (int i = 1; i <= metaData.getColumnCount(); i++) {
                 rowList.add(sqlRowSet.getObject(i));
@@ -361,88 +362,88 @@ public class SalesService {
 
     public List<Map<String, Object>> getSaleAmount(Map<String, String> params) {
 
-        if(params!=null){
+        if (params != null) {
             List<Object> list = new ArrayList<>();
             StringBuilder sb = new StringBuilder("select count(DISTINCT(os.orderno)) cut,sum(price*num) totalprice from orderproduct op left join orders os on os.orderno = op.orderno");
             sb.append(" left join (SELECT pi.*,a.attribute 牙距,a.VALUE,b.attribute 公称直径,b.VALUE,c.attribute 长度,c.VALUE,d.attribute 外径,d.VALUE");
             sb.append(" ,e.attribute 厚度,e.VALUE from productinfo pi ");
-            sb.append(" left join (select * from productattr  where attribute ='牙距' "+(params.containsKey("pitch")?"and value='"+params.get("pitch")+"'":"")+") a on pi.id = a.productid ");
-            sb.append(" left join (select * from productattr  where attribute ='公称直径' "+(params.containsKey("nominalDiameter")?"and value='"+params.get("nominalDiameter")+"'":"")+") b on pi.id = b.productid ");
-            sb.append(" left join (select * from productattr  where attribute ='长度' "+(params.containsKey("extent")?"and value='"+params.get("extent")+"'":"")+") c on pi.id = c.productid ");
-            sb.append(" left join (select * from productattr  where attribute ='外径' "+(params.containsKey("outerDiameter")?"and value='"+params.get("outerDiameter")+"'":"")+") d on pi.id = d.productid ");
-            sb.append(" left join (select * from productattr  where attribute ='厚度' "+(params.containsKey("thickness")?"and value='"+params.get("thickness")+"'":"")+") e on pi.id = e.productid ");
+            sb.append(" left join (select * from productattr  where attribute ='牙距' " + (params.containsKey("pitch") ? "and value='" + params.get("pitch") + "'" : "") + ") a on pi.id = a.productid ");
+            sb.append(" left join (select * from productattr  where attribute ='公称直径' " + (params.containsKey("nominalDiameter") ? "and value='" + params.get("nominalDiameter") + "'" : "") + ") b on pi.id = b.productid ");
+            sb.append(" left join (select * from productattr  where attribute ='长度' " + (params.containsKey("extent") ? "and value='" + params.get("extent") + "'" : "") + ") c on pi.id = c.productid ");
+            sb.append(" left join (select * from productattr  where attribute ='外径' " + (params.containsKey("outerDiameter") ? "and value='" + params.get("outerDiameter") + "'" : "") + ") d on pi.id = d.productid ");
+            sb.append(" left join (select * from productattr  where attribute ='厚度' " + (params.containsKey("thickness") ? "and value='" + params.get("thickness") + "'" : "") + ") e on pi.id = e.productid ");
             sb.append(" ) pp on pp.id = op.pdid where os.orderstatus <>7 ");
-            if (params.containsKey("startCreateTime")&&StringUtils.isNotBlank(params.get("startCreateTime"))){
-                sb.append( "and os.createTime >= ?");
+            if (params.containsKey("startCreateTime") && StringUtils.isNotBlank(params.get("startCreateTime"))) {
+                sb.append("and os.createTime >= ?");
                 Timestamp alarmStartTime = Timestamp.valueOf(params.get("startCreateTime") + " 00:00:00");
                 list.add(alarmStartTime);
             }
-            if (params.containsKey("endCreateTime")&&StringUtils.isNotBlank(params.get("endCreateTime"))){
-                sb.append( "and os.createTime <= ?");
+            if (params.containsKey("endCreateTime") && StringUtils.isNotBlank(params.get("endCreateTime"))) {
+                sb.append("and os.createTime <= ?");
                 Timestamp alarmStartTime = Timestamp.valueOf(params.get("endCreateTime") + " 23:59:59");
                 list.add(alarmStartTime);
             }
-            if (params.containsKey("productName")&&StringUtils.isNotBlank(params.get("productName"))){
-                sb.append( "and op.pdname = ?");
+            if (params.containsKey("productName") && StringUtils.isNotBlank(params.get("productName"))) {
+                sb.append("and op.pdname = ?");
                 list.add(params.get("productName"));
             }
-            if (params.containsKey("classOne")&&StringUtils.isNotBlank(params.get("classOne"))){
-                sb.append( "and pi.level1 = ?");
+            if (params.containsKey("classOne") && StringUtils.isNotBlank(params.get("classOne"))) {
+                sb.append("and pi.level1 = ?");
                 list.add(params.get("classOne"));
             }
-            if (params.containsKey("classTwo")&&StringUtils.isNotBlank(params.get("classTwo"))){
-                sb.append( "and pi.level2 = ?");
+            if (params.containsKey("classTwo") && StringUtils.isNotBlank(params.get("classTwo"))) {
+                sb.append("and pi.level2 = ?");
                 list.add(params.get("classTwo"));
             }
-            if (params.containsKey("classify")&&StringUtils.isNotBlank(params.get("classify"))){
-                sb.append( "and op.classify = ?");
+            if (params.containsKey("classify") && StringUtils.isNotBlank(params.get("classify"))) {
+                sb.append("and op.classify = ?");
                 list.add(params.get("classify"));
             }
-            if (params.containsKey("standard")&&StringUtils.isNotBlank(params.get("standard"))){
-                sb.append( "and op.standard = ?");
+            if (params.containsKey("standard") && StringUtils.isNotBlank(params.get("standard"))) {
+                sb.append("and op.standard = ?");
                 list.add(params.get("standard"));
             }
-            if (params.containsKey("brand")&&StringUtils.isNotBlank(params.get("brand"))){
-                sb.append( "and op.brand = ?");
+            if (params.containsKey("brand") && StringUtils.isNotBlank(params.get("brand"))) {
+                sb.append("and op.brand = ?");
                 list.add(params.get("brand"));
             }
-            if (params.containsKey("mark")&&StringUtils.isNotBlank(params.get("mark"))){
-                sb.append( "and op.mark = ?");
+            if (params.containsKey("mark") && StringUtils.isNotBlank(params.get("mark"))) {
+                sb.append("and op.mark = ?");
                 list.add(params.get("mark"));
             }
-            if (params.containsKey("material")&&StringUtils.isNotBlank(params.get("material"))){
-                sb.append( "and op.material = ?");
+            if (params.containsKey("material") && StringUtils.isNotBlank(params.get("material"))) {
+                sb.append("and op.material = ?");
                 list.add(params.get("material"));
             }
-            if (params.containsKey("grade")&&StringUtils.isNotBlank(params.get("grade"))){
-                sb.append( "and op.gradeno = ?");
+            if (params.containsKey("grade") && StringUtils.isNotBlank(params.get("grade"))) {
+                sb.append("and op.gradeno = ?");
                 list.add(params.get("grade"));
             }
-            if (params.containsKey("surface")&&StringUtils.isNotBlank(params.get("surface"))){
-                sb.append( "and pi.surfacetreatment = ?");
+            if (params.containsKey("surface") && StringUtils.isNotBlank(params.get("surface"))) {
+                sb.append("and pi.surfacetreatment = ?");
                 list.add(params.get("surface"));
             }
-            if (params.containsKey("store")&&StringUtils.isNotBlank(params.get("store"))){
-                sb.append( "and op.storename = ?");
+            if (params.containsKey("store") && StringUtils.isNotBlank(params.get("store"))) {
+                sb.append("and op.storename = ?");
                 list.add(params.get("store"));
             }
-            if (params.containsKey("nominalDiameter")&&StringUtils.isNotBlank(params.get("nominalDiameter"))){
-                sb.append( "and pp.公称直径 != ''");
+            if (params.containsKey("nominalDiameter") && StringUtils.isNotBlank(params.get("nominalDiameter"))) {
+                sb.append("and pp.公称直径 != ''");
             }
-            if (params.containsKey("pitch")&&StringUtils.isNotBlank(params.get("pitch"))){
-                sb.append( "and pp.牙距 != ''");
+            if (params.containsKey("pitch") && StringUtils.isNotBlank(params.get("pitch"))) {
+                sb.append("and pp.牙距 != ''");
             }
-            if (params.containsKey("extent")&&StringUtils.isNotBlank(params.get("extent"))){
-                sb.append( "and pp.长度 != ''");
+            if (params.containsKey("extent") && StringUtils.isNotBlank(params.get("extent"))) {
+                sb.append("and pp.长度 != ''");
             }
-            if (params.containsKey("outerDiameter")&&StringUtils.isNotBlank(params.get("outerDiameter"))){
-                sb.append( "and pp.外径 != ''");
+            if (params.containsKey("outerDiameter") && StringUtils.isNotBlank(params.get("outerDiameter"))) {
+                sb.append("and pp.外径 != ''");
             }
-            if (params.containsKey("thickness")&&StringUtils.isNotBlank(params.get("thickness"))){
-                sb.append( "and pp.厚度 != ''");
+            if (params.containsKey("thickness") && StringUtils.isNotBlank(params.get("thickness"))) {
+                sb.append("and pp.厚度 != ''");
             }
             System.out.println(sb.toString());
-            return jdbcTemplate.queryForList(sb.toString(),list.toArray());
+            return jdbcTemplate.queryForList(sb.toString(), list.toArray());
 
         }
 
@@ -453,10 +454,11 @@ public class SalesService {
      * 商品分类销售统计
      * 参数：ex: key=year va='2019'年份
      * 品牌参数：ex: key=srand 品牌
+     *
      * @param params
      * @return
      */
-    public List<Map<String ,Object>> getCategorySalesPage(Map<String ,String > params, @NotNull String year){
+    public List<Map<String, Object>> getCategorySalesPage(Map<String, String> params, @NotNull String year) {
 //        if(year==null) {
 ////            Calendar now = Calendar.getInstance();
 ////            now.setTime(new Date());
@@ -464,40 +466,40 @@ public class SalesService {
 ////        }
         String leveid = "level1id";
         int parentid = 0;
-        if(params.containsKey("parentid")&&StringUtils.isNotBlank(params.get("parentid"))){
-            if (!"0".equals( params.get("parentid"))){
+        if (params.containsKey("parentid") && StringUtils.isNotBlank(params.get("parentid"))) {
+            if (!"0".equals(params.get("parentid"))) {
                 leveid = "level2id";
             }
             parentid = Integer.parseInt(params.get("parentid"));
         }
         List<Object> list = new ArrayList<>();
         StringBuilder sb = new StringBuilder("select tb.name,tb.id,tb.brand,sum(totalpr) totalpr,round(avg(cut),2) sss,");
-        sb.append(" round(sum(case when tb.years = '"+year+"-12' then totalpr else 0 end), 2)  十二月,");
-        sb.append(" round(sum(case when tb.years = '"+year+"-11' then totalpr else 0 end), 2)  十一月,");
-        sb.append(" round(sum(case when tb.years = '"+year+"-10' then totalpr else 0 end), 2)  十月,");
-        sb.append(" round(sum(case when tb.years = '"+year+"-09' then totalpr else 0 end), 2)  九月,");
-        sb.append(" round(sum(case when tb.years = '"+year+"-08' then totalpr else 0 end), 2) 八月,");
-        sb.append(" round(sum(case when tb.years = '"+year+"-07' then totalpr else 0 end), 2)  七月,");
-        sb.append(" round(sum(case when tb.years = '"+year+"-06' then totalpr else 0 end), 2)  六月,");
-        sb.append(" round(sum(case when tb.years = '"+year+"-05' then totalpr else 0 end), 2)  五月,");
-        sb.append(" round(sum(case when tb.years = '"+year+"-04' then totalpr else 0 end), 2)  四月,");
-        sb.append(" round(sum(case when tb.years = '"+year+"-03' then totalpr else 0 end), 2)  三月,");
-        sb.append(" round(sum(case when tb.years = '"+year+"-02' then totalpr else 0 end), 2)  二月,");
-        sb.append(" round(sum(case when tb.years = '"+year+"-01' then totalpr else 0 end), 2)  一月");
+        sb.append(" round(sum(case when tb.years = '" + year + "-12' then totalpr else 0 end), 2)  十二月,");
+        sb.append(" round(sum(case when tb.years = '" + year + "-11' then totalpr else 0 end), 2)  十一月,");
+        sb.append(" round(sum(case when tb.years = '" + year + "-10' then totalpr else 0 end), 2)  十月,");
+        sb.append(" round(sum(case when tb.years = '" + year + "-09' then totalpr else 0 end), 2)  九月,");
+        sb.append(" round(sum(case when tb.years = '" + year + "-08' then totalpr else 0 end), 2) 八月,");
+        sb.append(" round(sum(case when tb.years = '" + year + "-07' then totalpr else 0 end), 2)  七月,");
+        sb.append(" round(sum(case when tb.years = '" + year + "-06' then totalpr else 0 end), 2)  六月,");
+        sb.append(" round(sum(case when tb.years = '" + year + "-05' then totalpr else 0 end), 2)  五月,");
+        sb.append(" round(sum(case when tb.years = '" + year + "-04' then totalpr else 0 end), 2)  四月,");
+        sb.append(" round(sum(case when tb.years = '" + year + "-03' then totalpr else 0 end), 2)  三月,");
+        sb.append(" round(sum(case when tb.years = '" + year + "-02' then totalpr else 0 end), 2)  二月,");
+        sb.append(" round(sum(case when tb.years = '" + year + "-01' then totalpr else 0 end), 2)  一月");
         sb.append(" from (");
         sb.append(" select ca.name,ca.sort,ca.id,pi.brand,count(1),sum(op.price*op.num) totalpr,to_char(os.createtime, 'yyyy-mm') years ");
-        sb.append(" from productinfo pi LEFT JOIN categories ca on ca.id = pi."+leveid+" left join orderproduct op on op.pdid = pi.id left join orders os on os.orderno = op.orderno  ");
+        sb.append(" from productinfo pi LEFT JOIN categories ca on ca.id = pi." + leveid + " left join orderproduct op on op.pdid = pi.id left join orders os on os.orderno = op.orderno  ");
         sb.append(" where os.orderstatus <> 7 and ca.parentid = ? and to_char(os.createtime, 'yyyy') = ?");
         list.add(parentid);
         list.add(year);
-        if (params.get("level")!=null&& StringUtils.isNotBlank(params.get("level"))){
+        if (params.get("level") != null && StringUtils.isNotBlank(params.get("level"))) {
             sb.append(" and ca.name =?");
             list.add(params.get("level"));
         }
         sb.append(" GROUP BY ca.id ,ca.name,ca.sort,to_char(os.createtime, 'yyyy-mm'),pi.brand )tb");
 
         sb.append(" LEFT JOIN( select ca.id ,ca.name,sum(op.price*op.num) cut from productinfo pi");
-        sb.append(" left join orderproduct op on op.pdid = pi.id LEFT JOIN categories ca on ca.id = pi."+leveid+" left join orders os on os.orderno = op.orderno ");
+        sb.append(" left join orderproduct op on op.pdid = pi.id LEFT JOIN categories ca on ca.id = pi." + leveid + " left join orders os on os.orderno = op.orderno ");
         sb.append(" where os.orderstatus <> 7 and to_char(os.createtime, 'yyyy') = ?");
         list.add(year);
         sb.append(" GROUP BY ca.id ,ca.name ) tcc on tb.id = tcc.id ");
@@ -523,9 +525,9 @@ public class SalesService {
         List<Object> list = new ArrayList<>();
         String leveid = "level1id";
         int parentid = 0;
-        if (params.containsKey("parentid")&& StringUtils.isNotBlank(params.get("parentid"))){
-            if(params.containsKey("parentid")&&StringUtils.isNotBlank(params.get("parentid"))){
-                if (!"0".equals( params.get("parentid"))){
+        if (params.containsKey("parentid") && StringUtils.isNotBlank(params.get("parentid"))) {
+            if (params.containsKey("parentid") && StringUtils.isNotBlank(params.get("parentid"))) {
+                if (!"0".equals(params.get("parentid"))) {
                     leveid = "level2id";
                 }
                 parentid = Integer.parseInt(params.get("parentid"));
@@ -533,11 +535,20 @@ public class SalesService {
         }
 
         StringBuilder sb = new StringBuilder("select count(1) from ( select ca.name,ca.id,pi.brand,count(1),sum(op.price*op.num) totalpr");
-        sb.append(" from productinfo pi LEFT JOIN categories ca on ca.id =  pi."+leveid+" left join orderproduct op on op.pdid = pi.id ");
+        sb.append(" from productinfo pi LEFT JOIN categories ca on ca.id =  pi." + leveid + " left join orderproduct op on op.pdid = pi.id ");
         sb.append(" left join orders os on os.orderno = op.orderno where os.orderstatus <> 7 and to_char(os.createtime, 'yyyy') = ? ");
         list.add(year);
         sb.append(" and ca.parentid = ? GROUP BY ca.id ,ca.name,pi.brand ) tb ");
         list.add(parentid);
-        return jdbcTemplate.queryForObject(sb.toString(), list.toArray(),Long.class);
+        return jdbcTemplate.queryForObject(sb.toString(), list.toArray(), Long.class);
+    }
+
+    /**
+     * 紧商网商家数量
+     *
+     * @return 有效商家数量
+     */
+    public int getShopNum() {
+        return jdbcTemplate.queryForObject("SELECT COUNT(1) FROM sellercompanyinfo sci WHERE sci.validate = 1", Integer.class);
     }
 }
