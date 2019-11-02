@@ -31,13 +31,13 @@ public class CustomerService {
             return  null;
         }
         List<Object > list = new ArrayList<>();
-        StringBuilder builder = new StringBuilder("SELECT t1.memberid ,mb.username ,t1.firsttime ,bc.companyname ," +
+        StringBuilder builder = new StringBuilder("SELECT t1.memberid ,mb.username ,mb.clerkname,t1.firsttime ,bc.companyname ," +
                 " mb.province || mb.city || mb.citysmall as city, mb.address,mb.realname,mb.mobile as mobile," +
                 " mb.telephone,mb.waysalesman ,sum ( os.totalprice ) as totalprice  from" +
                 "(select min( os.createtime ) as firsttime,os.memberid from orders os where 1=1 ");
         sqlCommon(param, list, builder);
         builder.append("  group by t1.memberid,t1.firsttime,mb.username,bc.companyname,mb.province || mb.city || mb.citysmall," +
-                " mb.address,mb.realname,mb.mobile,mb.telephone,mb.waysalesman ");//order by t1.firsttime desc limit 10; ");
+                " mb.address,mb.realname,mb.mobile,mb.clerkname,mb.telephone,mb.waysalesman ");
         if (StringUtils.isNotBlank(param.get("sort"))) {
             if (StringUtils.isNotBlank(param.get("sortOrder"))&&"desc".equalsIgnoreCase(param.get("sortOrder"))) {
                 builder.append(" order by " + param.get("sort") + "  desc");
@@ -60,6 +60,7 @@ public class CustomerService {
             builder.append(" offset 0 ;");
         }
 
+        System.out.println(builder.toString());
         List<Map<String,Object>> customers = jdbcTemplate.queryForList(builder.toString(),list.toArray());
 
         List<CustomerOfOrder> customerOfOrders = new ArrayList<>();
@@ -71,6 +72,7 @@ public class CustomerService {
             customerOfOrder.setFirsttime((Date)customer.get("firsttime"));
             customerOfOrder.setCompanyname(customer.get("companyname")==null?null:customer.get("companyname").toString());
             customerOfOrder.setCity(customer.get("city")==null?null:customer.get("city").toString());
+            customerOfOrder.setClerkname(customer.get("clerkname")==null?null:customer.get("clerkname").toString());
             customerOfOrder.setAddress(customer.get("address")==null?null:customer.get("address").toString());
             customerOfOrder.setRealname(customer.get("realname")==null?null:customer.get("realname").toString());
             customerOfOrder.setMobile(customer.get("mobile")==null?null:customer.get("mobile").toString());

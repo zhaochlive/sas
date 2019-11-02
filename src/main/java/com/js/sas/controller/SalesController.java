@@ -404,13 +404,14 @@ public class SalesController {
             result.put("304", "缺少年份参数year，例如：year = 2018");
             return result;
         }
+        if (request.getParameter("brand") != null && StringUtils.isNotBlank(request.getParameter("brand"))) {
+            params.put("brand", request.getParameter("brand"));
+        }
+        if (request.getParameter("show") != null && StringUtils.isNotBlank(request.getParameter("show"))) {
+            params.put("show", request.getParameter("show"));
+        }
         if (request.getParameter("level") != null && StringUtils.isNotBlank(request.getParameter("level"))) {
             params.put("level", request.getParameter("level"));
-        }
-        if (request.getParameter("parentid") != null && StringUtils.isNotBlank(request.getParameter("parentid"))) {
-            params.put("parentid", request.getParameter("parentid"));
-        } else {
-            params.put("parentid", "0");
         }
         if (StringUtils.isNotBlank(request.getParameter("limit"))) {
             params.put("limit", request.getParameter("limit"));
@@ -431,5 +432,75 @@ public class SalesController {
         return result;
     }
 
+    @RequestMapping(value = "/download/productCategory",method = {RequestMethod.GET,RequestMethod.POST})
+    public void productCategory(HttpServletResponse response, HttpServletRequest request) {
+        Map<String, String> params = new HashMap<String, String>();
+        String year = null;
+        if (request.getParameter("year") != null || StringUtils.isNotBlank(request.getParameter("year"))) {
+            year = request.getParameter("year");
+        } else {
+            return ;
+        }
+        if (request.getParameter("brand2") != null && StringUtils.isNotBlank(request.getParameter("brand2"))) {
+            params.put("brand", request.getParameter("brand2"));
+            System.out.println(request.getParameter("brand2"));
+        }
+        if (request.getParameter("show2") != null && StringUtils.isNotBlank(request.getParameter("show2"))) {
+            params.put("show", request.getParameter("show2"));
+            System.out.println(request.getParameter("show2"));
+        }
+        if (request.getParameter("level2") != null && StringUtils.isNotBlank(request.getParameter("level2"))) {
+            params.put("level", request.getParameter("level2"));
+            System.out.println(request.getParameter("level2"));
+        }
+        params.put("limit", "99999999");
+        params.put("offset", "0");
+        List<List<Object>> result = new ArrayList<>();
+        List<String > columnNameList = new ArrayList<>();
+        columnNameList.add("分类");
+        columnNameList.add("合计");
+        columnNameList.add("品牌");
+        columnNameList.add("合计");
+        columnNameList.add("一月份");
+        columnNameList.add("二月份");
+        columnNameList.add("三月份");
+        columnNameList.add("四月份");
+        columnNameList.add("五月份");
+        columnNameList.add("六月份");
+        columnNameList.add("七月份");
+        columnNameList.add("八月份");
+        columnNameList.add("九月份");
+        columnNameList.add("十月份");
+        columnNameList.add("十一月份");
+        columnNameList.add("十二月份");
+        try {
+            List<Map<String, Object>> list = salesService.getCategorySalesPage(params, year);
+            System.out.println(list.toString());
+            List<Object> objects ;
+            for (Map<String,Object> order : list) {
+                objects = new ArrayList<>();
+                objects.add(order.get("name"));
+                objects.add(order.get("sss"));
+                objects.add(order.get("brand"));
+                objects.add(order.get("totalpr"));
+                objects.add(order.get("一月"));
+                objects.add(order.get("二月"));
+                objects.add(order.get("三月"));
+                objects.add(order.get("四月"));
+                objects.add(order.get("五月"));
+                objects.add(order.get("六月"));
+                objects.add(order.get("七月"));
+                objects.add(order.get("八月"));
+                objects.add(order.get("九月"));
+                objects.add(order.get("十月"));
+                objects.add(order.get("十一月"));
+                objects.add(order.get("十二月"));
+                result.add(objects);
+            }
+            CommonUtils.exportByList(response, columnNameList, result, "商品分类销售额统计");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 }

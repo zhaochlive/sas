@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -163,4 +164,33 @@ public class SearchOptionService {
     }
 
 
+    public  List<Map<String, Object>> getLevel() {
+
+        List<Map<String, Object>> level1 = this.getCategoryById(0);
+        String sql = "SELECT id,name,parentid from categories ";
+        List<Map<String, Object>> mapList = jdbcTemplate.queryForList(sql);
+
+        List<Map<String, Object>> sortList = new ArrayList<>();
+        if (mapList!=null&&mapList.size()>0){
+            for (int i = 0; i <level1.size() ; i++) {
+                level1.get(i).put("selected","selected");
+                sortList.add(level1.get(i));
+                for (int j = 0; j <mapList.size() ; j++){
+                    if (mapList.get(j).get("parentid").equals(level1.get(i).get("id"))){
+                        mapList.get(j).put("selected","");
+                        sortList.add(mapList.get(j));
+                        continue;
+                    }
+                }
+
+            }
+        }
+        return sortList;
+    }
+
+
+    public List<String > getAllBrand() {
+        String sql ="SELECT distinct(brand) from productinfo ORDER BY brand";
+        return jdbcTemplate.queryForList(sql,String.class);
+    }
 }

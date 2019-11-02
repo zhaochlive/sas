@@ -13,6 +13,7 @@ public class CustomerOfOrder {
     private String mobile;//手机
     private String telephone;//座机
     private String waysalesman;//业务员
+    private String clerkname;//客服
     private String totalprice;//总金额
 
     public Long getMemberid() {
@@ -103,6 +104,14 @@ public class CustomerOfOrder {
         this.totalprice = totalprice;
     }
 
+    public String getClerkname() {
+        return clerkname;
+    }
+
+    public void setClerkname(String clerkname) {
+        this.clerkname = clerkname;
+    }
+
     @Override
     public String toString() {
         return "CustomerOfOrder{" +
@@ -116,6 +125,7 @@ public class CustomerOfOrder {
                 ", mobile='" + mobile + '\'' +
                 ", telephone='" + telephone + '\'' +
                 ", waysalesman='" + waysalesman + '\'' +
+                ", clerkname='" + clerkname + '\'' +
                 ", totalprice='" + totalprice + '\'' +
                 '}';
     }

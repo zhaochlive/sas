@@ -239,6 +239,8 @@ public class SystemController {
     public String category(HttpServletRequest request, Model model) {
 
         model.addAttribute("category",searchOptionService.getCategoryById(0));
+        model.addAttribute("Levels",searchOptionService.getLevel());
+        model.addAttribute("Brands",searchOptionService.getAllBrand());
 
         return "pages/sales/productCategory.html";
     }

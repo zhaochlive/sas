@@ -441,7 +441,6 @@ public class SalesService {
             if (params.containsKey("thickness")&&StringUtils.isNotBlank(params.get("thickness"))){
                 sb.append( "and pp.厚度 != ''");
             }
-            System.out.println(sb.toString());
             return jdbcTemplate.queryForList(sb.toString(),list.toArray());
 
         }
@@ -457,19 +456,7 @@ public class SalesService {
      * @return
      */
     public List<Map<String ,Object>> getCategorySalesPage(Map<String ,String > params, @NotNull String year){
-//        if(year==null) {
-////            Calendar now = Calendar.getInstance();
-////            now.setTime(new Date());
-////            year = now.getWeekYear()+"";
-////        }
-        String leveid = "level1id";
-        int parentid = 0;
-        if(params.containsKey("parentid")&&StringUtils.isNotBlank(params.get("parentid"))){
-            if (!"0".equals( params.get("parentid"))){
-                leveid = "level2id";
-            }
-            parentid = Integer.parseInt(params.get("parentid"));
-        }
+
         List<Object> list = new ArrayList<>();
         StringBuilder sb = new StringBuilder("select tb.name,tb.id,tb.brand,sum(totalpr) totalpr,round(avg(cut),2) sss,");
         sb.append(" round(sum(case when tb.years = '"+year+"-12' then totalpr else 0 end), 2)  十二月,");
@@ -486,22 +473,24 @@ public class SalesService {
         sb.append(" round(sum(case when tb.years = '"+year+"-01' then totalpr else 0 end), 2)  一月");
         sb.append(" from (");
         sb.append(" select ca.name,ca.sort,ca.id,pi.brand,count(1),sum(op.price*op.num) totalpr,to_char(os.createtime, 'yyyy-mm') years ");
-        sb.append(" from productinfo pi LEFT JOIN categories ca on ca.id = pi."+leveid+" left join orderproduct op on op.pdid = pi.id left join orders os on os.orderno = op.orderno  ");
-        sb.append(" where os.orderstatus <> 7 and ca.parentid = ? and to_char(os.createtime, 'yyyy') = ?");
-        list.add(parentid);
-        list.add(year);
-        if (params.get("level")!=null&& StringUtils.isNotBlank(params.get("level"))){
-            sb.append(" and ca.name =?");
-            list.add(params.get("level"));
-        }
-        sb.append(" GROUP BY ca.id ,ca.name,ca.sort,to_char(os.createtime, 'yyyy-mm'),pi.brand )tb");
-
-        sb.append(" LEFT JOIN( select ca.id ,ca.name,sum(op.price*op.num) cut from productinfo pi");
-        sb.append(" left join orderproduct op on op.pdid = pi.id LEFT JOIN categories ca on ca.id = pi."+leveid+" left join orders os on os.orderno = op.orderno ");
+        sb.append(" from productinfo pi LEFT JOIN categories ca on ca.id = pi.level2id or ca.id = pi.level1id " +
+                "left join orderproduct op on op.pdid = pi.id left join orders os on os.orderno = op.orderno  ");
         sb.append(" where os.orderstatus <> 7 and to_char(os.createtime, 'yyyy') = ?");
         list.add(year);
-        sb.append(" GROUP BY ca.id ,ca.name ) tcc on tb.id = tcc.id ");
-        sb.append(" GROUP BY tb.name,tb.sort,tb.id,brand order by tb.sort");
+        if (params.get("level")!=null&& StringUtils.isNotBlank(params.get("level"))){
+            sb.append(" and ca.id  in ("+params.get("level")+")");
+        }
+        sb.append(" GROUP BY ca.id ,ca.name,ca.sort,to_char(os.createtime, 'yyyy-mm'),pi.brand )tb");
+        sb.append(" LEFT JOIN( select ca.id ,ca.name,sum(op.price*op.num) cut from productinfo pi");
+        sb.append(" left join orderproduct op on op.pdid = pi.id LEFT JOIN categories ca on ca.id = pi.level2id or ca.id = pi.level1id " +
+                "left join orders os on os.orderno = op.orderno ");
+        sb.append(" where os.orderstatus <> 7 and to_char(os.createtime, 'yyyy') = ?");
+        list.add(year);
+        sb.append(" GROUP BY ca.id ,ca.name ) tcc on tb.id = tcc.id  where 1 =1 ");
+        if (params.get("brand")!=null&& StringUtils.isNotBlank(params.get("brand"))){
+            sb.append(" and tb.brand in ("+params.get("brand")+")");
+        }
+        sb.append(" GROUP BY tb.name,tb.sort,tb.id,tb.brand order by tb.sort");
         if (StringUtils.isNotBlank(params.get("limit"))) {
             long limit = Long.parseLong(params.get("limit").trim());
             sb.append(" limit ? ");
@@ -516,28 +505,33 @@ public class SalesService {
         } else {
             sb.append(" offset 0 ;");
         }
-        return jdbcTemplate.queryForList(sb.toString(), list.toArray());
+        String str = sb.toString();
+        if (params.containsKey("show")&&params.get("show").equals("false")){
+            str = str.replaceAll(",tb.brand"," ");
+        }
+        System.out.println(str);
+        return jdbcTemplate.queryForList(str, list.toArray());
     }
 
     public Long getCategorySalesCount(Map<String, String> params, String year) {
         List<Object> list = new ArrayList<>();
-        String leveid = "level1id";
-        int parentid = 0;
-        if (params.containsKey("parentid")&& StringUtils.isNotBlank(params.get("parentid"))){
-            if(params.containsKey("parentid")&&StringUtils.isNotBlank(params.get("parentid"))){
-                if (!"0".equals( params.get("parentid"))){
-                    leveid = "level2id";
-                }
-                parentid = Integer.parseInt(params.get("parentid"));
-            }
-        }
 
         StringBuilder sb = new StringBuilder("select count(1) from ( select ca.name,ca.id,pi.brand,count(1),sum(op.price*op.num) totalpr");
-        sb.append(" from productinfo pi LEFT JOIN categories ca on ca.id =  pi."+leveid+" left join orderproduct op on op.pdid = pi.id ");
+        sb.append(" from productinfo pi LEFT JOIN categories ca on ca.id =  pi.level2id or ca.id = pi.level1id left join orderproduct op on op.pdid = pi.id ");
         sb.append(" left join orders os on os.orderno = op.orderno where os.orderstatus <> 7 and to_char(os.createtime, 'yyyy') = ? ");
         list.add(year);
-        sb.append(" and ca.parentid = ? GROUP BY ca.id ,ca.name,pi.brand ) tb ");
-        list.add(parentid);
-        return jdbcTemplate.queryForObject(sb.toString(), list.toArray(),Long.class);
+        if (params.get("brand")!=null&& StringUtils.isNotBlank(params.get("brand"))){
+            sb.append(" and pi.brand in ("+params.get("brand")+")");
+        }
+        if (params.get("level")!=null&& StringUtils.isNotBlank(params.get("level"))){
+            sb.append(" and ca.id  in ("+params.get("level")+")");
+        }
+        sb.append(" GROUP BY ca.id ,ca.name,pi.brand ) tb ");
+        String str = sb.toString();
+        if (params.containsKey("show")&&params.get("show").equals("false")){
+            str = str.replaceAll(",pi.brand"," ");
+        }
+        System.out.println(str);
+        return jdbcTemplate.queryForObject(str, list.toArray(),Long.class);
     }
 }

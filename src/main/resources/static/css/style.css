@@ -1,3 +1,11 @@
+@import url("https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700");
+@import url("https://fonts.googleapis.com/css?family=Roboto:400,300,500,700");
+/*
+ *
+ *   INSPINIA - Responsive Admin Theme
+ *   version 2.9.2
+ *
+*/
 @font-face {
   font-family: 'Glyphicons Halflings';
   src: url('../fonts/glyphicons-halflings-regular.eot');
@@ -990,18 +998,18 @@ h5 {
 .nav-header {
   padding: 33px 25px;
   background-color: #2f4050;
-  background-image: url("");
+  background-image: url("patterns/header-profile.png");
 }
-/*.caret {*/
-/*  display: inline-block;*/
-/*  width: 0;*/
-/*  height: 0;*/
-/*  margin-left: 2px;*/
-/*  vertical-align: middle;*/
-/*  border-top: 4px dashed;*/
-/*  border-right: 4px solid transparent;*/
-/*  border-left: 4px solid transparent;*/
-/*}*/
+.caret {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: 2px;
+  vertical-align: middle;
+  border-top: 4px dashed;
+  border-right: 4px solid transparent;
+  border-left: 4px solid transparent;
+}
 .profile-element .dropdown-toggle::after {
   display: none;
 }
@@ -4866,7 +4874,7 @@ code {
 }
 .ibox {
   clear: both;
-  margin-bottom: 5px;
+  margin-bottom: 25px;
   margin-top: 0;
   padding: 0;
 }
@@ -9571,4 +9579,20 @@ body.md-skin {
     display: inline-block;
   }
 }
-
+/* Only demo */
+@media (max-width: 1000px) {
+  .welcome-message {
+    display: none;
+  }
+}
+@media print {
+  nav.navbar-static-side {
+    display: none;
+  }
+  body {
+    overflow: visible !important;
+  }
+  #page-wrapper {
+    margin: 0;
+  }
+}

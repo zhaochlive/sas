@@ -145,7 +145,7 @@
     $('input[name="dateRange"]').daterangepicker({
         startDate:todaySt(),
         endDate:todaySt(),
-        timePicker: true,
+        timePicker: false,
         autoUpdateInput: true,
         showDropdowns: true,
         autoApply: true,
@@ -292,8 +292,12 @@
                 field: 'waysalesman',
                 title: '业务员',
                 align: 'center',
+                valign: 'middle'
+            }, {
+                field: 'clerkname',
+                title: '客服',
+                align: 'center',
                 valign: 'middle',
-                // sortable: 'false'
             }, {
                 field: 'totalprice',
                 title: '总金额',

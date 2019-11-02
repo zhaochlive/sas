@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -269,5 +270,9 @@ public class SearchOptionController {
         return new Result("200", "success", searchOptionService.getLevelTwo(name));
     }
 
+    @GetMapping("/getLevel")
+    public Result getLevel(){
+        return new Result("200", "success", searchOptionService.getLevel());
+    }
 
 }

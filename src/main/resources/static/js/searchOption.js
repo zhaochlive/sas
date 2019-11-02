@@ -495,3 +495,18 @@ $('.classTwo ').typeahead({
     }
 });
 
+function getLevel() {
+    $.ajax({
+        url: "/getLevel",
+        method: "get",
+        success: function (data) {
+            if (data.code==200){
+                for (i in data.data){
+                    document.getElementById(data.data[i]).remove() ;
+                }
+            }
+        }
+    })
+}
+
+
