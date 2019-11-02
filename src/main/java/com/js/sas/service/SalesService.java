@@ -486,8 +486,11 @@ public class SalesService {
         sb.append(" where os.orderstatus <> 7 and to_char(os.createtime, 'yyyy') = ?");
         list.add(year);
         sb.append(" GROUP BY ca.id ,ca.name ) tcc on tb.id = tcc.id  where 1 =1 ");
-        if (params.get("brand")!=null&& StringUtils.isNotBlank(params.get("brand"))){
-            sb.append(" and tb.brand in ("+params.get("brand")+")");
+
+        if (params.containsKey("show")&&params.get("show").equals("true")){
+            if (params.get("brand")!=null&& StringUtils.isNotBlank(params.get("brand"))){
+                sb.append(" and tb.brand in ("+params.get("brand")+")");
+            }
         }
         sb.append(" GROUP BY tb.name,tb.sort,tb.id,tb.brand order by tb.sort");
         if (StringUtils.isNotBlank(params.get("limit"))) {
@@ -508,6 +511,7 @@ public class SalesService {
         if (params.containsKey("show")&&params.get("show").equals("false")){
             str = str.replaceAll(",tb.brand"," ");
         }
+        System.out.println(str);
         return jdbcTemplate.queryForList(str, list.toArray());
     }
 
