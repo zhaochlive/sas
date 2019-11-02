@@ -55,7 +55,7 @@
                             <span class="label label-warning float-left">紧商网入驻商家</span>
                         </div>
                         <div class="ibox-content">
-                            <h1 class="no-margins">- 家</h1>
+                            <h1 class="no-margins"><label id="shopNum">-</label> 家</h1>
                             <small>&nbsp;</small>
                         </div>
                     </div>
@@ -115,6 +115,20 @@
     $('#side-menu').load('left.html');
     $('#header').load('header.html');
     $('#footer').load('footer.html');
+
+    // 商家数量
+    $.ajax({
+        type: 'POST',
+        url: "/sales/getShopNum",
+        data: {},
+        dataType: "json",
+        async: false,
+        success: function (result) {
+            $("#shopNum").text(result);
+        }, error: function (error) {
+            console.log(error);
+        }
+    });
 
     /**
      * 销售额周期统计（天、月、年）

@@ -456,7 +456,6 @@ public class SalesService {
      * @return
      */
     public List<Map<String ,Object>> getCategorySalesPage(Map<String ,String > params, @NotNull String year){
-
         List<Object> list = new ArrayList<>();
         StringBuilder sb = new StringBuilder("select tb.name,tb.id,tb.brand,sum(totalpr) totalpr,round(avg(cut),2) sss,");
         sb.append(" round(sum(case when tb.years = '"+year+"-12' then totalpr else 0 end), 2)  十二月,");
@@ -509,7 +508,6 @@ public class SalesService {
         if (params.containsKey("show")&&params.get("show").equals("false")){
             str = str.replaceAll(",tb.brand"," ");
         }
-        System.out.println(str);
         return jdbcTemplate.queryForList(str, list.toArray());
     }
 
@@ -533,5 +531,14 @@ public class SalesService {
         }
         System.out.println(str);
         return jdbcTemplate.queryForObject(str, list.toArray(),Long.class);
+    }
+
+    /**
+     * 紧商网商家数量
+     *
+     * @return 有效商家数量
+     */
+    public int getShopNum() {
+        return jdbcTemplate.queryForObject("SELECT COUNT(1) FROM sellercompanyinfo sci WHERE sci.validate = 1", Integer.class);
     }
 }

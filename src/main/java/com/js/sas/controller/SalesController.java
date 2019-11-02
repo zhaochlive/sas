@@ -193,10 +193,6 @@ public class SalesController {
     public Object findOrderAreas(String startDate, String endDate, String province, String city, int offset, int limit) {
         return salesService.findOrderAreas(startDate, endDate, province, city, offset, limit);
     }
-    /**
-     * 商品销售额
-     * @return Result，商品销售总额
-     */
 
     /**
      * 客户、开票名称、客服、地址，月销售统计
@@ -430,6 +426,17 @@ public class SalesController {
         result.put("rows", list);
         result.put("total", salesService.getCategorySalesCount(params, year));
         return result;
+    }
+
+    /**
+     * 紧商网商家数量
+     *
+     * @return Object
+     */
+    @ApiOperation(value = "紧商网商家数量", notes = "数据来源：紧商网；数据截止日期：实时")
+    @PostMapping(value = "/getShopNum")
+    public Object getShopNum() {
+        return salesService.getShopNum();
     }
 
     @RequestMapping(value = "/download/productCategory",method = {RequestMethod.GET,RequestMethod.POST})
