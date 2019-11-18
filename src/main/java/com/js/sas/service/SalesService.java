@@ -511,7 +511,7 @@ public class SalesService {
         if (params.containsKey("show")&&params.get("show").equals("false")){
             str = str.replaceAll(",tb.brand"," ");
         }
-        System.out.println(str);
+//        System.out.println(str);
         return jdbcTemplate.queryForList(str, list.toArray());
     }
 
@@ -533,7 +533,7 @@ public class SalesService {
         if (params.containsKey("show")&&params.get("show").equals("false")){
             str = str.replaceAll(",pi.brand"," ");
         }
-        System.out.println(str);
+//        System.out.println(str);
         return jdbcTemplate.queryForObject(str, list.toArray(),Long.class);
     }
 

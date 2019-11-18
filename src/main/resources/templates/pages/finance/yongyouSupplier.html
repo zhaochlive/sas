@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="../../css/bootstrap-4.3.1.min.css">
+    <link rel="stylesheet" href="../../css/bootstrap-table.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="../../css/style.css">
+    <!--    <link rel="stylesheet" href="../../css/bootstrap-datetimepicker.min.css">-->
+    <link rel="stylesheet" type="text/css" href="../../css/daterangepicker.css"/>
+    <link rel="stylesheet" href="../../plugins/toastr/toastr.min.css">
+
+    <title>统计分析系统 - 财务 - 用友供应商对账单</title>
+</head>
+<body>
+<div id="wrapper">
+    <!-- 菜单 -->
+    <nav class="navbar-default navbar-static-side" role="navigation">
+        <div class="sidebar-collapse">
+            <ul class="nav metismenu" id="side-menu"></ul>
+        </div>
+    </nav>
+    <div id="page-wrapper" class="gray-bg dashbard-1">
+        <!-- 顶部 -->
+        <div class="row border-bottom" id="header"></div>
+        <!-- 内容 -->
+        <div class="wrapper wrapper-content">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="ibox">
+                        <div class="ibox-title">
+                            <h5>
+                                用友供应商对账单
+                            </h5>
+                            <div class="ibox-tools">
+                                <a class="collapse-link">
+                                    <i class="fa fa-chevron-up"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="ibox-content">
+                            <form id="form1" class="form-horizontal">
+                                <div class="box-body">
+                                    <div class="row">
+                                        <div class="form-group row col-sm-4">
+                                            <label class="col-sm-3 col-form-label"> 对账名称：</label>
+                                            <div class="col-sm-9">
+                                                <input id="name" name="name" type="text" placeholder="对账名称"
+                                                       class="settlementName form-control"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row col-sm-4">
+                                            <label class="col-sm-3 col-form-label">时间周期：</label>
+                                            <div class="col-sm-9">
+                                                <input id="dateRange" name="dateRange" placeholder="时间周期"
+                                                       class="form-control" type="text"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box-footer">
+                                    <input type="hidden" id="limit" name="limit" value=""/>
+                                    <input type="hidden" id="startDate" name="startDate" value=""/>
+                                    <input type="hidden" id="endDate" name="endDate" value=""/>
+                                    <button type="button" class="btn btn-primary pull-right" id="search"
+                                            style="margin-left:20px;">搜 索
+                                    </button>
+                                    <button type="button" class="btn btn-default pull-right" id="refresh"
+                                            style="margin-left:20px;">清 空
+                                    </button>
+                                    <button type="button" class="btn btn-default pull-right" id="export"
+                                            style="margin-left:20px;">导出Excel
+                                    </button>
+
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="ibox">
+                        <div class="ibox-content">
+                            <div class="row">
+                                <div class="tableDisplay" id="dataTableOnline" style="width:98%; margin: auto;">
+                                    <div class="form-group row col-sm-12">
+                                        <div id="onlineSettlementName" class="col-sm-12 col-form-label"
+                                             style="text-align: center; font-size: 16px;"></div>
+                                        <div id="onlineSettlementDate" class="col-sm-12 col-form-label"
+                                             style="text-align: center;"></div>
+                                    </div>
+                                    <div class="form-group row col-sm-12">
+                                        <div class="col-form-label">表一：线上供应商对账单:</div>
+                                    </div>
+                                    <table class="table table-bordered table-hover" style="margin-bottom:0px;">
+                                        <tbody id="onlineDetail">
+                                        </tbody>
+                                    </table>
+
+
+                                </div>
+                                <div class="tableDisplay" id="dataTableOffline" style="width:98%; margin: auto;">
+                                    <div class="form-group row col-sm-12">
+                                        <div id="onlineSettlementName1" class="col-sm-12 col-form-label"
+                                             style="text-align: center; font-size: 16px;"></div>
+                                        <div id="onlineSettlementDate1" class="col-sm-12 col-form-label"
+                                             style="text-align: center;"></div>
+                                    </div>
+                                    <div class="form-group row col-sm-12">
+                                        <div class="col-form-label">表二：线下供应商对账单:</div>
+                                    </div>
+                                    <table class="table table-bordered table-hover" style="margin-bottom:0px;">
+                                        <tbody id="OfflineDetail">
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="tableDisplay" id="dataTableCount" style="width:98%; margin: auto;">
+                                    <div class="form-group row col-sm-12">
+                                        <div id="onlineSettlementName2" class="col-sm-12 col-form-label"
+                                             style="text-align: center; font-size: 16px;"></div>
+                                        <div id="onlineSettlementDate2" class="col-sm-12 col-form-label"
+                                             style="text-align: center;"></div>
+                                    </div>
+                                    <div class="form-group row col-sm-12">
+                                        <div class="col-sm-12 col-form-label"
+                                             style="text-align: center; font-size: 16px;">线上线下单据汇总:
+                                        </div>
+                                    </div>
+                                    <table class="table table-bordered table-hover" style="margin-bottom:0px;">
+                                        <tbody id="countDetail">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 底部 -->
+        <div class="footer" id="footer"></div>
+    </div>
+</div>
+</body>
+
+<script src="../../js/jquery-3.3.1.min.js"></script>
+<script src="../../js/popper.min.js"></script>
+<script src="../../js/bootstrap-4.3.1.min.js"></script>
+<script src="../../plugins/slimscroll/jquery.slimscroll.min.js"></script>
+<script src="../../js/inspinia.js"></script>
+<script src="../../plugins/metisMenu/jquery.metisMenu.js"></script>
+<script src="../../js/tableExport.min.js"></script>
+<script src="../../js/bootstrap-table.min.js"></script>
+<script src="../../js/bootstrap-table-export.min.js"></script>
+<script src="../../js/bootstrap-table-zh-CN.min.js"></script>
+<script src="../../js/moment.min.js"></script>
+<script src="../../js/common.js"></script>
+<script src="../../js/typeahead.min.js"></script>
+<script src="../../js/bootstrap-datetimepicker.min.js"></script>
+<script src="../../js/daterangepicker.min.js"></script>
+<script src="../../js/locales/bootstrap-datetimepicker.zh-CN.js"></script>
+<script src="../../plugins/toastr/toastr.min.js"></script>
+
+<script>
+    // 设置菜单
+    $('#side-menu').load('left.html', function () {
+        $("#home").removeClass("active");
+        $("#finance").addClass("active");
+        $("#finance ul").addClass("in");
+        $("#finance ul").attr("aria-expanded=\'true\'");
+        $("#yongyouSupplier").addClass("active");
+    });
+    $('#header').load('header.html');
+    $('#footer').load('footer.html');
+
+    // 开始时间
+    var startDate = "";
+    // 结束时间
+    var endDate = "";
+    // 时间选择插件
+    $('input[name="dateRange"]').daterangepicker({
+        timePicker: false,
+        autoUpdateInput: false,
+        showDropdowns: true,
+        autoApply: true,
+        locale: {
+            format: 'YYYY-MM-DD',
+            applyLabel: '确定',
+            cancelLabel: '取消',
+            fromLabel: '从',
+            toLabel: '到',
+            weekLabel: 'W',
+            customRangeLabel: 'Custom Range',
+            daysOfWeek: ['日', '一', '二', '三', '四', '五', '六'],
+            monthNames: ['一月', '二月', '三月', '四月', '五月', '六月',
+                '七月', '八月', '九月', '十月', '十一月', '十二月'],
+            firstDay: moment.localeData()._week.dow
+        }
+    }, function (start, end, label) {
+        startDate = start.format(this.locale.format);
+        endDate = end.format(this.locale.format);
+        if (!start) {
+            this.element.val('');
+        } else {
+            this.element.val(startDate + this.locale.separator + endDate);
+            // 设置自定义表单字段
+            $("#startDate").val(startDate);
+            $("#endDate").val(endDate);
+        }
+        // 时间输入框置空判断
+        $("#dateRange").on("input", function (e) {
+            if ($.trim(e.delegateTarget.value) == "") {
+                startDate = "";
+                endDate = "";
+            }
+        });
+    });
+
+    function onlineTable() {
+        $("#dataTableOnline table ").bootstrapTable({
+            method: "POST",
+            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+            cache: false,
+            clickToSelect: true,
+            pagination: true,
+            pageNumber: 1,
+            pageSize: 25,
+            pageList: [25, 50, 100],
+            clickToSelect: true,
+            locale: "zh-CN",
+            striped: true,
+            toggle: true,
+            silent: true,
+            sidePagination: "server",
+            url: "/finance/getSupplier",
+            queryParams: function (params) {
+                var temp = {
+                    dateRange: $("input[name='dateRange']").val(),
+                    startDate: startDate,
+                    endDate: endDate,
+                    isOnline: "线上",
+                    name: $("input[name='name']").val(),
+                    limit: params.limit,
+                    offset: params.offset,
+                    sort: params.sort,
+                    sortOrder: params.order
+                };
+                // 设置开始时间
+                $("#startDate").val(temp.startDate);
+                // 设置结束时间
+                $("#endDate").val(temp.endDate);
+                return temp;
+            },
+            columns: [{
+                field: 'num',
+                title: '序号',
+                align: 'center',
+                valign: 'middle'
+                , formatter: function (value, row, index) {
+                    return index + 1;
+                }
+            }, {
+                field: 'voucherdate',
+                title: '日期',
+                align: 'center',
+                valign: 'middle'
+                , formatter: function (value, row, index) {
+                    return datePaseToString(value);
+                }
+            }, {
+                field: 'code',
+                title: '合同编号',
+                align: 'center',
+                valign: 'middle'
+            }, {
+                field: 'type',
+                title: '单据类别',
+                align: 'center',
+                valign: 'middle',
+            }, {
+                field: 'receivingAmount',
+                title: '收货金额',
+                align: 'center',
+                valign: 'middle',
+            }, {
+                field: 'paymentAmount',
+                title: '付款金额',
+                align: 'center',
+                valign: 'middle',
+            }, {
+                field: 'balancePayableAmount',
+                title: '应付账款',
+                align: 'center',
+                valign: 'middle',
+            }, {
+                field: 'invoiceAmount',
+                title: '开票金额',
+                align: 'center',
+                valign: 'middle',
+            }, {
+                field: 'balanceInvoiceAmount',
+                title: '发票结余/开票余额',
+                align: 'center',
+                valign: 'middle',
+
+            }],
+            onLoadSuccess: function (result) {
+
+            },
+            onLoadError: function (error) {
+                console.log(error);
+            },
+            onDblClickRow: function (row, $element) {
+                //
+            }
+        });
+    }
+
+    function offlineTable() {
+        $("#dataTableOffline table ").bootstrapTable({
+            method: "POST",
+            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+            cache: false,
+            clickToSelect: true,
+            pagination: true,
+            pageNumber: 1,
+            pageSize: 25,
+            pageList: [25, 50, 100],
+            clickToSelect: true,
+            locale: "zh-CN",
+            striped: true,
+            toggle: true,
+            silent: true,
+            sidePagination: "server",
+            url: "/finance/getSupplier",
+            queryParams: function (params) {
+                var temp = {
+                    dateRange: $("input[name='dateRange']").val(),
+                    startDate: startDate,
+                    endDate: endDate,
+                    isOnline: "线下",
+                    name: $("input[name='name']").val(),
+                    limit: params.limit,
+                    offset: params.offset,
+                    sort: params.sort,
+                    sortOrder: params.order
+                };
+                // 设置开始时间
+                $("#startDate").val(temp.startDate);
+                // 设置结束时间
+                $("#endDate").val(temp.endDate);
+                return temp;
+            },
+            columns: [{
+                field: 'RowNumbes',
+                title: '序号',
+                align: 'center',
+                valign: 'middle'
+            }, {
+                field: 'voucherdate',
+                title: '日期',
+                align: 'center',
+                valign: 'middle'
+                , formatter: function (value, row, index) {
+                    return datePaseToString(value);
+                }
+            }, {
+                field: 'code',
+                title: '合同编号',
+                align: 'center',
+                valign: 'middle'
+            }, {
+                field: 'type',
+                title: '单据类别',
+                align: 'center',
+                valign: 'middle',
+            }, {
+                field: 'receivingAmount',
+                title: '收货金额',
+                align: 'center',
+                valign: 'middle',
+            }, {
+                field: 'paymentAmount',
+                title: '付款金额',
+                align: 'center',
+                valign: 'middle',
+            }, {
+                field: 'balancePayableAmount',
+                title: '应付账款',
+                align: 'center',
+                valign: 'middle',
+            }, {
+                field: 'invoiceAmount',
+                title: '开票金额',
+                align: 'center',
+                valign: 'middle',
+            }, {
+                field: 'balanceInvoiceAmount',
+                title: '发票结余/开票余额',
+                align: 'center',
+                valign: 'middle',
+
+            }],
+            onLoadSuccess: function (result) {
+
+            },
+            onLoadError: function (error) {
+                console.log(error);
+            },
+            onDblClickRow: function (row, $element) {
+                //
+            }
+        });
+    }
+    function countTable() {
+        $("#dataTableCount table ").bootstrapTable({
+            method: "POST",
+            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+            cache: false,
+            clickToSelect: true,
+            pagination: true,
+            pageNumber: 1,
+            pageSize: 25,
+            pageList: [25, 50, 100],
+            clickToSelect: true,
+            locale: "zh-CN",
+            striped: true,
+            toggle: true,
+            silent: true,
+            sidePagination: "server",
+            url: "/finance/getCountSupplier",
+            queryParams: function (params) {
+                var temp = {
+                    dateRange: $("input[name='dateRange']").val(),
+                    startDate: startDate,
+                    endDate: endDate,
+                    name: $("input[name='name']").val(),
+                    limit: params.limit,
+                    offset: params.offset,
+                    sort: params.sort,
+                    sortOrder: params.order
+                };
+                // 设置开始时间
+                $("#startDate").val(temp.startDate);
+                // 设置结束时间
+                $("#endDate").val(temp.endDate);
+                return temp;
+            },
+            columns: [{
+                field: 'type',
+                title: '序号',
+                align: 'center',
+                valign: 'middle',
+                formatter: function (value, row, index) {
+                    return index+1;
+                }
+            }, {
+                field: 'type',
+                title: '单据类别',
+                align: 'center',
+                valign: 'middle',
+            }, {
+                field: 'receivingAmount',
+                title: '收货金额',
+                align: 'center',
+                valign: 'middle',
+            }, {
+                field: 'paymentAmount',
+                title: '付款金额',
+                align: 'center',
+                valign: 'middle',
+            }, {
+                field: 'balancePayableAmount',
+                title: '应付账款',
+                align: 'center',
+                valign: 'middle',
+            }, {
+                field: 'invoiceAmount',
+                title: '开票金额',
+                align: 'center',
+                valign: 'middle',
+            }, {
+                field: 'balanceInvoiceAmount',
+                title: '发票结余/开票余额',
+                align: 'center',
+                valign: 'middle',
+
+            }],
+            onLoadSuccess: function (result) {
+
+            },
+            onLoadError: function (error) {
+                console.log(error);
+            },
+            onDblClickRow: function (row, $element) {
+                //
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        onlineTable();
+        offlineTable();
+        countTable();
+        $("button[id='search']").click(function () {
+            $("#dataTableOnline table").bootstrapTable('destroy');
+            $("#dataTableOffline table").bootstrapTable('destroy');
+            $("#dataTableCount table").bootstrapTable('destroy');
+            onlineTable();
+            offlineTable();
+            countTable();
+        });
+
+        // 刷新按钮
+        $("button[id='refresh']").click(function () {
+            $("input[name='name']").val("");
+            $("input[name='dateRange']").val("");
+            startDate = "";
+            endDate = "";
+        });
+
+        // 导出按钮
+        $("button[id='export']").click(function () {
+            if ($("input[name='dateRange']").val() == '' || $("input[name='name']").val() == '') {
+                toastr.error('请填写 对账名称 和 日期范围');
+            } else {
+                $("#form1").attr('action', "/finance/exportYonyouSupplier");
+                $("#form1").attr('method', "POST");
+                $("#form1").submit();
+            }
+        });
+
+        // 自动补全
+        $('.settlementName').typeahead({
+            source: function (query, process) {
+                $.ajax({
+                    type: 'POST',
+                    url: "/partner/getPartnerByNameLikeLimit",
+                    data: {
+                        name: query,
+                        limit: "8"
+                    },
+                    dataType: "json",
+                    success: function (result) {
+                        return process(result.data);
+                    }, error: function (error) {
+                        console.log(error);
+                    }
+                });
+            }
+        });
+
+        // // 回车搜索
+        $(document).on("keydown", function (event) {
+            $("button[id='export']").attr('disabled', false);
+            $("button[id='exportAll']").attr('disabled', false);
+            var e = event || window.event || arguments.callee.caller.arguments[0];
+            if (e && e.keyCode == 13) {
+                $("#search").trigger("click");
+            }
+        });
+    });
+
+</script>
+
+</html>

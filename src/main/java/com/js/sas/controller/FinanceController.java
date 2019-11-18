@@ -16,9 +16,11 @@ import com.js.sas.utils.*;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BindingResult;
@@ -26,7 +28,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 import java.io.*;
@@ -692,7 +696,7 @@ public class FinanceController {
         }
 
         // 比较结束日期，如果大于今天，显示今天。
-        SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Date date = null;
         try {
             date = sdf.parse(endDate);
@@ -970,5 +974,238 @@ public class FinanceController {
 
     enum ExcelPropertyEnum {
         HANDLER, ROWLIST, SHEET, FILENAME, MERGE
+    }
+
+    /**
+     * 查询用友线上供应商应付对账单
+     *
+     * @param request
+     * @return
+     */
+    @PostMapping(value = "getSupplier")
+    public Object getSupplier(HttpServletRequest request) {
+        Map<String, String> requestMap = new HashMap<>();
+        Map<String, Object> result = new HashMap<>();
+        try {
+            String isOnline = null;
+            if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
+                requestMap.put("startDate", request.getParameter("startDate"));
+            }
+            if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
+                requestMap.put("endDate", request.getParameter("endDate"));
+            }
+            if (StringUtils.isNotBlank(request.getParameter("isOnline"))) {
+                isOnline = request.getParameter("isOnline");
+            } else {
+                return null;
+            }
+            if (StringUtils.isNotBlank(request.getParameter("name"))) {
+                requestMap.put("name", request.getParameter("name"));
+            } else {
+                return null;
+            }
+            if (StringUtils.isNotBlank(request.getParameter("limit"))) {
+                requestMap.put("limit", request.getParameter("limit"));
+            } else {
+                requestMap.put("limit", "100");
+            }
+            if (StringUtils.isNotBlank(request.getParameter("offset"))) {
+                requestMap.put("offset", request.getParameter("offset"));
+            } else {
+                requestMap.put("offset", "0");
+            }
+
+            List<Map<String, Object>> supplier = this.getSupplier(requestMap, isOnline);
+            result.put("rows", supplier);
+            result.put("total", financeService.getSupplierCount(requestMap,isOnline));
+            return result;
+        } catch (ParseException e) {
+            return new Result("400", "异常", null);
+        }
+    }
+
+    /**
+     *
+     * @param requestMap
+     * @param isOnline "线上“：”线下“
+     * @return
+     * @throws ParseException
+     */
+    private List<Map<String, Object>> getSupplier(Map<String, String> requestMap, String isOnline) throws ParseException{
+        //当前页
+        List<Map<String, Object>> page = financeService.getSupplier(requestMap,isOnline);
+        //分页前数据
+        List<Map<String, Object>> beforePage = null;
+        //前期结余
+        Map<String, Object> initial  = financeService.getOrigAmount(requestMap,isOnline);
+        //收货金额
+        BigDecimal thisReceivingAmount = null;
+        //付款金额
+        BigDecimal thisPaymentAmount = null;
+        //开票金额
+        BigDecimal thisInvoiceAmount = null;
+        //初期应付余额
+        BigDecimal initPayableAmount = new BigDecimal(0);
+        //初期开票余额
+        BigDecimal initInvoiceAmount = new BigDecimal(0);
+        if(initial!=null&&initial.size()>0){
+            initPayableAmount = new BigDecimal(initial.get("payable").toString());
+            initInvoiceAmount = new BigDecimal(initial.get("invoice").toString());
+        }
+
+        //首页数据
+        if ("0".equals(requestMap.get("offset"))) {
+            Map<String, Object> index0 = new HashMap<>();
+            index0.put("balancePayableAmount", initPayableAmount);
+            index0.put("balanceInvoiceAmount", initInvoiceAmount);
+            index0.put("Amount"," ");
+            index0.put("type", "期初余额");
+            page.add(0, index0);
+            for (int i = 1; i < page.size(); i++) {
+                thisReceivingAmount = new BigDecimal(0);
+                thisPaymentAmount = new BigDecimal(0);
+                thisInvoiceAmount = new BigDecimal(0);
+                String plus = page.get(i).get("plus").toString();
+                switch (plus){
+                    case "1" : thisReceivingAmount = new BigDecimal(page.get(i).get("Amount").toString());
+                        page.get(i).put("receivingAmount",thisReceivingAmount);
+                        break;
+                    case "-1" :thisPaymentAmount = new BigDecimal(page.get(i).get("Amount").toString());
+                        page.get(i).put("paymentAmount",thisPaymentAmount);
+                        break;
+                    case "-2" :thisInvoiceAmount = new BigDecimal(page.get(i).get("Amount").toString());
+                        page.get(i).put("invoiceAmount",thisInvoiceAmount);
+                        break;
+                    default:break;
+                }
+
+                BigDecimal lastPayableAmount = new BigDecimal(page.get(i - 1).get("balancePayableAmount").toString());
+                BigDecimal lastInvoiceAmount = new BigDecimal(page.get(i - 1).get("balanceInvoiceAmount").toString());
+                page.get(i).put("balancePayableAmount", lastPayableAmount.add(thisReceivingAmount).subtract(thisPaymentAmount).doubleValue());
+                page.get(i).put("balanceInvoiceAmount", lastInvoiceAmount.add(thisReceivingAmount).subtract(thisInvoiceAmount).doubleValue());
+            }
+        } else {
+            beforePage = financeService.getTopOrigAmount(requestMap,isOnline);
+            BigDecimal payable = new BigDecimal(beforePage.get(0).get("payable").toString());
+            BigDecimal invoice = new BigDecimal(beforePage.get(0).get("invoice").toString());
+            for (int i = 0; i < page.size(); i++) {
+                thisReceivingAmount = new BigDecimal(0);
+                thisPaymentAmount = new BigDecimal(0);
+                thisInvoiceAmount = new BigDecimal(0);
+                String plus = page.get(i).get("plus").toString();
+                BigDecimal amount = new BigDecimal(page.get(i).get("Amount").toString());
+                switch (plus){
+                    case "1" : thisReceivingAmount = amount;
+                        page.get(i).put("receivingAmount",thisReceivingAmount);
+                        break;
+                    case "-1" :thisPaymentAmount = amount;
+                        page.get(i).put("paymentAmount",thisPaymentAmount);
+                        break;
+                    case "-2" :thisInvoiceAmount = amount;
+                        page.get(i).put("invoiceAmount",thisInvoiceAmount);
+                        break;
+                    default:break;
+                }
+                if (i == 0) {
+                    page.get(i).put("balancePayableAmount", initPayableAmount.add(payable).add(thisReceivingAmount).subtract(thisPaymentAmount).doubleValue());
+                    page.get(i).put("balanceInvoiceAmount", initInvoiceAmount.add(invoice).add(thisReceivingAmount).subtract(thisInvoiceAmount).doubleValue());
+                } else {
+                    BigDecimal lastPayableAmount = new BigDecimal(page.get(i-1).get("balancePayableAmount").toString());
+                    BigDecimal lastInvoiceAmount = new BigDecimal(page.get(i-1 ).get("balanceInvoiceAmount").toString());
+                    page.get(i).put("balancePayableAmount", lastPayableAmount.add(thisReceivingAmount).subtract(thisPaymentAmount).doubleValue());
+                    page.get(i).put("balanceInvoiceAmount", lastInvoiceAmount.add(thisReceivingAmount).subtract(thisInvoiceAmount).doubleValue());
+                }
+            }
+        }
+
+        return page;
+    }
+
+    @PostMapping(value = "getCountSupplier")
+    public Object getCountSupplier(HttpServletRequest request) {
+        Map<String, String> requestMap = new HashMap<>();
+        Map<String, Object> result = new HashMap<>();
+        try {
+            if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
+                requestMap.put("startDate", request.getParameter("startDate"));
+            }
+            if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
+                requestMap.put("endDate", request.getParameter("endDate"));
+            }
+            if (StringUtils.isNotBlank(request.getParameter("name"))) {
+                requestMap.put("name", request.getParameter("name"));
+            } else {
+                return null;
+            }
+            List<Map<String, Object>> mapList = financeService.getSupplierCount(requestMap);
+            if (mapList!=null&&mapList.size()>0){
+                HashMap<String, Object> map = new HashMap<>();
+                BigDecimal balancePayableAmount = new BigDecimal(0);
+                BigDecimal balanceInvoiceAmount = new BigDecimal(0);
+                BigDecimal receivingAmount = new BigDecimal(0);
+                BigDecimal paymentAmount = new BigDecimal(0);
+                BigDecimal invoiceAmount = new BigDecimal(0);
+                for (Map<String, Object> stringObjectMap : mapList) {
+                    balancePayableAmount =balancePayableAmount.add( new BigDecimal( stringObjectMap.get("balancePayableAmount").toString()));
+                    balanceInvoiceAmount = balanceInvoiceAmount.add(new BigDecimal( stringObjectMap.get("balanceInvoiceAmount").toString()));
+                    receivingAmount = receivingAmount.add(new BigDecimal( stringObjectMap.get("receivingAmount").toString()));
+                    paymentAmount =paymentAmount.add(new BigDecimal( stringObjectMap.get("paymentAmount").toString()));
+                    invoiceAmount =invoiceAmount.add( new BigDecimal( stringObjectMap.get("invoiceAmount").toString()));
+                }
+                map.put("balancePayableAmount",balancePayableAmount);
+                map.put("balanceInvoiceAmount",balanceInvoiceAmount);
+                map.put("receivingAmount",receivingAmount);
+                map.put("paymentAmount",paymentAmount);
+                map.put("invoiceAmount",invoiceAmount);
+                map.put("type","汇总");
+                mapList.add(map);
+            }
+            result.put("rows", mapList);
+            result.put("total", 3);
+            return result;
+        } catch (ParseException e) {
+            return new Result("400", "异常", null);
+        }
+    }
+
+    @PostMapping(value = "/download/excel")
+    public void download(HttpServletResponse response, HttpServletRequest request) {
+        Map<String, String> requestMap = new HashMap<>();
+        Map<String, Object> result = new HashMap<>();
+        if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
+            requestMap.put("startDate", request.getParameter("startDate"));
+        }
+        if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
+            requestMap.put("endDate", request.getParameter("endDate"));
+        }
+        if (StringUtils.isNotBlank(request.getParameter("name"))) {
+            requestMap.put("name", request.getParameter("name"));
+        } else {
+            return ;
+        }
+        requestMap.put("limit", "9999999");
+        requestMap.put("offset", "0");
+        List<Map<String, Object>> page = financeService.getSupplier(requestMap,"线上");
+
+        List<String > columnNameList = new ArrayList<>();
+        columnNameList.add("日期");
+        columnNameList.add("合同编号");
+        columnNameList.add("单据类别");
+        columnNameList.add("收货金额");
+        columnNameList.add("付款金额");
+        columnNameList.add("应付账款");
+        columnNameList.add("开票金额");
+        columnNameList.add("发票结余");
+
+        List<Object> objects ;
+        for (Map<String, Object> objectMap : page) {
+            objects = new ArrayList<>();
+            objects.add(objectMap.get("voucherdate"));
+            objects.add(objectMap.get("code"));
+            objects.add(objectMap.get("type"));
+            objects.add("1".equals( objectMap.get("plus"))?objectMap.get("Amount"):"");
+            objects.add("-1".equals( objectMap.get("plus"))?objectMap.get("Amount"):"");
+            objects.add("0".equals( objectMap.get("plus"))?objectMap.get("Amount"):"");
+        }
     }
 }

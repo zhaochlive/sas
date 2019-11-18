@@ -187,10 +187,16 @@ public class SystemController {
         return "pages/operations/orderAreas.html";
     }
 
-    // 用友对账单
+    // 用友客户对账单
     @GetMapping("/yongyouStatement")
     public String yongyouStatement() {
         return "pages/finance/yongyouStatement.html";
+    }
+
+    // 用友供应商对账单
+    @GetMapping("/yongyouSupplier")
+    public String yongyouSupplier() {
+        return "pages/finance/yongyouSupplier.html";
     }
 
     // 紧商订单信息

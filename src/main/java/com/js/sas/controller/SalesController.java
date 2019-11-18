@@ -482,7 +482,7 @@ public class SalesController {
         columnNameList.add("十二月份");
         try {
             List<Map<String, Object>> list = salesService.getCategorySalesPage(params, year);
-            System.out.println(list.toString());
+//            System.out.println(list.toString());
             List<Object> objects ;
             for (Map<String,Object> order : list) {
                 objects = new ArrayList<>();
