@@ -46,6 +46,11 @@ public class SystemController {
         return "pages/finance/overdue.html";
     }
 
+    @GetMapping("/overdueAll")
+    public String overdueAll() {
+        return "pages/finance/overdueAll.html";
+    }
+
     @GetMapping("/salesPerformance")
     public String salesPerformance() {
         return "pages/operations/salesPerformance.html";
@@ -80,14 +85,17 @@ public class SystemController {
     public String customerCountGroup() {
         return "pages/operations/customerCountGroup.html";
     }
+
     @GetMapping("/orderByCustomerService")
     public String orderByCustomerService() {
         return "pages/operations/orderByCustomerService.html";
     }
+
     @GetMapping("/storeDetail")
     public String storeDetail() {
         return "pages/operations/storeDetail.html";
     }
+
     @GetMapping("/storeInfo")
     public String storeInfo() {
         return "pages/operations/storeInfo.html";
@@ -228,6 +236,7 @@ public class SystemController {
     public String clerkManSales() {
         return "pages/sales/clerkManSales.html";
     }
+
     // 客户结算统计
     @GetMapping("/settlementCustomer")
     public String settlementCustomer() {
@@ -239,11 +248,9 @@ public class SystemController {
         return "pages/sales/monthlySalesAmount.html";
     }
 
-
     // 商品类别销售情况
     @GetMapping("/productCategory")
     public String category(HttpServletRequest request, Model model) {
-
         model.addAttribute("category",searchOptionService.getCategoryById(0));
         model.addAttribute("Levels",searchOptionService.getLevel());
         model.addAttribute("Brands",searchOptionService.getAllBrand());
@@ -260,18 +267,22 @@ public class SystemController {
     public String orderList(){
         return "pages/systemManage/userList";
     }
+
     @GetMapping("/roleManage")
     public String roleManage(){
         return "pages/systemManage/roleList";
     }
+
     @GetMapping("/humanRole")
     public String humanRole(){
         return "pages/systemManage/humanRole";
     }
+
     @GetMapping("/menuList")
     public String menuManage(){
         return "pages/systemManage/menuList";
     }
+
     @GetMapping("/humanCenter")
     public String humanCenter(HttpServletRequest request,Model model){
         SystemUser systemUser=(SystemUser)request.getSession().getAttribute(LoginController.SYSTEM_USER);
@@ -288,7 +299,5 @@ public class SystemController {
     public String modifyPwd(){
         return "pages/systemManage/modifyPwd.html";
     }
-
-
 
 }

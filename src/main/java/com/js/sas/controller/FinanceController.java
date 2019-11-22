@@ -1,21 +1,28 @@
 package com.js.sas.controller;
 
+import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.metadata.Sheet;
 import com.alibaba.excel.support.ExcelTypeEnum;
+import com.alibaba.excel.write.handler.WriteHandler;
 import com.alibaba.fastjson.JSONArray;
 import com.js.sas.dto.OverdueDTO;
 import com.js.sas.dto.SettlementSummaryDTO;
+import com.js.sas.entity.DeptStaff;
 import com.js.sas.entity.Dictionary;
 import com.js.sas.entity.PartnerEntity;
 import com.js.sas.entity.SettlementSummaryEntity;
+import com.js.sas.repository.DeptStaffRepository;
 import com.js.sas.service.DictionaryService;
 import com.js.sas.service.FinanceService;
 import com.js.sas.service.PartnerService;
 import com.js.sas.utils.*;
+import com.js.sas.utils.upload.UploadData;
+import com.js.sas.utils.upload.UploadDataListener;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
@@ -26,6 +33,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.annotation.Resource;
@@ -61,6 +69,9 @@ public class FinanceController {
     private final PartnerService partnerService;
 
     private final DataSource dataSource;
+
+    @Autowired
+    DeptStaffRepository deptStaffRepository;
 
     public FinanceController(FinanceService financeService, DictionaryService dictionaryService, DataSource dataSource, PartnerService partnerService) {
         this.financeService = financeService;
@@ -508,7 +519,7 @@ public class FinanceController {
             e.printStackTrace();
         }
 
-        StyleExcelHandler handler = (StyleExcelHandler) enumMap.get(ExcelPropertyEnum.HANDLER);
+        WriteHandler handler = (WriteHandler) enumMap.get(ExcelPropertyEnum.HANDLER);
         // 写入数据
         ExcelWriter writer = new ExcelWriter(null, out, ExcelTypeEnum.XLSX, true, handler);
         writer.write1((List) enumMap.get(ExcelPropertyEnum.ROWLIST), (Sheet) enumMap.get(ExcelPropertyEnum.SHEET));
@@ -589,7 +600,7 @@ public class FinanceController {
                 e.printStackTrace();
             }
             // 写入数据
-            ExcelWriter writer = new ExcelWriter(null, out, ExcelTypeEnum.XLSX, true, (StyleExcelHandler) enumMap.get(ExcelPropertyEnum.HANDLER));
+            ExcelWriter writer = new ExcelWriter(null, out, ExcelTypeEnum.XLSX, true, (WriteHandler) enumMap.get(ExcelPropertyEnum.HANDLER));
             writer.write1((List) enumMap.get(ExcelPropertyEnum.ROWLIST), (Sheet) enumMap.get(ExcelPropertyEnum.SHEET));
             // 合并单元格
             writer.merge(1, 1, 0, 2);
@@ -972,6 +983,223 @@ public class FinanceController {
         return reusltEnumMap;
     }
 
+    @ApiIgnore
+    @PostMapping("/overdueAllColumns")
+    public Object overdueAllColumns() {
+        return financeService.findOverdueAllColumns();
+    }
+
+    @ApiOperation(value = "客户逾期统计", notes = "数据来源：用友；数据截止日期：昨天")
+    @PostMapping("/overdueAll")
+    public Object overdueAll(@Validated OverdueDTO partner, BindingResult bindingResult) {
+        // 参数格式校验
+        Result checkResult = CommonUtils.checkParameter(bindingResult);
+        if (checkResult != null) {
+            return checkResult;
+        }
+        // 列名
+        List<String> columnsList = financeService.findOverdueAllColumns().get("columns");
+        // 数据List
+        List<Object[]> resultDataList = financeService.findOverdueAll(partner);
+        // 数据
+        ArrayList<Map<String, Object>> rowsList = new ArrayList<>();
+
+        for (Object[] dataRow : resultDataList) {
+            Map<String, Object> dataMap = new HashMap<>();
+            ArrayList<Object> dataList = new ArrayList<>();
+            // 账期月, 目前rs第7列
+            int month = Integer.parseInt(dataRow[7].toString());
+            // 账期日，目前rs第8列
+            int day = Integer.parseInt(dataRow[8].toString());
+            // 应减去的结算周期数
+            int overdueMonths = CommonUtils.overdueMonth(month, day);
+            // 当前逾期金额
+            BigDecimal overdue = new BigDecimal(dataRow[11].toString());
+            // 设置数据行，移除前3列（关联id列、总发货、总收款）
+            for (int i = 3; i < dataRow.length; i++) {
+                if (i > 12) {  // 计算每个周期的发货和应收
+                    if (i >= dataRow.length - overdueMonths * 2) {
+                        // 有关联的账期客户逾期总金额不计算未到账期的退货金额，无关联关系的账期客户预期总金额计算所有退货金额
+                        // 分月统计全部计算所有退货金额
+                        // 发货金额，未到账期均不计算
+                        overdue = overdue.subtract(new BigDecimal(dataRow[i].toString()));
+                        // 只计算逾期账期数据，如果是未逾期账期数据，需要将逾期款减去相应的发货金额
+                        BigDecimal tempOverdue = new BigDecimal(0);
+
+                        if ("0".equals(dataRow[0])) {
+                            tempOverdue = new BigDecimal(dataList.get(8).toString()).subtract(new BigDecimal(dataRow[i++].toString()));
+                            dataList.set(8, tempOverdue);
+                        } else {
+                            // 有关联账户不计算未到期的退货
+                            tempOverdue = new BigDecimal(dataList.get(8).toString()).subtract(new BigDecimal(dataRow[i++].toString()));
+                            tempOverdue = tempOverdue.subtract(new BigDecimal(dataRow[i].toString()));
+                            dataList.set(8, tempOverdue);
+                        }
+                        dataList.add(0);
+                    } else {
+                        dataList.add(new BigDecimal(dataRow[i++].toString()));
+                    }
+                } else if (i > 9 && i <= 12) {
+                    dataList.add(new BigDecimal(dataRow[i].toString()));
+                } else {
+                    dataList.add(dataRow[i].toString());
+                }
+            }
+
+            // 根据逾期款，设置excel数据。从后向前，到期初为止。
+            for (int index = dataList.size() - 1; index > 8; index--) {
+                if (overdue.compareTo(new BigDecimal(0)) < 1) {  // 逾期金额小于等于0，所有账期逾期金额都是0
+                    dataList.set(index, 0);
+                } else {  // 逾期金额大于0，从最后一个开始分摊逾期金额
+                    if (overdue.compareTo(new BigDecimal(dataList.get(index).toString())) > -1) {
+                        overdue = overdue.subtract(new BigDecimal(dataList.get(index).toString()));
+                        dataList.set(index, dataList.get(index));
+                    } else {
+                        dataList.set(index, overdue);
+                        overdue = new BigDecimal(0);
+                    }
+                }
+            }
+
+            // 补零数量
+            // int overdueZero = CommonUtils.overdueZero(month, day);
+            // 导出的Excel显示逾期金额，不是发货金额。需要按照账期周期，向后推迟逾期金额，在期初之后补0实现。
+            for (int overdueIndex = 0; overdueIndex < month; overdueIndex++) {
+                // 插入0
+                dataList.add(9, 0);
+                // 删除最后一位
+                dataList.remove(dataList.size() - 1);
+            }
+
+            // 设置数据列
+            for (int index = 0; index < columnsList.size(); index++) {
+                dataMap.put(columnsList.get(index), dataList.get(index));
+            }
+
+            rowsList.add(dataMap);
+
+        }
+
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("rows", rowsList);
+        result.put("total", financeService.findOverdueAllCount(partner));
+        return result;
+    }
+
+    @ApiIgnore
+    @PostMapping("/exportOverdueAll")
+    public void exportOverdueAll(HttpServletResponse httpServletResponse) throws IOException {
+        // 列名
+        List<String> columnsList = financeService.findOverdueAllColumns().get("columns");
+        // 数据List
+        List<Object[]> resultDataList = financeService.findOverdueAll(null);
+        // 数据
+        ArrayList<List<Object>> rowsList = new ArrayList<>();
+
+        for (Object[] dataRow : resultDataList) {
+            Map<String, Object> dataMap = new HashMap<>();
+            ArrayList<Object> dataList = new ArrayList<>();
+            // 账期月, 目前rs第7列
+            int month = Integer.parseInt(dataRow[7].toString());
+            // 账期日，目前rs第8列
+            int day = Integer.parseInt(dataRow[8].toString());
+            // 应减去的结算周期数
+            int overdueMonths = CommonUtils.overdueMonth(month, day);
+            // 当前逾期金额
+            BigDecimal overdue = new BigDecimal(dataRow[11].toString());
+            // 设置数据行，移除前3列（关联id列、总发货、总收款）
+            for (int i = 3; i < dataRow.length; i++) {
+                if (i > 12) {  // 计算每个周期的发货和应收
+                    if (i >= dataRow.length - overdueMonths * 2) {
+                        // 有关联的账期客户逾期总金额不计算未到账期的退货金额，无关联关系的账期客户预期总金额计算所有退货金额
+                        // 分月统计全部计算所有退货金额
+                        // 发货金额，未到账期均不计算
+                        overdue = overdue.subtract(new BigDecimal(dataRow[i].toString()));
+                        // 只计算逾期账期数据，如果是未逾期账期数据，需要将逾期款减去相应的发货金额
+                        BigDecimal tempOverdue = new BigDecimal(0);
+
+                        if ("0".equals(dataRow[0])) {
+                            tempOverdue = new BigDecimal(dataList.get(8).toString()).subtract(new BigDecimal(dataRow[i++].toString()));
+                            dataList.set(8, tempOverdue);
+                        } else {
+                            // 有关联账户不计算未到期的退货
+                            tempOverdue = new BigDecimal(dataList.get(8).toString()).subtract(new BigDecimal(dataRow[i++].toString()));
+                            tempOverdue = tempOverdue.subtract(new BigDecimal(dataRow[i].toString()));
+                            dataList.set(8, tempOverdue);
+                        }
+                        dataList.add(0);
+                    } else {
+                        dataList.add(new BigDecimal(dataRow[i++].toString()));
+                    }
+                } else if (i > 9 && i <= 12) {
+                    dataList.add(new BigDecimal(dataRow[i].toString()));
+                } else {
+                    dataList.add(dataRow[i].toString());
+                }
+            }
+
+            // 根据逾期款，设置excel数据。从后向前，到期初为止。
+            for (int index = dataList.size() - 1; index > 8; index--) {
+                if (overdue.compareTo(new BigDecimal(0)) < 1) {  // 逾期金额小于等于0，所有账期逾期金额都是0
+                    dataList.set(index, 0);
+                } else {  // 逾期金额大于0，从最后一个开始分摊逾期金额
+                    if (overdue.compareTo(new BigDecimal(dataList.get(index).toString())) > -1) {
+                        overdue = overdue.subtract(new BigDecimal(dataList.get(index).toString()));
+                        dataList.set(index, dataList.get(index));
+                    } else {
+                        dataList.set(index, overdue);
+                        overdue = new BigDecimal(0);
+                    }
+                }
+            }
+
+            // 补零数量
+            // int overdueZero = CommonUtils.overdueZero(month, day);
+            // 导出的Excel显示逾期金额，不是发货金额。需要按照账期周期，向后推迟逾期金额，在期初之后补0实现。
+            for (int overdueIndex = 0; overdueIndex < month; overdueIndex++) {
+                // 插入0
+                dataList.add(9, 0);
+                // 删除最后一位
+                dataList.remove(dataList.size() - 1);
+            }
+
+            // 设置数据列
+            for (int index = 0; index < columnsList.size(); index++) {
+                dataMap.put(columnsList.get(index), dataList.get(index));
+            }
+
+            rowsList.add(dataList);
+
+        }
+
+        String fileName = "逾期统计表";
+        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
+
+        Sheet sheet1 = new Sheet(1, 0);
+        sheet1.setSheetName(fileName);
+        sheet1.setAutoWidth(Boolean.TRUE);
+
+        fileName = fileName + df.format(new Date());
+        ServletOutputStream out = httpServletResponse.getOutputStream();
+        httpServletResponse.setContentType("multipart/form-data");
+        httpServletResponse.setCharacterEncoding("utf-8");
+        httpServletResponse.setHeader("Content-Disposition", "attachment;filename*= UTF-8''" + URLEncoder.encode(fileName, "UTF-8") + ".xlsx");
+        // 设置列名
+        if (columnsList != null) {
+            List<List<String>> list = new ArrayList<>();
+            columnsList.forEach(c -> list.add(Collections.singletonList(c)));
+            sheet1.setHead(list);
+        }
+        // 写入数据
+        ExcelWriter writer = new ExcelWriter(out, ExcelTypeEnum.XLSX, true);
+        writer.write1(rowsList, sheet1);
+
+        writer.finish();
+        out.flush();
+        out.close();
+
+    }
+
     enum ExcelPropertyEnum {
         HANDLER, ROWLIST, SHEET, FILENAME, MERGE
     }
@@ -1207,5 +1435,21 @@ public class FinanceController {
             objects.add("-1".equals( objectMap.get("plus"))?objectMap.get("Amount"):"");
             objects.add("0".equals( objectMap.get("plus"))?objectMap.get("Amount"):"");
         }
+    }
+
+    /**
+     * 文件上传
+     * <p>
+     * 1. 创建excel对应的实体对象
+     * <p>
+     * 2. 由于默认异步读取excel，所以需要创建excel一行一行的回调监听器
+     * <p>
+     * 3. 直接读即可
+     */
+    @PostMapping("upload")
+    @ResponseBody
+    public String upload(MultipartFile file) throws IOException {
+        EasyExcel.read(file.getInputStream(), UploadData.class, new UploadDataListener(deptStaffRepository)).sheet().doRead();
+        return "success";
     }
 }
