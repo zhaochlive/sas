@@ -1,10 +1,10 @@
 package com.js.sas.controller;
 
-import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.event.WriteHandler;
 import com.alibaba.excel.metadata.Sheet;
 import com.alibaba.excel.support.ExcelTypeEnum;
-import com.alibaba.excel.write.handler.WriteHandler;
 import com.alibaba.fastjson.JSONArray;
 import com.js.sas.dto.OverdueDTO;
 import com.js.sas.dto.SettlementSummaryDTO;
@@ -17,17 +17,17 @@ import com.js.sas.service.DictionaryService;
 import com.js.sas.service.FinanceService;
 import com.js.sas.service.PartnerService;
 import com.js.sas.utils.*;
+import com.js.sas.utils.upload.ExcelListener;
 import com.js.sas.utils.upload.UploadData;
 import com.js.sas.utils.upload.UploadDataListener;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BindingResult;
@@ -36,7 +36,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
-import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -1449,7 +1448,24 @@ public class FinanceController {
     @PostMapping("upload")
     @ResponseBody
     public String upload(MultipartFile file) throws IOException {
-        EasyExcel.read(file.getInputStream(), UploadData.class, new UploadDataListener(deptStaffRepository)).sheet().doRead();
+        // 新版
+        // EasyExcel.read(file.getInputStream(), UploadData.class, new UploadDataListener(deptStaffRepository)).sheet().doRead();
+
+        // 旧版
+        InputStream inputStream = file.getInputStream();
+        ExcelListener listener = new ExcelListener();
+        ExcelReader excelReader = new ExcelReader(inputStream, ExcelTypeEnum.XLSX, null, listener);
+        excelReader.read(new Sheet(1, 1, UploadData.class));
+        List<Object> list = listener.getDatas();
+        List<DeptStaff> deptStaffList = new ArrayList<>();
+        deptStaffRepository.deleteAll();
+        deptStaffRepository.flush();
+        for (int i = 0; i < list.size(); i++) {
+            DeptStaff deptStaff = new DeptStaff();
+            BeanUtils.copyProperties((UploadData) list.get(i), deptStaff);
+            deptStaffList.add(deptStaff);
+        }
+        deptStaffRepository.saveAll(deptStaffList);
         return "success";
     }
 }

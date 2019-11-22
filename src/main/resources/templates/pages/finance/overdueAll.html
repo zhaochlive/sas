@@ -370,9 +370,11 @@
         }
     });
 
+    // 上传人员部门
     $("input[id='upload']").click(function () {
         var formData = new FormData();
         formData.append("file", $("#file")[0].files[0]);
+        formData.append("enctype", "multipart/form-data");
         $.ajax({
             url: '/finance/upload',
             type: 'post',
