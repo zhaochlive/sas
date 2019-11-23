@@ -44,7 +44,7 @@ public class PartnerEntity extends BaseRowModel implements Serializable {
     private String parentCode;
 
     // 往来单位名称
-    @ExcelProperty(value = "往来单位名称", index = 0)
+    @ExcelProperty(value = "往来单位名称", index = 1)
     @Column(name = "name", nullable = false)
     private String name;
 
@@ -81,7 +81,7 @@ public class PartnerEntity extends BaseRowModel implements Serializable {
     private BigDecimal amountDelivery;
 
     // 客服，导出是业务员
-    @ExcelProperty(value = "业务员", index = 0)
+    @ExcelProperty(value = "业务员", index = 2)
     @Column(name = "customer_service_staff", nullable = false)
     private String customerServiceStaff;
 
@@ -92,7 +92,7 @@ public class PartnerEntity extends BaseRowModel implements Serializable {
     @Column(name = "amount_today", nullable = false)
     private BigDecimal amountToday;
 
-    @ExcelProperty(value = "逾期金额", index = 0)
+    @ExcelProperty(value = "逾期金额", index = 3)
     @Column(name = "receivables_before_today", nullable = false)
     private BigDecimal receivablesBeforeToday;
 

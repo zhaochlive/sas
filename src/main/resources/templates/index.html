@@ -111,6 +111,31 @@
 <script src="js/inspinia.js"></script>
 
 <script>
+
+    //日期，在原有日期基础上，增加days天数，默认增加1天
+    function addDate(date, days) {
+        if(days == undefined || days == '') {
+            days = 1;
+        }
+        var date = new Date(date);
+        date.setDate(date.getDate() + days);
+        var month = date.getMonth() + 1;
+        var day = date.getDate();
+        var mm = "'" + month + "'";
+        var dd = "'" + day + "'";
+
+        //单位数前面加0
+        if(mm.length == 3) {
+            month = "0" + month;
+        }
+        if(dd.length == 3) {
+            day = "0" + day;
+        }
+
+        var time = date.getFullYear() + "-" + month + "-" + day;
+        return time;
+    }
+
     // 菜单
     $('#side-menu').load('left.html');
     $('#header').load('header.html');
@@ -133,12 +158,13 @@
     /**
      * 销售额周期统计（天、月、年）
      */
-    // 日销售额
+        // 日销售额
     var amountDay = [];
     // 日订单数
     var ordersDay = [];
     // 日期
     var lastDay = new Date().getDate() - 1;
+    var templastDay = lastDay;
     // 日销售额
     $.ajax({
         type: 'POST',
@@ -150,10 +176,19 @@
         async: false,
         success: function (result) {
             lastDay = result.data[0].days;
+            templastDay = addDate(new Date(lastDay), - 29);
             var len = 30;
             while (len--) {
-                amountDay.push((result.data[len].amount / 10000).toFixed(4));
-                ordersDay.push(result.data[len].counts);
+                if (new Date(templastDay).getDate() == new Date(result.data[len].days).getDate()) {
+                    amountDay.push((result.data[len].amount / 10000).toFixed(4));
+                    ordersDay.push(result.data[len].counts);
+                    templastDay = addDate(new Date(templastDay), 1);
+                } else if (new Date(templastDay).getDate() < new Date(result.data[len].days).getDate()){
+                    amountDay.push(0);
+                    ordersDay.push(0);
+                    len++;
+                    templastDay = addDate(new Date(templastDay), 1);
+                }
             }
         }, error: function (error) {
             console.log(error);
@@ -259,7 +294,7 @@
         dataType: "json",
         async: false,
         success: function (result) {
-            if ((new Date().getFullYear()+""+("0" + (new Date().getMonth() + 1)).slice(-2)) > result.data[0].months) {
+            if ((new Date().getFullYear() + "" + ("0" + (new Date().getMonth() + 1)).slice(-2)) > result.data[0].months) {
                 firstDay = true;
             }
 
@@ -513,15 +548,13 @@
 </script>
 
 <script>
-    var mydata = [
-    ];
+    var mydata = [];
 
     // 省份销售额
     $.ajax({
         type: 'POST',
         url: "/sales/getProvinceOfSales",
-        data: {
-        },
+        data: {},
         dataType: "json",
         async: false,
         success: function (result) {
@@ -557,7 +590,7 @@
                 {start: 100, end: 500},
                 {start: 0, end: 100},
             ],
-            color: ['#FF0000','#5475f5', '#9feaa5', '#85daef', '#74e2ca', '#e6ac53', '#9fb5ea']
+            color: ['#FF0000', '#5475f5', '#9feaa5', '#85daef', '#74e2ca', '#e6ac53', '#9fb5ea']
         },
 
         //配置属性
@@ -582,6 +615,7 @@
 
     //使用制定的配置项和数据显示图表
     myChart.setOption(optionMap);
+
 
 </script>
 </html>
