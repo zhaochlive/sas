@@ -102,6 +102,7 @@
                         <div class="ibox-content">
                             <div class="row">
                                 <div class="box-footer">
+                                    <a id="template" href="../../template/员工部门模板.xlsx" target="_blank" class="btn btn-default pull-right">模板下载</a>
                                     <input type="file" name="file" id="file" value=""
                                            class="btn btn-default pull-right">
                                     <input type="button" id="upload" value="提交" name="upload"
@@ -385,6 +386,7 @@
                 if (result == "success") {
                     toastr.success('部门更新成功');
                 } else {
+                    toastr.error('更新失败，请检查上传文件内容。第一列：姓名，第二列：部门');
                     console.log(result);
                 }
             }
