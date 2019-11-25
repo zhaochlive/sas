@@ -1229,7 +1229,7 @@ public class FinanceController {
             if (StringUtils.isNotBlank(request.getParameter("name"))) {
                 requestMap.put("name", request.getParameter("name"));
             } else {
-                return null;
+                return new Result("400", "供应商名称为空", null);
             }
             if (StringUtils.isNotBlank(request.getParameter("limit"))) {
                 requestMap.put("limit", request.getParameter("limit"));
@@ -1244,27 +1244,137 @@ public class FinanceController {
 
             List<Map<String, Object>> supplier = this.getSupplier(requestMap, isOnline);
             result.put("rows", supplier);
-            result.put("total", financeService.getSupplierCount(requestMap,isOnline));
+            result.put("total", financeService.getSupplierCount(requestMap, isOnline));
             return result;
         } catch (ParseException e) {
             return new Result("400", "异常", null);
         }
     }
+    @PostMapping(value = "/download/SupplierExcel")
+    public void downSupplierExcel(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        Map<String, String> requestMap = new HashMap<>();
+        List<List<Object>> result = new ArrayList<>();
+        if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
+            requestMap.put("startDate", request.getParameter("startDate"));
+        }
+        if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
+            requestMap.put("endDate", request.getParameter("endDate"));
+        }
+        if (StringUtils.isNotBlank(request.getParameter("name"))) {
+            requestMap.put("name", request.getParameter("name"));
+        } else {
+            return;
+        }
+        requestMap.put("limit", "10000000000");
+        requestMap.put("offset", "0");
+
+        List<Map<String, Object>> online = this.getSupplier(requestMap, "线上");
+        List<Map<String, Object>> offline = this.getSupplier(requestMap, "线下");
+//        financeService.getCountSupplier
+        List<String> columnNameList = new ArrayList<>();
+        columnNameList.add("日期");
+        columnNameList.add("合同编号");
+        columnNameList.add("单据类别");
+        columnNameList.add("收货金额");
+        columnNameList.add("付款金额");
+        columnNameList.add("应付账款");
+        columnNameList.add("开票金额");
+        columnNameList.add("发票结余/开票余额");
+        List<Object> objects;
+        objects = new ArrayList<>();
+        objects.add("线上供应商对账单:");
+        result.add(objects);
+        for (Map<String, Object> order : online) {
+            objects = new ArrayList<>();
+            objects.add(order.get("voucherdate"));
+            objects.add(order.get("code"));
+            objects.add(order.get("type"));
+            objects.add(order.get("receivingAmount"));
+            objects.add(order.get("paymentAmount"));
+            objects.add(order.get("balancePayableAmount"));
+            objects.add(order.get("invoiceAmount"));
+            objects.add(order.get("balanceInvoiceAmount"));
+            result.add(objects);
+        }
+        result.add(new ArrayList<>());
+        objects = new ArrayList<>();
+        objects.add("线下供应商对账单:");
+        result.add(objects);
+        for (Map<String, Object> order : offline) {
+            objects = new ArrayList<>();
+            objects.add(order.get("voucherdate"));
+            objects.add(order.get("code"));
+            objects.add(order.get("type"));
+            objects.add(order.get("receivingAmount"));
+            objects.add(order.get("paymentAmount"));
+            objects.add(order.get("balancePayableAmount"));
+            objects.add(order.get("invoiceAmount"));
+            objects.add(order.get("balanceInvoiceAmount"));
+            result.add(objects);
+        }
+        List<Map<String, Object>> mapList = financeService.getSupplierCount(requestMap);
+        if (mapList != null && mapList.size() > 0) {
+            HashMap<String, Object> map = new HashMap<>();
+            BigDecimal balancePayableAmount = new BigDecimal(0);
+            BigDecimal balanceInvoiceAmount = new BigDecimal(0);
+            BigDecimal receivingAmount = new BigDecimal(0);
+            BigDecimal paymentAmount = new BigDecimal(0);
+            BigDecimal invoiceAmount = new BigDecimal(0);
+            for (Map<String, Object> stringObjectMap : mapList) {
+                balancePayableAmount = balancePayableAmount.add(new BigDecimal(stringObjectMap.get("balancePayableAmount").toString()));
+                balanceInvoiceAmount = balanceInvoiceAmount.add(new BigDecimal(stringObjectMap.get("balanceInvoiceAmount").toString()));
+                receivingAmount = receivingAmount.add(new BigDecimal(stringObjectMap.get("receivingAmount").toString()));
+                paymentAmount = paymentAmount.add(new BigDecimal(stringObjectMap.get("paymentAmount").toString()));
+                invoiceAmount = invoiceAmount.add(new BigDecimal(stringObjectMap.get("invoiceAmount").toString()));
+            }
+            map.put("balancePayableAmount", balancePayableAmount);
+            map.put("balanceInvoiceAmount", balanceInvoiceAmount);
+            map.put("receivingAmount", receivingAmount);
+            map.put("paymentAmount", paymentAmount);
+            map.put("invoiceAmount", invoiceAmount);
+            map.put("type", "汇总");
+            mapList.add(map);
+        }
+        result.add(new ArrayList<>());
+        objects = new ArrayList<>();
+        objects.add("线下供应商对账单汇总:");
+        result.add(objects);
+        objects = new ArrayList<>();
+        objects.add("单据类别");
+        objects.add("收货金额");
+        objects.add("付款金额");
+        objects.add("应付账款");
+        objects.add("开票金额");
+        objects.add("发票结余/开票余额");
+        result.add(objects);
+        for (Map<String, Object> order : mapList) {
+            objects = new ArrayList<>();
+            objects.add(order.get("type"));
+            objects.add(order.get("receivingAmount"));
+            objects.add(order.get("paymentAmount"));
+            objects.add(order.get("balancePayableAmount"));
+            objects.add(order.get("invoiceAmount"));
+            objects.add(order.get("balanceInvoiceAmount"));
+            result.add(objects);
+        }
+        CommonUtils.exportByList(response, columnNameList, result, "供应商对账单");
+
+
+    }
 
     /**
-     *
      * @param requestMap
-     * @param isOnline "线上“：”线下“
+     * @param isOnline   "线上“：”线下“
      * @return
      * @throws ParseException
      */
-    private List<Map<String, Object>> getSupplier(Map<String, String> requestMap, String isOnline) throws ParseException{
+    private List<Map<String, Object>> getSupplier(Map<String, String> requestMap, String isOnline) throws ParseException {
         //当前页
-        List<Map<String, Object>> page = financeService.getSupplier(requestMap,isOnline);
+        List<Map<String, Object>> page = financeService.getSupplier(requestMap, isOnline);
         //分页前数据
         List<Map<String, Object>> beforePage = null;
         //前期结余
-        Map<String, Object> initial  = financeService.getOrigAmount(requestMap,isOnline);
+        Map<String, Object> initial = financeService.getOrigAmount(requestMap, isOnline);
         //收货金额
         BigDecimal thisReceivingAmount = null;
         //付款金额
@@ -1275,9 +1385,10 @@ public class FinanceController {
         BigDecimal initPayableAmount = new BigDecimal(0);
         //初期开票余额
         BigDecimal initInvoiceAmount = new BigDecimal(0);
-        if(initial!=null&&initial.size()>0){
-            initPayableAmount = new BigDecimal(initial.get("payable").toString());
-            initInvoiceAmount = new BigDecimal(initial.get("invoice").toString());
+        if (initial != null && initial.size() > 0) {
+            System.out.println(initial.toString());
+            initPayableAmount = new BigDecimal(initial.get("payable") == null ? "0" : initial.get("payable").toString());
+            initInvoiceAmount = new BigDecimal(initial.get("invoice") == null ? "0" : initial.get("invoice").toString());
         }
 
         //首页数据
@@ -1285,7 +1396,7 @@ public class FinanceController {
             Map<String, Object> index0 = new HashMap<>();
             index0.put("balancePayableAmount", initPayableAmount);
             index0.put("balanceInvoiceAmount", initInvoiceAmount);
-            index0.put("Amount"," ");
+            index0.put("Amount", " ");
             index0.put("type", "期初余额");
             page.add(0, index0);
             for (int i = 1; i < page.size(); i++) {
@@ -1293,17 +1404,21 @@ public class FinanceController {
                 thisPaymentAmount = new BigDecimal(0);
                 thisInvoiceAmount = new BigDecimal(0);
                 String plus = page.get(i).get("plus").toString();
-                switch (plus){
-                    case "1" : thisReceivingAmount = new BigDecimal(page.get(i).get("Amount").toString());
-                        page.get(i).put("receivingAmount",thisReceivingAmount);
+                switch (plus) {
+                    case "1":
+                        thisReceivingAmount = new BigDecimal(page.get(i).get("Amount").toString());
+                        page.get(i).put("receivingAmount", thisReceivingAmount);
                         break;
-                    case "-1" :thisPaymentAmount = new BigDecimal(page.get(i).get("Amount").toString());
-                        page.get(i).put("paymentAmount",thisPaymentAmount);
+                    case "-1":
+                        thisPaymentAmount = new BigDecimal(page.get(i).get("Amount").toString());
+                        page.get(i).put("paymentAmount", thisPaymentAmount);
                         break;
-                    case "-2" :thisInvoiceAmount = new BigDecimal(page.get(i).get("Amount").toString());
-                        page.get(i).put("invoiceAmount",thisInvoiceAmount);
+                    case "-2":
+                        thisInvoiceAmount = new BigDecimal(page.get(i).get("Amount").toString());
+                        page.get(i).put("invoiceAmount", thisInvoiceAmount);
                         break;
-                    default:break;
+                    default:
+                        break;
                 }
 
                 BigDecimal lastPayableAmount = new BigDecimal(page.get(i - 1).get("balancePayableAmount").toString());
@@ -1312,7 +1427,7 @@ public class FinanceController {
                 page.get(i).put("balanceInvoiceAmount", lastInvoiceAmount.add(thisReceivingAmount).subtract(thisInvoiceAmount).doubleValue());
             }
         } else {
-            beforePage = financeService.getTopOrigAmount(requestMap,isOnline);
+            beforePage = financeService.getTopOrigAmount(requestMap, isOnline);
             BigDecimal payable = new BigDecimal(beforePage.get(0).get("payable").toString());
             BigDecimal invoice = new BigDecimal(beforePage.get(0).get("invoice").toString());
             for (int i = 0; i < page.size(); i++) {
@@ -1321,24 +1436,28 @@ public class FinanceController {
                 thisInvoiceAmount = new BigDecimal(0);
                 String plus = page.get(i).get("plus").toString();
                 BigDecimal amount = new BigDecimal(page.get(i).get("Amount").toString());
-                switch (plus){
-                    case "1" : thisReceivingAmount = amount;
-                        page.get(i).put("receivingAmount",thisReceivingAmount);
+                switch (plus) {
+                    case "1":
+                        thisReceivingAmount = amount;
+                        page.get(i).put("receivingAmount", thisReceivingAmount);
                         break;
-                    case "-1" :thisPaymentAmount = amount;
-                        page.get(i).put("paymentAmount",thisPaymentAmount);
+                    case "-1":
+                        thisPaymentAmount = amount;
+                        page.get(i).put("paymentAmount", thisPaymentAmount);
                         break;
-                    case "-2" :thisInvoiceAmount = amount;
-                        page.get(i).put("invoiceAmount",thisInvoiceAmount);
+                    case "-2":
+                        thisInvoiceAmount = amount;
+                        page.get(i).put("invoiceAmount", thisInvoiceAmount);
                         break;
-                    default:break;
+                    default:
+                        break;
                 }
                 if (i == 0) {
                     page.get(i).put("balancePayableAmount", initPayableAmount.add(payable).add(thisReceivingAmount).subtract(thisPaymentAmount).doubleValue());
                     page.get(i).put("balanceInvoiceAmount", initInvoiceAmount.add(invoice).add(thisReceivingAmount).subtract(thisInvoiceAmount).doubleValue());
                 } else {
-                    BigDecimal lastPayableAmount = new BigDecimal(page.get(i-1).get("balancePayableAmount").toString());
-                    BigDecimal lastInvoiceAmount = new BigDecimal(page.get(i-1 ).get("balanceInvoiceAmount").toString());
+                    BigDecimal lastPayableAmount = new BigDecimal(page.get(i - 1).get("balancePayableAmount").toString());
+                    BigDecimal lastInvoiceAmount = new BigDecimal(page.get(i - 1).get("balanceInvoiceAmount").toString());
                     page.get(i).put("balancePayableAmount", lastPayableAmount.add(thisReceivingAmount).subtract(thisPaymentAmount).doubleValue());
                     page.get(i).put("balanceInvoiceAmount", lastInvoiceAmount.add(thisReceivingAmount).subtract(thisInvoiceAmount).doubleValue());
                 }
@@ -1365,7 +1484,7 @@ public class FinanceController {
                 return null;
             }
             List<Map<String, Object>> mapList = financeService.getSupplierCount(requestMap);
-            if (mapList!=null&&mapList.size()>0){
+            if (mapList != null && mapList.size() > 0) {
                 HashMap<String, Object> map = new HashMap<>();
                 BigDecimal balancePayableAmount = new BigDecimal(0);
                 BigDecimal balanceInvoiceAmount = new BigDecimal(0);
@@ -1373,18 +1492,18 @@ public class FinanceController {
                 BigDecimal paymentAmount = new BigDecimal(0);
                 BigDecimal invoiceAmount = new BigDecimal(0);
                 for (Map<String, Object> stringObjectMap : mapList) {
-                    balancePayableAmount =balancePayableAmount.add( new BigDecimal( stringObjectMap.get("balancePayableAmount").toString()));
-                    balanceInvoiceAmount = balanceInvoiceAmount.add(new BigDecimal( stringObjectMap.get("balanceInvoiceAmount").toString()));
-                    receivingAmount = receivingAmount.add(new BigDecimal( stringObjectMap.get("receivingAmount").toString()));
-                    paymentAmount =paymentAmount.add(new BigDecimal( stringObjectMap.get("paymentAmount").toString()));
-                    invoiceAmount =invoiceAmount.add( new BigDecimal( stringObjectMap.get("invoiceAmount").toString()));
+                    balancePayableAmount = balancePayableAmount.add(new BigDecimal(stringObjectMap.get("balancePayableAmount").toString()));
+                    balanceInvoiceAmount = balanceInvoiceAmount.add(new BigDecimal(stringObjectMap.get("balanceInvoiceAmount").toString()));
+                    receivingAmount = receivingAmount.add(new BigDecimal(stringObjectMap.get("receivingAmount").toString()));
+                    paymentAmount = paymentAmount.add(new BigDecimal(stringObjectMap.get("paymentAmount").toString()));
+                    invoiceAmount = invoiceAmount.add(new BigDecimal(stringObjectMap.get("invoiceAmount").toString()));
                 }
-                map.put("balancePayableAmount",balancePayableAmount);
-                map.put("balanceInvoiceAmount",balanceInvoiceAmount);
-                map.put("receivingAmount",receivingAmount);
-                map.put("paymentAmount",paymentAmount);
-                map.put("invoiceAmount",invoiceAmount);
-                map.put("type","汇总");
+                map.put("balancePayableAmount", balancePayableAmount);
+                map.put("balanceInvoiceAmount", balanceInvoiceAmount);
+                map.put("receivingAmount", receivingAmount);
+                map.put("paymentAmount", paymentAmount);
+                map.put("invoiceAmount", invoiceAmount);
+                map.put("type", "汇总");
                 mapList.add(map);
             }
             result.put("rows", mapList);
@@ -1408,13 +1527,13 @@ public class FinanceController {
         if (StringUtils.isNotBlank(request.getParameter("name"))) {
             requestMap.put("name", request.getParameter("name"));
         } else {
-            return ;
+            return;
         }
         requestMap.put("limit", "9999999");
         requestMap.put("offset", "0");
-        List<Map<String, Object>> page = financeService.getSupplier(requestMap,"线上");
+        List<Map<String, Object>> page = financeService.getSupplier(requestMap, "线上");
 
-        List<String > columnNameList = new ArrayList<>();
+        List<String> columnNameList = new ArrayList<>();
         columnNameList.add("日期");
         columnNameList.add("合同编号");
         columnNameList.add("单据类别");
@@ -1424,15 +1543,15 @@ public class FinanceController {
         columnNameList.add("开票金额");
         columnNameList.add("发票结余");
 
-        List<Object> objects ;
+        List<Object> objects;
         for (Map<String, Object> objectMap : page) {
             objects = new ArrayList<>();
             objects.add(objectMap.get("voucherdate"));
             objects.add(objectMap.get("code"));
             objects.add(objectMap.get("type"));
-            objects.add("1".equals( objectMap.get("plus"))?objectMap.get("Amount"):"");
-            objects.add("-1".equals( objectMap.get("plus"))?objectMap.get("Amount"):"");
-            objects.add("0".equals( objectMap.get("plus"))?objectMap.get("Amount"):"");
+            objects.add("1".equals(objectMap.get("plus")) ? objectMap.get("Amount") : "");
+            objects.add("-1".equals(objectMap.get("plus")) ? objectMap.get("Amount") : "");
+            objects.add("0".equals(objectMap.get("plus")) ? objectMap.get("Amount") : "");
         }
     }
 
