@@ -19,7 +19,6 @@ import com.js.sas.service.PartnerService;
 import com.js.sas.utils.*;
 import com.js.sas.utils.upload.ExcelListener;
 import com.js.sas.utils.upload.UploadData;
-import com.js.sas.utils.upload.UploadDataListener;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -302,10 +301,6 @@ public class FinanceController {
                     // 如果两个不相等，说明是新的关联code，重新赋值
                     if (!parentCode.equals(rs.getString("parent_code"))) {
                         parentCode = rs.getString("parent_code");
-                        // 计算之前应收之和
-//                        for (int index : totalIndexList) {
-//                            rowsList.get(index - 1).set(5, totalReceivables);
-//                        }
                         // 此处修改的目的是防止单元格合并之后，数值求和计算错误。
                         if (!totalIndexList.isEmpty()) {
                             rowsList.get(totalIndexList.get(0) - 1).set(5, totalReceivables);

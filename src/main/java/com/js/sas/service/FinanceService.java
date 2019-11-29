@@ -158,6 +158,10 @@ public class FinanceService {
             // 加1个月
             origin.add(Calendar.MONTH, 1);
         }
+        // 如果日期大于27日，则需要多计算下一个月
+        if (now.get(Calendar.DATE) > 27 ) {
+            columnList.add(origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月");
+        }
 
         HashMap<String, List<String>> result = new HashMap<>();
         result.put("columns", columnList);
@@ -182,6 +186,12 @@ public class FinanceService {
             sqlStringBuilder.append(", SUM(CASE months WHEN '" + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月退货' THEN vssm.amount ELSE 0 END) AS " + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月退货 ");
             // 加1个月
             origin.add(Calendar.MONTH, 1);
+        }
+
+        // 如果日期大于27日，则需要多计算下一个月
+        if (now.get(Calendar.DATE) > 27 ) {
+            sqlStringBuilder.append(", SUM(CASE months WHEN '" + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月销售' THEN vssm.amount ELSE 0 END) AS " + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月 ");
+            sqlStringBuilder.append(", SUM(CASE months WHEN '" + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月退货' THEN vssm.amount ELSE 0 END) AS " + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月退货 ");
         }
 
         sqlStringBuilder.append(" FROM YY_AA_Partner yap ");
@@ -255,6 +265,11 @@ public class FinanceService {
 
         // 当前时间
         Calendar now = Calendar.getInstance();
+        // 如果日期大于27日，则需要多计算下一个月
+        if (now.get(Calendar.DATE) > 27 ) {
+            // 加1个月
+            now.add(Calendar.MONTH, 1);
+        }
         // 减2个月
         now.add(Calendar.MONTH, -2);
         columnList.add(now.get(Calendar.YEAR) + "年" + (now.get(Calendar.MONTH) + 1) + "月");
@@ -297,6 +312,11 @@ public class FinanceService {
             sqlStringBuilder.append(", SUM(CASE months WHEN '" + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月退货' THEN vssm.amount ELSE 0 END) AS " + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月退货 ");
             // 加1个月
             origin.add(Calendar.MONTH, 1);
+        }
+        // 如果日期大于27日，则需要多计算下一个月
+        if (now.get(Calendar.DATE) > 27 ) {
+            sqlStringBuilder.append(", SUM(CASE months WHEN '" + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月销售' THEN vssm.amount ELSE 0 END) AS " + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月 ");
+            sqlStringBuilder.append(", SUM(CASE months WHEN '" + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月退货' THEN vssm.amount ELSE 0 END) AS " + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月退货 ");
         }
 
         sqlStringBuilder.append(" FROM YY_AA_Partner yap ");
