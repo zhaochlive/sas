@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="../../css/bootstrap-4.3.1.min.css">
+    <link rel="stylesheet" href="../../css/bootstrap-table.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" href="../../plugins/toastr/toastr.min.css">
+    <link rel="stylesheet" href="../../plugins/icheck/skins/all.css">
+
+    <title>统计分析系统 - 财务 - 逾期统计（销售）</title>
+</head>
+<body>
+<div id="wrapper">
+    <!-- 菜单 -->
+    <nav class="navbar-default navbar-static-side" role="navigation">
+        <div class="sidebar-collapse">
+            <ul class="nav metismenu" id="side-menu"></ul>
+        </div>
+    </nav>
+    <div id="page-wrapper" class="gray-bg dashbard-1">
+        <!-- 顶部 -->
+        <div class="row border-bottom" id="header"></div>
+        <!-- 内容 -->
+        <div class="wrapper wrapper-content">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="ibox">
+                        <div class="ibox-title">
+                            <h5>逾期统计（销售）
+                                <div id="refreshTime"></div>
+                            </h5>
+                            <div class="ibox-tools">
+                                <a class="collapse-link">
+                                    <i class="fa fa-chevron-up"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="ibox-content">
+                            <form id="form1" class="form-horizontal">
+                                <div class="box-body">
+                                    <div class="row">
+                                        <div class="form-group row col-sm-4">
+                                            <label class="col-sm-3 col-form-label">客户编码：</label>
+                                            <div class="col-sm-9">
+                                                <input id="code" name="code" type="text" placeholder="客户编码"
+                                                       class="form-control"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row col-sm-4">
+                                            <label class="col-sm-3 col-form-label">结算客户名称：</label>
+                                            <div class="col-sm-9">
+                                                <input id="name" name="name" type="text" placeholder="结算客户名称"
+                                                       class="settlementName form-control"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row col-sm-4">
+                                            <label class="col-sm-3 col-form-label"><input type="checkbox"
+                                                                                          id="onlyOverdue" value=""/>
+                                                只看逾期</label>
+                                            <div class="col-sm-9">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box-footer">
+                                    <input type="hidden" id="limit" name="limit" value=""/>
+                                    <button type="button" class="btn btn-primary pull-right" id="search"
+                                            style="margin-left:20px;">搜
+                                        索
+                                    </button>
+                                    <button type="button" class="btn btn-default pull-right" id="refresh"
+                                            style="margin-left:20px;">清 空
+                                    </button>
+                                    <button type="button" class="btn btn-default pull-right" id="exportCredit"
+                                            style="margin-left:20px;">
+                                        导出逾期Excel
+                                    </button>
+                                    <button type="button" class="btn btn-default pull-right" id="refreshData"
+                                            style="margin-left:20px; float:right;">
+                                        刷新数据
+                                    </button>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                    <div class="ibox">
+                        <div class="ibox-content">
+                            <div class="row">
+                                <div class="tableDisplay" id="dataTable" style="width:98%; margin: auto;">
+                                    <table class="table table-bordered" style="margin-bottom:0px;">
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 底部 -->
+        <div class="footer" id="footer"></div>
+    </div>
+</div>
+</body>
+
+<script src="../../js/jquery-3.3.1.min.js"></script>
+<script src="../../js/popper.min.js"></script>
+<script src="../../js/bootstrap-4.3.1.min.js"></script>
+<script src="../../plugins/slimscroll/jquery.slimscroll.min.js"></script>
+<script src="../../js/inspinia.js"></script>
+<script src="../../plugins/metisMenu/jquery.metisMenu.js"></script>
+<script src="../../js/tableExport.min.js"></script>
+<script src="../../js/bootstrap-table.min.js"></script>
+<script src="../../js/bootstrap-table-export.min.js"></script>
+<script src="../../js/bootstrap-table-zh-CN.min.js"></script>
+<script src="../../js/moment.min.js"></script>
+<script src="../../js/typeahead.min.js"></script>
+<script src="../../plugins/toastr/toastr.min.js"></script>
+<script src="../../plugins/icheck/icheck.min.js"></script>
+
+<script>
+    // 设置菜单
+    $('#side-menu').load('left.html', function () {
+        $("#home").removeClass("active");
+        $("#finance").addClass("active");
+        $("#finance ul").addClass("in");
+        $("#finance ul").attr("aria-expanded=\'true\'");
+        $("li[id='overdueSales']").addClass("active");
+    });
+    $('#header').load('header.html');
+    $('#footer').load('footer.html');
+
+    $(document).ready(function () {
+        toastr.options = {
+            closeButton: true,
+            debug: false,
+            progressBar: false,
+            positionClass: "toast-top-center",
+            onclick: null,
+            showDuration: "300",
+            hideDuration: "1000",
+            timeOut: "36000000",
+            extendedTimeOut: "1000",
+            showEasing: "swing",
+            hideEasing: "linear",
+            showMethod: "fadeIn",
+            hideMethod: "fadeOut"
+        };
+
+        $("#onlyOverdue").iCheck({
+            handler: 'checkbox',
+            checkboxClass: 'icheckbox_square-green'
+        });
+
+        $("#onlyOverdue").on('ifChecked', function (event) {
+            $("input[id='onlyOverdue']").val("true");
+
+            $("#dataTable table").bootstrapTable('refresh');
+        });
+
+        $("#onlyOverdue").on('ifUnchecked', function (event) {
+            $("input[id='onlyOverdue']").val("");
+
+            $("#dataTable table").bootstrapTable('refresh');
+        });
+
+        // 列名
+        var colums = [];
+
+        var formData = new FormData();
+        formData.append("code", $("input[name='code']").val());
+        formData.append("name", $("input[name='name']").val());
+        formData.append("onlyOverdue", $("input[id='onlyOverdue']").val());
+
+        formData.append("status", '0');
+        formData.append("settlementType", '1');
+        formData.append("code", '1');
+        formData.append("parentCode", '0');
+        formData.append("limit", '10');
+        formData.append("offset", '0');
+        formData.append("sort", 'name');
+        formData.append("sortOrder", 'asc');
+
+        $.ajax({
+            type: 'POST',
+            url: "/finance/overdueSalesColumns",
+            data: formData,
+            async: false,
+            contentType: false,
+            processData: false,
+            success: function (result) {
+                $.each(result.columns, function (index, value) {
+                    colums.push({field: value, title: value, sortable: true, align: 'center'});
+                });
+            }, error: function (error) {
+                console.log(error);
+            }
+        });
+
+        // 表单设置
+        $("#dataTable table").bootstrapTable({
+            method: "POST",
+            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+            cache: false,
+            clickToSelect: true,
+            pagination: true,
+            sortable: false,
+            pageNumber: 1,
+            pageSize: 10,
+            pageList: [10, 20, 50, 100],
+            clickToSelect: true,
+            locale: "zh-CN",
+            striped: true,
+            toggle: true,
+            silent: true,
+            sidePagination: "server",
+            sortName: "name",
+            sortOrder: "asc",
+            url: "/finance/overdueSales",
+            queryParams: function (params) {
+                if ($("input[name='code']").val() != "") {
+                    params['code'] = $("input[name='code']").val();
+                }
+                if ($("input[name='name']").val() != "") {
+                    params['name'] = $("input[name='name']").val();
+                }
+                if ($("input[id='onlyOverdue']").val() != "") {
+                    params['onlyOverdue'] = $("input[id='onlyOverdue']").val();
+                }
+                params['status'] = '0';
+                params['settlementType'] = '1';
+                params['parentCode'] = '0';
+                params['limit'] = params.limit;
+                params['offset'] = params.offset;
+                params['sort'] = params.sort;
+                params['sortOrder'] = params.order;
+
+                return params;
+            },
+            columns: colums,
+            onLoadSuccess: function (result) {
+                // 设置导出limit值
+                if (result.total) {
+                    $("#limit").val(result.total);
+                }
+            },
+            onLoadError: function (error) {
+                console.log(error);
+            },
+            onDblClickRow: function (row, $element) {
+                //
+            }
+        });
+
+        // 设置更新时间
+        $.ajax({
+            type: 'POST',
+            url: "/finance/findeOverdueRefreshTime",
+            dataType: "json",
+            success: function (result) {
+                $("#refreshTime").text("数据更新时间: " + result.data);
+            }, error: function (error) {
+                console.log(error);
+            }
+        });
+
+        // 查询按钮
+        $("button[id='search']").click(function () {
+            $("#dataTable table").bootstrapTable('refresh');
+        });
+
+        // 刷新按钮
+        $("button[id='refresh']").click(function () {
+            $("input[name='name']").val("");
+            $("input[name='dateRange']").val("");
+            $("select[name='channel']").find("option:selected").prop("selected", "");
+            $("select[name='channel']").find("option[text='全部']").prop("selected", "selected");
+
+            $("button[id='refreshData']").attr('disabled', false);
+
+            $("#dataTable table").bootstrapTable('refresh');
+        });
+
+        // 账期导出按钮
+        $("button[id='exportCredit']").click(function () {
+            $("#form1").attr('action', "/finance/exportoverdueSales");
+            $("#form1").attr('method', "POST");
+            $("#form1").submit();
+        });
+
+        var index = 1;
+
+        // 刷新数据按钮
+        $("button[id='refreshData']").click(function () {
+
+            $("button[id='refreshData']").attr('disabled', 'disabled');
+
+            $.ajax({
+                type: 'POST',
+                url: "/finance/refreshOverdueData",
+                dataType: "json",
+                success: function (result) {
+                    toastr.success('数据刷新中，请稍后查看数据。');
+
+                    var interval = setInterval(function () {
+                        $.ajax({
+                            type: 'POST',
+                            url: "/finance/findeOverdueRefreshTime",
+                            dataType: "json",
+                            success: function (result) {
+                                if ($("#refreshTime").text() != ("数据更新时间: " + result.data)) {
+                                    $("#refreshTime").text("数据更新时间: " + result.data);
+                                    clearInterval(interval);
+                                    toastr.success('数据已更新完成！');
+                                    return;
+                                }
+                            }, error: function (error) {
+                                console.log(error);
+                            }
+                        });
+                    }, 60000);
+                }, error: function (error) {
+                    console.log(error);
+                }
+            });
+        });
+
+        // 自动补全
+        $('.settlementName').typeahead({
+            source: function (query, process) {
+                $.ajax({
+                    type: 'POST',
+                    url: "/partner/getPartnerByNameLikeLimit",
+                    data: {
+                        name: query,
+                        limit: "8"
+                    },
+                    dataType: "json",
+                    success: function (result) {
+                        return process(result.data);
+                    }, error: function (error) {
+                        console.log(error);
+                    }
+                });
+            }
+        });
+    });
+
+    // 回车搜索
+    $(document).on("keydown", function (event) {
+        var e = event || window.event || arguments.callee.caller.arguments[0];
+        if (e && e.keyCode == 13) {
+            $("#search").trigger("click");
+        }
+    });
+
+</script>
+
+
+</html>

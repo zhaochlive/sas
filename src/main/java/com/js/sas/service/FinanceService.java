@@ -168,7 +168,7 @@ public class FinanceService {
 
         StringBuilder sqlStringBuilder = new StringBuilder("SELECT yap.parent_code, yap.amount_delivery, yap.amount_collected, IFNULL(ds.department,'') AS 部门, " +
                 "yap.customer_service_staff AS 业务员, yap.code AS 用友往来单位编码, yap.name AS 往来单位名称, yap.payment_month AS 账期月, " +
-                "yap.payment_date AS 账期日, IF(yap.parent_name IS NULL OR yap.parent_name = '' OR (yap.settlement_type = 1 AND yap.parent_code = 0), yap.NAME, yap.parent_name) AS 订货客户, yap.receivables AS 应收总计, " +
+                "IF(yap.parent_name IS NULL OR yap.parent_name = '' OR (yap.settlement_type = '1' AND yap.parent_code = '0'), '现款', yap.payment_date) AS 账期日, IF(yap.parent_name IS NULL OR yap.parent_name = '' OR (yap.settlement_type = '1' AND yap.parent_code = '0'), yap.NAME, yap.parent_name) AS 订货客户, yap.receivables AS 应收总计, " +
                 "yap.amount_delivery + yap.opening_balance - yap.amount_collected + yap.amount_refund AS 逾期款, yap.opening_balance AS 期初应收 ");
         // 当前时间
         Calendar now = Calendar.getInstance();
@@ -233,6 +233,123 @@ public class FinanceService {
         sqlCountStringBuilder.append(" ) t ");
         return (BigInteger) entityManager.createNativeQuery(sqlCountStringBuilder.toString()).getSingleResult();
     }
+
+    /**
+     * 逾期统计（销售版）列名
+     *
+     * @return Map<String, Object>
+     */
+    public Map<String, List<String>> findOverdueSalesColumns() {
+        List<String> columnList = new ArrayList<>();
+
+        columnList.add("部门");
+        columnList.add("业务员");
+        columnList.add("用友往来单位编码");
+        columnList.add("往来单位名称");
+        columnList.add("账期月");
+        columnList.add("账期日");
+        columnList.add("订货客户");
+        columnList.add("应收总计");
+        columnList.add("逾期款");
+        columnList.add("期初应收");
+
+        // 当前时间
+        Calendar now = Calendar.getInstance();
+        // 减2个月
+        now.add(Calendar.MONTH, -2);
+        columnList.add(now.get(Calendar.YEAR) + "年" + (now.get(Calendar.MONTH) + 1) + "月");
+        // 加1个月
+        now.add(Calendar.MONTH, 1);
+        columnList.add(now.get(Calendar.YEAR) + "年" + (now.get(Calendar.MONTH) + 1) + "月");
+        // 加1个月
+        now.add(Calendar.MONTH, 1);
+        columnList.add(now.get(Calendar.YEAR) + "年" + (now.get(Calendar.MONTH) + 1) + "月");
+
+        HashMap<String, List<String>> result = new HashMap<>();
+        result.put("columns", columnList);
+        return result;
+    }
+
+    /**
+     * 逾期统计（销售版）
+     *
+     * @param partner
+     * @return
+     */
+    public List<Object[]> findOverdueSales(OverdueDTO partner) {
+
+        StringBuilder sqlStringBuilder = new StringBuilder("SELECT yap.parent_code, yap.amount_delivery, yap.amount_collected, IFNULL(ds.department,'') AS 部门, " +
+                "IFNULL( yapp.customer_service_staff, '' ) AS 业务员, yap.code AS 用友往来单位编码, yap.name AS 往来单位名称, yap.payment_month AS 账期月, " +
+                "IF(yap.parent_name IS NULL OR yap.parent_name = '' OR (yap.settlement_type = '1' AND yap.parent_code = '0'), '现款', yap.payment_date) AS 账期日, IF(yap.parent_name IS NULL OR yap.parent_name = '' OR (yap.settlement_type = '1' AND yap.parent_code = '0'), yap.NAME, yap.parent_name) AS 订货客户, yap.receivables AS 应收总计, " +
+                "yap.amount_delivery + yap.opening_balance - yap.amount_collected + yap.amount_refund AS 逾期款, yap.opening_balance AS 期初应收 ");
+        // 当前时间
+        Calendar now = Calendar.getInstance();
+        /**
+         * 初始时间
+         * 功能只需要显示3个月的，但是涉及账期问题，如果账期一个月，需要多计算1个月，也就是4个月。目前按多算3个月，也就是6个月的数据。
+         */
+        Calendar origin = Calendar.getInstance();
+        origin.add(Calendar.MONTH, -6);
+        origin.set(origin.get(Calendar.YEAR), origin.get(Calendar.MONTH), 1, 0, 0, 0);
+
+        while (origin.before(now)) {
+            sqlStringBuilder.append(", SUM(CASE months WHEN '" + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月销售' THEN vssm.amount ELSE 0 END) AS " + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月 ");
+            sqlStringBuilder.append(", SUM(CASE months WHEN '" + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月退货' THEN vssm.amount ELSE 0 END) AS " + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月退货 ");
+            // 加1个月
+            origin.add(Calendar.MONTH, 1);
+        }
+
+        sqlStringBuilder.append(" FROM YY_AA_Partner yap ");
+        sqlStringBuilder.append(" LEFT JOIN v_settlement_sales_months vssm ON yap.id = vssm.settlementId ");
+        sqlStringBuilder.append(" LEFT JOIN dept_staff ds ON yap.customer_service_staff = ds.name ");
+        sqlStringBuilder.append(" LEFT JOIN YY_AA_Partner yapp ON yapp.`code` = yap.parent_code ");
+        sqlStringBuilder.append(" WHERE yap.status = 0 ");
+        if (partner != null && StringUtils.isNotBlank(partner.getCode())) {
+            sqlStringBuilder.append(" AND yap.code = '" + partner.getCode() + "' ");
+        }
+        if (partner != null && StringUtils.isNotBlank(partner.getName())) {
+            sqlStringBuilder.append(" AND yap.name = '" + partner.getName() + "' ");
+        }
+        if (partner != null && StringUtils.isNotBlank(partner.getOnlyOverdue()) && partner.getOnlyOverdue().equals("true")) {
+            sqlStringBuilder.append(" AND yap.receivables > 0 ");
+        }
+        sqlStringBuilder.append(" GROUP BY ");
+        sqlStringBuilder.append(" yap.id, ds.department, yapp.customer_service_staff, yap.code, yap.parent_code, yap.payment_month, yap.payment_date, yap.name, yap.amount_delivery, yap.amount_collected, yap.opening_balance ");
+
+        if (partner != null) {
+            sqlStringBuilder.append(" ORDER BY yap.parent_code DESC, yap.name ASC LIMIT " + partner.getOffset() + ", " + partner.getLimit());
+        } else {
+            sqlStringBuilder.append(" ORDER BY yap.parent_code DESC, yap.name ASC ");
+        }
+
+        Query query = entityManager.createNativeQuery(sqlStringBuilder.toString());
+
+        //query.unwrap(NativeQueryImpl.class).setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP);
+
+        return query.getResultList();
+    }
+
+    public BigInteger findOverdueSalesCount(OverdueDTO partner) {
+        StringBuilder sqlCountStringBuilder = new StringBuilder("SELECT COUNT(1) FROM ( SELECT 1 ");
+        sqlCountStringBuilder.append(" FROM YY_AA_Partner yap ");
+        sqlCountStringBuilder.append(" LEFT JOIN v_settlement_sales_months vssm ON yap.id = vssm.settlementId ");
+        sqlCountStringBuilder.append(" LEFT JOIN dept_staff ds ON yap.customer_service_staff = ds.name ");
+        sqlCountStringBuilder.append(" WHERE yap.status = 0 ");
+        if (partner != null && StringUtils.isNotBlank(partner.getCode())) {
+            sqlCountStringBuilder.append(" AND yap.code = '" + partner.getCode() + "' ");
+        }
+        if (partner != null && StringUtils.isNotBlank(partner.getName())) {
+            sqlCountStringBuilder.append(" AND yap.name = '" + partner.getName() + "' ");
+        }
+        if (partner != null && StringUtils.isNotBlank(partner.getOnlyOverdue()) && partner.getOnlyOverdue().equals("true")) {
+            sqlCountStringBuilder.append(" AND yap.receivables > 0 ");
+        }
+        sqlCountStringBuilder.append(" GROUP BY ");
+        sqlCountStringBuilder.append(" yap.id, ds.department, yap.code, yap.parent_code, yap.payment_month, yap.payment_date, yap.name, yap.amount_delivery, yap.amount_collected, yap.opening_balance ");
+        sqlCountStringBuilder.append(" ) t ");
+        return (BigInteger) entityManager.createNativeQuery(sqlCountStringBuilder.toString()).getSingleResult();
+    }
+
 
     /**
      * 查询供应商对账单

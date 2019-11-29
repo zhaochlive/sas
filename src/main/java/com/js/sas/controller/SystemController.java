@@ -51,6 +51,11 @@ public class SystemController {
         return "pages/finance/overdueAll.html";
     }
 
+    @GetMapping("/overdueSales")
+    public String overdueSales() {
+        return "pages/finance/overdueSales.html";
+    }
+
     @GetMapping("/salesPerformance")
     public String salesPerformance() {
         return "pages/operations/salesPerformance.html";

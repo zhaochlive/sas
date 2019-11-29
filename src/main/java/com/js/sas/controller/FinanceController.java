@@ -1023,8 +1023,7 @@ public class FinanceController {
                         // 发货金额，未到账期均不计算
                         overdue = overdue.subtract(new BigDecimal(dataRow[i].toString()));
                         // 只计算逾期账期数据，如果是未逾期账期数据，需要将逾期款减去相应的发货金额
-                        BigDecimal tempOverdue = new BigDecimal(0);
-
+                        BigDecimal tempOverdue;
                         if ("0".equals(dataRow[0])) {
                             tempOverdue = new BigDecimal(dataList.get(8).toString()).subtract(new BigDecimal(dataRow[i++].toString()));
                             dataList.set(8, tempOverdue);
@@ -1101,7 +1100,10 @@ public class FinanceController {
             // 账期月, 目前rs第7列
             int month = Integer.parseInt(dataRow[7].toString());
             // 账期日，目前rs第8列
-            int day = Integer.parseInt(dataRow[8].toString());
+            int day = 0;
+            if (StringUtils.isNumeric(dataRow[8].toString())) {
+                day = Integer.parseInt(dataRow[8].toString());
+            }
             // 应减去的结算周期数
             int overdueMonths = CommonUtils.overdueMonth(month, day);
             // 当前逾期金额
@@ -1197,6 +1199,115 @@ public class FinanceController {
         out.flush();
         out.close();
 
+    }
+
+    @ApiIgnore
+    @PostMapping("/overdueSalesColumns")
+    public Object overdueSalesColumns() {
+        return financeService.findOverdueSalesColumns();
+    }
+
+    @ApiOperation(value = "客户逾期统计（销售版本）", notes = "数据来源：用友；数据截止日期：昨天")
+    @PostMapping("/overdueSales")
+    public Object overdueSales(@Validated OverdueDTO partner, BindingResult bindingResult) {
+        // 参数格式校验
+        Result checkResult = CommonUtils.checkParameter(bindingResult);
+        if (checkResult != null) {
+            return checkResult;
+        }
+        // 列名
+        List<String> columnsList = financeService.findOverdueSalesColumns().get("columns");
+        // 数据List
+        List<Object[]> resultDataList = financeService.findOverdueSales(partner);
+        // 数据
+        ArrayList<Map<String, Object>> rowsList = new ArrayList<>();
+
+        for (Object[] dataRow : resultDataList) {
+            Map<String, Object> dataMap = new HashMap<>();
+            ArrayList<Object> dataList = new ArrayList<>();
+            // 账期月, 目前rs第7列
+            int month = Integer.parseInt(dataRow[7].toString());
+            // 账期日，目前rs第8列
+            int day = Integer.parseInt(dataRow[8].toString());
+            // 应减去的结算周期数
+            int overdueMonths = CommonUtils.overdueMonth(month, day);
+            // 当前逾期金额
+            BigDecimal overdue = new BigDecimal(dataRow[11].toString());
+            // 设置数据行，移除前3列（关联id列、总发货、总收款）
+            for (int i = 3; i < dataRow.length; i++) {
+                if (i > 12) {  // 计算每个周期的发货和应收
+                    if (i >= dataRow.length - overdueMonths * 2) {
+                        // 有关联的账期客户逾期总金额不计算未到账期的退货金额，无关联关系的账期客户预期总金额计算所有退货金额
+                        // 分月统计全部计算所有退货金额
+                        // 发货金额，未到账期均不计算
+                        overdue = overdue.subtract(new BigDecimal(dataRow[i].toString()));
+                        // 只计算逾期账期数据，如果是未逾期账期数据，需要将逾期款减去相应的发货金额
+                        BigDecimal tempOverdue;
+                        if ("0".equals(dataRow[0])) {
+                            tempOverdue = new BigDecimal(dataList.get(8).toString()).subtract(new BigDecimal(dataRow[i++].toString()));
+                            dataList.set(8, tempOverdue);
+                        } else {
+                            // 有关联账户不计算未到期的退货
+                            tempOverdue = new BigDecimal(dataList.get(8).toString()).subtract(new BigDecimal(dataRow[i++].toString()));
+                            tempOverdue = tempOverdue.subtract(new BigDecimal(dataRow[i].toString()));
+                            dataList.set(8, tempOverdue);
+                        }
+                        dataList.add(0);
+                    } else {
+                        dataList.add(new BigDecimal(dataRow[i++].toString()));
+                    }
+                } else if (i > 9 && i <= 12) {
+                    dataList.add(new BigDecimal(dataRow[i].toString()));
+                } else {
+                    dataList.add(dataRow[i].toString());
+                }
+            }
+
+            // 根据逾期款，设置excel数据。从后向前，不计算期初。
+            for (int index = dataList.size() - 1; index > 8; index--) {
+                if (overdue.compareTo(new BigDecimal(0)) < 1) {  // 逾期金额小于等于0，所有账期逾期金额都是0
+                    dataList.set(index, 0);
+                } else {  // 逾期金额大于0，从最后一个开始分摊逾期金额
+                    if (overdue.compareTo(new BigDecimal(dataList.get(index).toString())) > -1) {
+                        overdue = overdue.subtract(new BigDecimal(dataList.get(index).toString()));
+                        dataList.set(index, dataList.get(index));
+                    } else {
+                        dataList.set(index, overdue);
+                        overdue = new BigDecimal(0);
+                    }
+                }
+            }
+
+            // 补零数量
+            // int overdueZero = CommonUtils.overdueZero(month, day);
+            // 导出的Excel显示逾期金额，不是发货金额。需要按照账期周期，向后推迟逾期金额，在期初之后补0实现。
+            for (int overdueIndex = 0; overdueIndex < month; overdueIndex++) {
+                // 插入0
+                dataList.add(10, 0);
+                // 删除最后一位
+                dataList.remove(dataList.size() - 1);
+            }
+
+            // 设置数据列
+            // 前面固定部分和后面月份动态部门分别处理
+            for (int index = 0; index < 10; index++) {
+                dataMap.put(columnsList.get(index), dataList.get(index));
+            }
+            for (int index = 1; index <= columnsList.size() - 9; index++) {
+                dataMap.put(columnsList.get(columnsList.size() - index), dataList.get(dataList.size() - index));
+            }
+
+            // 期初等于剩余的逾期款。
+            dataList.set(9, overdue);
+
+            rowsList.add(dataMap);
+
+        }
+
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("rows", rowsList);
+        result.put("total", financeService.findOverdueAllCount(partner));
+        return result;
     }
 
     enum ExcelPropertyEnum {
