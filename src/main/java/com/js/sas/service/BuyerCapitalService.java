@@ -528,8 +528,8 @@ public class BuyerCapitalService {
         builder.append(" WHEN bc.capitaltype = 1 "+start+" AND bc.rechargestate = 1  THEN if (bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital )");
         builder.append(" WHEN bc.capitaltype = 2 "+start+" AND bc.paytype IN ( 0, 1, 2 ) THEN if (bc.scattered = 1 ,-(bc.capital+bc.scatteredcapital),-bc.capital )");
         builder.append(" WHEN bc.capitaltype = 3 "+start+" AND bc.rechargestate = 1  THEN if (bc.scattered = 1 ,-(bc.capital+bc.scatteredcapital),-bc.capital )END) Receiptamount,");
-        builder.append(" SUM(CASE WHEN bc.capitaltype = 10 THEN if (bc.scattered = 1 , (bc.capital+bc.scatteredcapital) , bc.capital )");
-        builder.append(" WHEN bc.capitaltype = 6 THEN if (bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital ) END) OtherAmount");
+        builder.append(" SUM(CASE WHEN bc.capitaltype = 10 "+start+" THEN if (bc.scattered = 1 , (bc.capital+bc.scatteredcapital) , bc.capital )");
+        builder.append(" WHEN bc.capitaltype = 6 "+start+" THEN if (bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital ) END) OtherAmount");
         builder.append(" FROM (SELECT ca.capitaltype,ca.capital,ca.tradetime,ca.paytype,ca.orderno,ca.id,ca.rechargestate,ca.tradeno,ca.scattered,ca.scatteredcapital");
         builder.append(" FROM buyer_capital ca WHERE 1 = 1 AND ca.capitaltype in (0,1,2,3,6,10) ");
         if(params!=null){
@@ -572,7 +572,7 @@ public class BuyerCapitalService {
         BigDecimal OtherAmount = new BigDecimal(0);
         BigDecimal Invoice = new BigDecimal(0);
         BigDecimal Receivable = new BigDecimal(0);
-
+        System.out.println(settlementSql);
         Map<String, Object> settlement = jdbcTemplate.queryForMap(settlementSql);//Deliveryamount Receiptamount OtherAmount
         if (settlement.containsKey("Deliveryamount")){
             Deliveryamount = CommonUtils.getBigDecimal(settlement.get("Deliveryamount") == null ? 0.00 : settlement.get("Deliveryamount"));
