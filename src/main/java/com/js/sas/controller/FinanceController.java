@@ -1,9 +1,11 @@
 package com.js.sas.controller;
 
+import com.alibaba.excel.EasyExcelFactory;
 import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.event.WriteHandler;
 import com.alibaba.excel.metadata.Sheet;
+import com.alibaba.excel.metadata.Table;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.alibaba.fastjson.JSONArray;
 import com.js.sas.dto.OverdueDTO;
@@ -222,7 +224,7 @@ public class FinanceController {
             // 有关联账号标记
             boolean hasParentCode;
             // 关联账户总计应收
-            BigDecimal totalReceivables = new BigDecimal(0);
+            BigDecimal totalReceivables = BigDecimal.ZERO;
 
             while (rs.next()) {
                 ArrayList<Object> dataList = new ArrayList<>();
@@ -244,7 +246,7 @@ public class FinanceController {
                             // 发货金额，未到账期均不计算
                             overdue = overdue.subtract(rs.getBigDecimal(i));
                             // 只计算逾期账期数据，如果是未逾期账期数据，需要将逾期款减去相应的发货金额
-                            BigDecimal tempOverdue = new BigDecimal(0);
+                            BigDecimal tempOverdue = BigDecimal.ZERO;
 
                             if ("0".equals(rs.getString("parent_code"))) {
                                 tempOverdue = new BigDecimal(dataList.get(6).toString()).subtract(rs.getBigDecimal(i++));
@@ -268,7 +270,7 @@ public class FinanceController {
 
                 // 根据逾期款，设置excel数据。从后向前，到期初为止。
                 for (int index = dataList.size() - 1; index > 6; index--) {
-                    if (overdue.compareTo(new BigDecimal(0)) < 1) {  // 逾期金额小于等于0，所有账期逾期金额都是0
+                    if (overdue.compareTo(BigDecimal.ZERO) < 1) {  // 逾期金额小于等于0，所有账期逾期金额都是0
                         dataList.set(index, 0);
                     } else {  // 逾期金额大于0，从最后一个开始分摊逾期金额
                         if (overdue.compareTo(new BigDecimal(dataList.get(index).toString())) > -1) {
@@ -276,7 +278,7 @@ public class FinanceController {
                             dataList.set(index, dataList.get(index));
                         } else {
                             dataList.set(index, overdue);
-                            overdue = new BigDecimal(0);
+                            overdue = BigDecimal.ZERO;
                         }
                     }
                 }
@@ -306,7 +308,7 @@ public class FinanceController {
                             rowsList.get(totalIndexList.get(0) - 1).set(5, totalReceivables);
                         }
                         // 置零
-                        totalReceivables = new BigDecimal(0);
+                        totalReceivables = BigDecimal.ZERO;
                         // 添加至集合
                         if (!totalIndexList.isEmpty()) {
                             totalList.add(totalIndexList);
@@ -331,7 +333,7 @@ public class FinanceController {
                     // 置零
                     hasParentCode = false;
                     parentCode = "";
-                    totalReceivables = new BigDecimal(0);
+                    totalReceivables = BigDecimal.ZERO;
                 }
 
                 // 设置应收金额合计
@@ -744,11 +746,11 @@ public class FinanceController {
         List<Integer> mergeRowNumList = new ArrayList<>();
         // 处理数据
         if (dataJSONArray.size() > 0) {
-            BigDecimal deliverTotal = new BigDecimal(0);
-            BigDecimal collectTotal = new BigDecimal(0);
-            BigDecimal receivableTotal = new BigDecimal(0);
-            BigDecimal invoiceTotal = new BigDecimal(0);
-            BigDecimal invoiceBalanceTotal = new BigDecimal(0);
+            BigDecimal deliverTotal = BigDecimal.ZERO;
+            BigDecimal collectTotal = BigDecimal.ZERO;
+            BigDecimal receivableTotal = BigDecimal.ZERO;
+            BigDecimal invoiceTotal = BigDecimal.ZERO;
+            BigDecimal invoiceBalanceTotal = BigDecimal.ZERO;
             // 第一行，结算客户信息
             dataList.add(dataJSONArray.getJSONObject(0).getString("settleCustomer"));
             dataList.add("");
@@ -820,10 +822,10 @@ public class FinanceController {
                     dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getString("bookedDate"));
                     dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getString("summary"));
                     dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getString("category"));
-                    dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("deliverAmount").compareTo(new BigDecimal(0)) == 0 ? "" : dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("deliverAmount"));
-                    dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("collectAmount").compareTo(new BigDecimal(0)) == 0 ? "" : dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("collectAmount"));
-                    dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("receivableAmount").compareTo(new BigDecimal(0)) == 0 ? "" : dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("receivableAmount"));
-                    dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("invoiceAmount").compareTo(new BigDecimal(0)) == 0 ? "" : dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("invoiceAmount"));
+                    dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("deliverAmount").compareTo(BigDecimal.ZERO) == 0 ? "" : dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("deliverAmount"));
+                    dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("collectAmount").compareTo(BigDecimal.ZERO) == 0 ? "" : dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("collectAmount"));
+                    dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("receivableAmount").compareTo(BigDecimal.ZERO) == 0 ? "" : dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("receivableAmount"));
+                    dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("invoiceAmount").compareTo(BigDecimal.ZERO) == 0 ? "" : dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("invoiceAmount"));
                     dataList.add(dataJSONArray.getJSONObject(0).getJSONArray("reportContent").getJSONObject(index).getJSONArray("arrDetail").getJSONObject(innerIndex).getBigDecimal("invoiceBalanceAmount"));
                     rowList.add(dataList);
                     borderList.add(rowList.size());
@@ -1041,7 +1043,7 @@ public class FinanceController {
 
             // 根据逾期款，设置excel数据。从后向前，到期初为止。
             for (int index = dataList.size() - 1; index > 8; index--) {
-                if (overdue.compareTo(new BigDecimal(0)) < 1) {  // 逾期金额小于等于0，所有账期逾期金额都是0
+                if (overdue.compareTo(BigDecimal.ZERO) < 1) {  // 逾期金额小于等于0，所有账期逾期金额都是0
                     dataList.set(index, 0);
                 } else {  // 逾期金额大于0，从最后一个开始分摊逾期金额
                     if (overdue.compareTo(new BigDecimal(dataList.get(index).toString())) > -1) {
@@ -1049,7 +1051,7 @@ public class FinanceController {
                         dataList.set(index, dataList.get(index));
                     } else {
                         dataList.set(index, overdue);
-                        overdue = new BigDecimal(0);
+                        overdue = BigDecimal.ZERO;
                     }
                 }
             }
@@ -1112,7 +1114,7 @@ public class FinanceController {
                         // 发货金额，未到账期均不计算
                         overdue = overdue.subtract(new BigDecimal(dataRow[i].toString()));
                         // 只计算逾期账期数据，如果是未逾期账期数据，需要将逾期款减去相应的发货金额
-                        BigDecimal tempOverdue = new BigDecimal(0);
+                        BigDecimal tempOverdue = BigDecimal.ZERO;
 
                         if ("0".equals(dataRow[0])) {
                             tempOverdue = new BigDecimal(dataList.get(8).toString()).subtract(new BigDecimal(dataRow[i++].toString()));
@@ -1136,7 +1138,7 @@ public class FinanceController {
 
             // 根据逾期款，设置excel数据。从后向前，到期初为止。
             for (int index = dataList.size() - 1; index > 8; index--) {
-                if (overdue.compareTo(new BigDecimal(0)) < 1) {  // 逾期金额小于等于0，所有账期逾期金额都是0
+                if (overdue.compareTo(BigDecimal.ZERO) < 1) {  // 逾期金额小于等于0，所有账期逾期金额都是0
                     dataList.set(index, 0);
                 } else {  // 逾期金额大于0，从最后一个开始分摊逾期金额
                     if (overdue.compareTo(new BigDecimal(dataList.get(index).toString())) > -1) {
@@ -1144,7 +1146,7 @@ public class FinanceController {
                         dataList.set(index, dataList.get(index));
                     } else {
                         dataList.set(index, overdue);
-                        overdue = new BigDecimal(0);
+                        overdue = BigDecimal.ZERO;
                     }
                 }
             }
@@ -1223,7 +1225,10 @@ public class FinanceController {
             // 账期月, 目前rs第7列
             int month = Integer.parseInt(dataRow[7].toString());
             // 账期日，目前rs第8列
-            int day = Integer.parseInt(dataRow[8].toString());
+            int day = 0;
+            if (StringUtils.isNumeric(dataRow[8].toString())) {
+                day = Integer.parseInt(dataRow[8].toString());
+            }
             // 应减去的结算周期数
             int overdueMonths = CommonUtils.overdueMonth(month, day);
             // 当前逾期金额
@@ -1259,8 +1264,12 @@ public class FinanceController {
             }
 
             // 根据逾期款，设置excel数据。从后向前，不计算期初。
-            for (int index = dataList.size() - 1; index > 8; index--) {
-                if (overdue.compareTo(new BigDecimal(0)) < 1) {  // 逾期金额小于等于0，所有账期逾期金额都是0
+            /**
+             * 功能只需要显示3个月的，但是涉及账期问题，如果账期一个月，需要多计算1个月，也就是4个月。目前按多算3个月，也就是6个月的数据。
+             * 因为是6个月的数据，所以逾期的分摊只需要算三个月，从第11列开始。
+             */
+            for (int index = dataList.size() - 1; index > 12; index--) {
+                if (overdue.compareTo(BigDecimal.ZERO) < 1) {  // 逾期金额小于等于0，所有账期逾期金额都是0
                     dataList.set(index, 0);
                 } else {  // 逾期金额大于0，从最后一个开始分摊逾期金额
                     if (overdue.compareTo(new BigDecimal(dataList.get(index).toString())) > -1) {
@@ -1268,13 +1277,11 @@ public class FinanceController {
                         dataList.set(index, dataList.get(index));
                     } else {
                         dataList.set(index, overdue);
-                        overdue = new BigDecimal(0);
+                        overdue = BigDecimal.ZERO;
                     }
                 }
             }
 
-            // 补零数量
-            // int overdueZero = CommonUtils.overdueZero(month, day);
             // 导出的Excel显示逾期金额，不是发货金额。需要按照账期周期，向后推迟逾期金额，在期初之后补0实现。
             for (int overdueIndex = 0; overdueIndex < month; overdueIndex++) {
                 // 插入0
@@ -1283,17 +1290,44 @@ public class FinanceController {
                 dataList.remove(dataList.size() - 1);
             }
 
+            // 期初等于减去显示的月份的逾期款，小于0期初显示0
+            if (overdue.compareTo(BigDecimal.ZERO) < 0) {
+                dataList.set(9, 0);
+            } else {
+                dataList.set(9, overdue);
+            }
+
             // 设置数据列
             // 前面固定部分和后面月份动态部门分别处理
             for (int index = 0; index < 10; index++) {
                 dataMap.put(columnsList.get(index), dataList.get(index));
             }
-            for (int index = 1; index <= columnsList.size() - 9; index++) {
-                dataMap.put(columnsList.get(columnsList.size() - index), dataList.get(dataList.size() - index));
+            // 动态部分
+            for (int index = 1; index <= columnsList.size() - 10; index++) {
+                if (index > 3) {
+                    dataMap.put(columnsList.get(columnsList.size() - index), dataList.get(dataList.size() - index));
+                } else {
+                    // 按账期日，每5天划分一列，向后合并。例如：账期日7显示在10日列。
+                    // 为了对应bootstrap的列名，看不懂可以重新写，符合规则就行。
+                    int date = 0;
+                    if (StringUtils.isNumeric(dataMap.get("账期日").toString())) {
+                        date = Integer.parseInt(dataMap.get("账期日").toString());
+                    }
+                    if (date <= 5) {
+                        dataMap.put((4 - index) + "05", dataList.get(dataList.size() - index));
+                    } else if (date <= 10) {
+                        dataMap.put((4 - index) + "10", dataList.get(dataList.size() - index));
+                    } else if (date <= 15) {
+                        dataMap.put((4 - index) + "15", dataList.get(dataList.size() - index));
+                    } else if (date <= 20) {
+                        dataMap.put((4 - index) + "20", dataList.get(dataList.size() - index));
+                    } else if (date <= 25) {
+                        dataMap.put((4 - index) + "25", dataList.get(dataList.size() - index));
+                    } else {
+                        dataMap.put((4 - index) + "30", dataList.get(dataList.size() - index));
+                    }
+                }
             }
-
-            // 期初等于剩余的逾期款。
-            dataList.set(9, overdue);
 
             rowsList.add(dataMap);
 
@@ -1303,6 +1337,234 @@ public class FinanceController {
         result.put("rows", rowsList);
         result.put("total", financeService.findOverdueAllCount(partner));
         return result;
+    }
+
+    @ApiIgnore
+    @PostMapping("/exportOverdueSales")
+    public void exportOverdueSales(HttpServletResponse httpServletResponse) throws IOException {
+        String fileName = "逾期统计表";
+        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
+        List<String> columnsList = financeService.findOverdueSalesColumns().get("columns");
+        // 表单
+        Sheet sheet = new Sheet(1, 0);
+        sheet.setSheetName(fileName);
+        // 创建一个表格
+        Table table = new Table(1);
+        // 表头List
+        List<List<String>> headList = new ArrayList<List<String>>();
+        // 拼接表头
+        for (int index = 0; index < columnsList.size(); index++) {
+            if (index < 10) {
+                List<String> headTitle = new ArrayList<>();
+                headTitle.add(columnsList.get(index));
+                headTitle.add(columnsList.get(index));
+                headList.add(headTitle);
+            } else {
+                List<String> headTitle = new ArrayList<>();
+                headTitle.add(columnsList.get(index));
+                headTitle.add("05");
+                headList.add(headTitle);
+                headTitle = new ArrayList<>();
+                headTitle.add(columnsList.get(index));
+                headTitle.add("10");
+                headList.add(headTitle);
+                headTitle = new ArrayList<>();
+                headTitle.add(columnsList.get(index));
+                headTitle.add("15");
+                headList.add(headTitle);
+                headTitle = new ArrayList<>();
+                headTitle.add(columnsList.get(index));
+                headTitle.add("20");
+                headList.add(headTitle);
+                headTitle = new ArrayList<>();
+                headTitle.add(columnsList.get(index));
+                headTitle.add("25");
+                headList.add(headTitle);
+                headTitle = new ArrayList<>();
+                headTitle.add(columnsList.get(index));
+                headTitle.add("30");
+                headList.add(headTitle);
+            }
+        }
+
+        table.setHead(headList);
+
+        Sheet sheet1 = new Sheet(1, 0);
+        sheet1.setSheetName(fileName);
+        sheet1.setAutoWidth(Boolean.TRUE);
+
+        fileName = fileName + df.format(new Date());
+        ServletOutputStream out = httpServletResponse.getOutputStream();
+        httpServletResponse.setContentType("multipart/form-data");
+        httpServletResponse.setCharacterEncoding("utf-8");
+        httpServletResponse.setHeader("Content-Disposition", "attachment;filename*= UTF-8''" + URLEncoder.encode(fileName, "UTF-8") + ".xlsx");
+        // 设置列名
+        if (columnsList != null) {
+            List<List<String>> list = new ArrayList<>();
+            columnsList.forEach(c -> list.add(Collections.singletonList(c)));
+            sheet1.setHead(list);
+        }
+
+        /**
+         * 以下处理数据
+         */
+        // 数据List
+        List<Object[]> resultDataList = financeService.findOverdueSales(null);
+        // 数据
+        List<List<Object>> rowsList = new ArrayList<>();
+
+        for (Object[] dataRow : resultDataList) {
+            ArrayList<Object> dataList = new ArrayList<>();
+            // 账期月, 目前rs第7列
+            int month = Integer.parseInt(dataRow[7].toString());
+            // 账期日，目前rs第8列
+            int day = 0;
+            if (StringUtils.isNumeric(dataRow[8].toString())) {
+                day = Integer.parseInt(dataRow[8].toString());
+            }
+            // 应减去的结算周期数
+            int overdueMonths = CommonUtils.overdueMonth(month, day);
+            // 当前逾期金额
+            BigDecimal overdue = new BigDecimal(dataRow[11].toString());
+            // 设置数据行，移除前3列（关联id列、总发货、总收款）
+            for (int i = 3; i < dataRow.length; i++) {
+                if (i > 12) {  // 计算每个周期的发货和应收
+                    if (i >= dataRow.length - overdueMonths * 2) {
+                        // 有关联的账期客户逾期总金额不计算未到账期的退货金额，无关联关系的账期客户预期总金额计算所有退货金额
+                        // 分月统计全部计算所有退货金额
+                        // 发货金额，未到账期均不计算
+                        overdue = overdue.subtract(new BigDecimal(dataRow[i].toString()));
+                        // 只计算逾期账期数据，如果是未逾期账期数据，需要将逾期款减去相应的发货金额
+                        BigDecimal tempOverdue;
+                        if ("0".equals(dataRow[0])) {
+                            tempOverdue = new BigDecimal(dataList.get(8).toString()).subtract(new BigDecimal(dataRow[i++].toString()));
+                            dataList.set(8, tempOverdue);
+                        } else {
+                            // 有关联账户不计算未到期的退货
+                            tempOverdue = new BigDecimal(dataList.get(8).toString()).subtract(new BigDecimal(dataRow[i++].toString()));
+                            tempOverdue = tempOverdue.subtract(new BigDecimal(dataRow[i].toString()));
+                            dataList.set(8, tempOverdue);
+                        }
+                        dataList.add(0);
+                    } else {
+                        dataList.add(new BigDecimal(dataRow[i++].toString()));
+                    }
+                } else if (i > 9 && i <= 12) {
+                    dataList.add(new BigDecimal(dataRow[i].toString()));
+                } else {
+                    dataList.add(dataRow[i].toString());
+                }
+            }
+
+            // 根据逾期款，设置excel数据。从后向前，不计算期初。
+            /**
+             * 功能只需要显示3个月的，但是涉及账期问题，如果账期一个月，需要多计算1个月，也就是4个月。目前按多算3个月，也就是6个月的数据。
+             * 因为是6个月的数据，所以逾期的分摊只需要算三个月，从第11列开始。
+             */
+            for (int index = dataList.size() - 1; index > 12; index--) {
+                if (overdue.compareTo(BigDecimal.ZERO) < 1) {  // 逾期金额小于等于0，所有账期逾期金额都是0
+                    dataList.set(index, 0);
+                } else {  // 逾期金额大于0，从最后一个开始分摊逾期金额
+                    if (overdue.compareTo(new BigDecimal(dataList.get(index).toString())) > -1) {
+                        overdue = overdue.subtract(new BigDecimal(dataList.get(index).toString()));
+                        dataList.set(index, dataList.get(index));
+                    } else {
+                        dataList.set(index, overdue);
+                        overdue = BigDecimal.ZERO;
+                    }
+                }
+            }
+
+            // 导出的Excel显示逾期金额，不是发货金额。需要按照账期周期，向后推迟逾期金额，在期初之后补0实现。
+            for (int overdueIndex = 0; overdueIndex < month; overdueIndex++) {
+                // 插入0
+                dataList.add(10, 0);
+                // 删除最后一位
+                dataList.remove(dataList.size() - 1);
+            }
+
+            // 期初等于减去显示的月份的逾期款，小于0期初显示0
+            if (overdue.compareTo(BigDecimal.ZERO) < 0) {
+                dataList.set(9, 0);
+            } else {
+                dataList.set(9, overdue);
+            }
+
+            // 设置数据列
+            List<Object> resultList = new ArrayList<>();
+            // 前面固定部分和后面月份动态部门分别处理
+            for (int index = 0; index < 10; index++) {
+                resultList.add(dataList.get(index));
+            }
+            // 动态部分
+            for (int index = 3; index > 0; index--) {
+//                if (index > 3) {
+//                    resultList.add(dataList.get(dataList.size() - index));
+//                } else {
+                    // 按账期日补-
+                    int date = 0;
+                    if (StringUtils.isNumeric(dataList.get(5).toString())) {
+                        date = Integer.parseInt(dataList.get(5).toString());
+                    }
+                    List<Object> zeroList = new ArrayList<>();
+                    if (date <= 5) {
+                        zeroList.add(dataList.get(dataList.size() - index));
+                        zeroList.add("-");
+                        zeroList.add("-");
+                        zeroList.add("-");
+                        zeroList.add("-");
+                        zeroList.add("-");
+                    } else if (date <= 10) {
+                        zeroList.add("-");
+                        zeroList.add(dataList.get(dataList.size() - index));
+                        zeroList.add("-");
+                        zeroList.add("-");
+                        zeroList.add("-");
+                        zeroList.add("-");
+                    } else if (date <= 15) {
+                        zeroList.add("-");
+                        zeroList.add("-");
+                        zeroList.add(dataList.get(dataList.size() - index));
+                        zeroList.add("-");
+                        zeroList.add("-");
+                        zeroList.add("-");
+                    } else if (date <= 20) {
+                        zeroList.add("-");
+                        zeroList.add("-");
+                        zeroList.add("-");
+                        zeroList.add(dataList.get(dataList.size() - index));
+                        zeroList.add("-");
+                        zeroList.add("-");
+                    } else if (date <= 25) {
+                        zeroList.add("-");
+                        zeroList.add("-");
+                        zeroList.add("-");
+                        zeroList.add("-");
+                        zeroList.add(dataList.get(dataList.size() - index));
+                        zeroList.add("-");
+                    } else {
+                        zeroList.add("-");
+                        zeroList.add("-");
+                        zeroList.add("-");
+                        zeroList.add("-");
+                        zeroList.add("-");
+                        zeroList.add(dataList.get(dataList.size() - index));
+                    }
+                    resultList.addAll(zeroList);
+//                }
+            }
+
+            rowsList.add(resultList);
+
+        }
+
+        // 写入数据
+        ExcelWriter writer = new ExcelWriter(out, ExcelTypeEnum.XLSX, true);
+        writer.write1(rowsList, sheet, table);
+
+        writer.finish();
+        out.flush();
+        out.close();
     }
 
     enum ExcelPropertyEnum {
@@ -1356,6 +1618,7 @@ public class FinanceController {
             return new Result("400", "异常", null);
         }
     }
+
     @PostMapping(value = "/download/SupplierExcel")
     public void downSupplierExcel(HttpServletRequest request, HttpServletResponse response) throws Exception {
         Map<String, String> requestMap = new HashMap<>();
@@ -1421,11 +1684,11 @@ public class FinanceController {
         List<Map<String, Object>> mapList = financeService.getSupplierCount(requestMap);
         if (mapList != null && mapList.size() > 0) {
             HashMap<String, Object> map = new HashMap<>();
-            BigDecimal balancePayableAmount = new BigDecimal(0);
-            BigDecimal balanceInvoiceAmount = new BigDecimal(0);
-            BigDecimal receivingAmount = new BigDecimal(0);
-            BigDecimal paymentAmount = new BigDecimal(0);
-            BigDecimal invoiceAmount = new BigDecimal(0);
+            BigDecimal balancePayableAmount = BigDecimal.ZERO;
+            BigDecimal balanceInvoiceAmount = BigDecimal.ZERO;
+            BigDecimal receivingAmount = BigDecimal.ZERO;
+            BigDecimal paymentAmount = BigDecimal.ZERO;
+            BigDecimal invoiceAmount = BigDecimal.ZERO;
             for (Map<String, Object> stringObjectMap : mapList) {
                 balancePayableAmount = balancePayableAmount.add(new BigDecimal(stringObjectMap.get("balancePayableAmount").toString()));
                 balanceInvoiceAmount = balanceInvoiceAmount.add(new BigDecimal(stringObjectMap.get("balanceInvoiceAmount").toString()));
@@ -1488,9 +1751,9 @@ public class FinanceController {
         //开票金额
         BigDecimal thisInvoiceAmount = null;
         //初期应付余额
-        BigDecimal initPayableAmount = new BigDecimal(0);
+        BigDecimal initPayableAmount = BigDecimal.ZERO;
         //初期开票余额
-        BigDecimal initInvoiceAmount = new BigDecimal(0);
+        BigDecimal initInvoiceAmount = BigDecimal.ZERO;
         if (initial != null && initial.size() > 0) {
             System.out.println(initial.toString());
             initPayableAmount = new BigDecimal(initial.get("payable") == null ? "0" : initial.get("payable").toString());
@@ -1506,9 +1769,9 @@ public class FinanceController {
             index0.put("type", "期初余额");
             page.add(0, index0);
             for (int i = 1; i < page.size(); i++) {
-                thisReceivingAmount = new BigDecimal(0);
-                thisPaymentAmount = new BigDecimal(0);
-                thisInvoiceAmount = new BigDecimal(0);
+                thisReceivingAmount = BigDecimal.ZERO;
+                thisPaymentAmount = BigDecimal.ZERO;
+                thisInvoiceAmount = BigDecimal.ZERO;
                 String plus = page.get(i).get("plus").toString();
                 switch (plus) {
                     case "1":
@@ -1537,9 +1800,9 @@ public class FinanceController {
             BigDecimal payable = new BigDecimal(beforePage.get(0).get("payable").toString());
             BigDecimal invoice = new BigDecimal(beforePage.get(0).get("invoice").toString());
             for (int i = 0; i < page.size(); i++) {
-                thisReceivingAmount = new BigDecimal(0);
-                thisPaymentAmount = new BigDecimal(0);
-                thisInvoiceAmount = new BigDecimal(0);
+                thisReceivingAmount = BigDecimal.ZERO;
+                thisPaymentAmount = BigDecimal.ZERO;
+                thisInvoiceAmount = BigDecimal.ZERO;
                 String plus = page.get(i).get("plus").toString();
                 BigDecimal amount = new BigDecimal(page.get(i).get("Amount").toString());
                 switch (plus) {
@@ -1592,11 +1855,11 @@ public class FinanceController {
             List<Map<String, Object>> mapList = financeService.getSupplierCount(requestMap);
             if (mapList != null && mapList.size() > 0) {
                 HashMap<String, Object> map = new HashMap<>();
-                BigDecimal balancePayableAmount = new BigDecimal(0);
-                BigDecimal balanceInvoiceAmount = new BigDecimal(0);
-                BigDecimal receivingAmount = new BigDecimal(0);
-                BigDecimal paymentAmount = new BigDecimal(0);
-                BigDecimal invoiceAmount = new BigDecimal(0);
+                BigDecimal balancePayableAmount = BigDecimal.ZERO;
+                BigDecimal balanceInvoiceAmount = BigDecimal.ZERO;
+                BigDecimal receivingAmount = BigDecimal.ZERO;
+                BigDecimal paymentAmount = BigDecimal.ZERO;
+                BigDecimal invoiceAmount = BigDecimal.ZERO;
                 for (Map<String, Object> stringObjectMap : mapList) {
                     balancePayableAmount = balancePayableAmount.add(new BigDecimal(stringObjectMap.get("balancePayableAmount").toString()));
                     balanceInvoiceAmount = balanceInvoiceAmount.add(new BigDecimal(stringObjectMap.get("balanceInvoiceAmount").toString()));

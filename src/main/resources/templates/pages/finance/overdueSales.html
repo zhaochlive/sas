@@ -169,7 +169,28 @@
         });
 
         // 列名
-        var colums = [];
+        var columns = [];
+        var upColumns = [];
+        var downColumns = [
+            {field: '105', title: '05', sortable: true, align: 'center'},
+            {field: '110', title: '10', sortable: true, align: 'center'},
+            {field: '115', title: '15', sortable: true, align: 'center'},
+            {field: '120', title: '20', sortable: true, align: 'center'},
+            {field: '125', title: '25', sortable: true, align: 'center'},
+            {field: '130', title: '30', sortable: true, align: 'center'},
+            {field: '205', title: '05', sortable: true, align: 'center'},
+            {field: '210', title: '10', sortable: true, align: 'center'},
+            {field: '215', title: '15', sortable: true, align: 'center'},
+            {field: '220', title: '20', sortable: true, align: 'center'},
+            {field: '225', title: '25', sortable: true, align: 'center'},
+            {field: '230', title: '30', sortable: true, align: 'center'},
+            {field: '305', title: '05', sortable: true, align: 'center'},
+            {field: '310', title: '10', sortable: true, align: 'center'},
+            {field: '315', title: '15', sortable: true, align: 'center'},
+            {field: '320', title: '20', sortable: true, align: 'center'},
+            {field: '325', title: '25', sortable: true, align: 'center'},
+            {field: '330', title: '30', sortable: true, align: 'center'}
+        ];
 
         var formData = new FormData();
         formData.append("code", $("input[name='code']").val());
@@ -194,8 +215,14 @@
             processData: false,
             success: function (result) {
                 $.each(result.columns, function (index, value) {
-                    colums.push({field: value, title: value, sortable: true, align: 'center'});
+                    if (index < 10) {
+                        upColumns.push({field: value, title: value, rowspan: 2, sortable: true, align: 'center', valign: 'middle'});
+                    } else {
+                        upColumns.push({title: value, colspan: 6, sortable: true, align: 'center'});
+                    }
                 });
+                columns.push(upColumns);
+                columns.push(downColumns);
             }, error: function (error) {
                 console.log(error);
             }
@@ -241,7 +268,7 @@
 
                 return params;
             },
-            columns: colums,
+            columns: columns,
             onLoadSuccess: function (result) {
                 // 设置导出limit值
                 if (result.total) {
@@ -285,9 +312,9 @@
             $("#dataTable table").bootstrapTable('refresh');
         });
 
-        // 账期导出按钮
+        // 导出按钮
         $("button[id='exportCredit']").click(function () {
-            $("#form1").attr('action', "/finance/exportoverdueSales");
+            $("#form1").attr('action', "/finance/exportOverdueSales");
             $("#form1").attr('method', "POST");
             $("#form1").submit();
         });
