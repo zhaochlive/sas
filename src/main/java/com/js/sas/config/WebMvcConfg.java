@@ -17,6 +17,7 @@ public class WebMvcConfg implements WebMvcConfigurer {
                 .excludePathPatterns("/"
                         ,"/login"
 //                        ,"/**"
+                        ,"/api/**"
                         ,"/login_out"
                         ,"/login_err"
                         ,"/static/**"
