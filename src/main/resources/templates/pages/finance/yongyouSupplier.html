@@ -45,9 +45,9 @@
                                 <div class="box-body">
                                     <div class="row">
                                         <div class="form-group row col-sm-4">
-                                            <label class="col-sm-3 col-form-label"> 对账名称：</label>
+                                            <label class="col-sm-3 col-form-label"> 供应商名称：</label>
                                             <div class="col-sm-9">
-                                                <input id="name" name="name" type="text" placeholder="对账名称"
+                                                <input id="name" name="name" type="text" placeholder="供应商名称"
                                                        class="settlementName form-control"/>
                                             </div>
                                         </div>
@@ -521,9 +521,9 @@
         // 导出按钮
         $("button[id='export']").click(function () {
             if ($("input[name='dateRange']").val() == '' || $("input[name='name']").val() == '') {
-                toastr.error('请填写 对账名称 和 日期范围');
+                toastr.error('请填写 客户名称 和 日期范围');
             } else {
-                $("#form1").attr('action', "/finance/exportYonyouSupplier");
+                $("#form1").attr('action', "finance/download/SupplierExcel");
                 $("#form1").attr('method', "POST");
                 $("#form1").submit();
             }
