@@ -1,6 +1,5 @@
 package com.js.sas.controller;
 
-import com.alibaba.excel.EasyExcelFactory;
 import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.event.WriteHandler;
@@ -1006,7 +1005,10 @@ public class FinanceController {
             // 账期月, 目前rs第7列
             int month = Integer.parseInt(dataRow[7].toString());
             // 账期日，目前rs第8列
-            int day = Integer.parseInt(dataRow[8].toString());
+            int day = 0;
+            if (StringUtils.isNumeric(dataRow[8].toString())) {
+                day = Integer.parseInt(dataRow[8].toString());
+            }
             // 应减去的结算周期数
             int overdueMonths = CommonUtils.overdueMonth(month, day);
             // 当前逾期金额
