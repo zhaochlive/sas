@@ -8,6 +8,9 @@ import java.util.List;
 
 
 @Repository
-public interface OrderProductBackInfoRepository extends JpaRepository<OrderProductBackInfo, Integer> {
+public interface OrderProductBackInfoRepository extends JpaRepository<OrderProductBackInfo, Long> {
+
     List<OrderProductBackInfo> findOrderProductBackInfoByOrderno(String orderno);
+
+
 }
