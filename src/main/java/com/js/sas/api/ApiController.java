@@ -50,9 +50,12 @@ public class ApiController {
         if (StringUtils.isBlank(customerName)){
             return new Result("400","用户名为空",null);
         }
+        if (startDate.length()>=10){
+            startDate = startDate.substring(0,10);
+        }
         Map<String, String> requestMap = new HashMap<>();
         requestMap.put("customerName", customerName.trim());
-        requestMap.put("startDate", startDate.substring(0,10)+" 00:00:00");
+        requestMap.put("startDate", startDate+" 00:00:00");
         requestMap.put("endDate", endDate);
         Map<String, Object> result = new HashMap<>();
         result.put("customerName",customerName);
