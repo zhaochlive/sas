@@ -1036,7 +1036,7 @@ public class FinanceController {
                             tempOverdue = tempOverdue.subtract(new BigDecimal(dataRow[i].toString()));
                             dataList.set(8, tempOverdue);
                         }
-                        dataList.add(0);
+                        dataList.add(new BigDecimal(dataRow[i-1].toString()));
                     } else {
                         dataList.add(new BigDecimal(dataRow[i++].toString()));
                     }
@@ -1054,14 +1054,31 @@ public class FinanceController {
              */
             for (int index = dataList.size() - 1; index > 12; index--) {
                 if (overdue.compareTo(BigDecimal.ZERO) < 1) {  // 逾期金额小于等于0，所有账期逾期金额都是0
-                    dataList.set(index, 0);
+                    //dataList.set(index, 0);
                 } else {  // 逾期金额大于0，从最后一个开始分摊逾期金额
                     if (overdue.compareTo(new BigDecimal(dataList.get(index).toString())) > -1) {
                         overdue = overdue.subtract(new BigDecimal(dataList.get(index).toString()));
+                        //dataList.set(index, dataList.get(index));
+                    } else {
+                        //dataList.set(index, overdue);
+                        overdue = BigDecimal.ZERO;
+                    }
+                }
+            }
+
+            // 销售需要显示未逾期得应收款
+            // 当前逾期金额
+            BigDecimal receivable = new BigDecimal(dataRow[10].toString());
+            for (int index = dataList.size() - 1; index > 12; index--) {
+                if (receivable.compareTo(BigDecimal.ZERO) < 1) {
+                    dataList.set(index, 0);
+                } else {
+                    if (receivable.compareTo(new BigDecimal(dataList.get(index).toString())) > -1) {
+                        receivable = receivable.subtract(new BigDecimal(dataList.get(index).toString()));
                         dataList.set(index, dataList.get(index));
                     } else {
-                        dataList.set(index, overdue);
-                        overdue = BigDecimal.ZERO;
+                        dataList.set(index, receivable);
+                        receivable = BigDecimal.ZERO;
                     }
                 }
             }
@@ -1075,10 +1092,10 @@ public class FinanceController {
             }
 
             // 期初等于减去显示的月份的逾期款，小于0期初显示0
-            if (overdue.compareTo(BigDecimal.ZERO) < 0) {
+            if (receivable.compareTo(BigDecimal.ZERO) < 0) {
                 dataList.set(9, 0);
             } else {
-                dataList.set(9, overdue);
+                dataList.set(9, receivable);
             }
 
             // 设置数据列
@@ -1229,7 +1246,7 @@ public class FinanceController {
                             tempOverdue = tempOverdue.subtract(new BigDecimal(dataRow[i].toString()));
                             dataList.set(8, tempOverdue);
                         }
-                        dataList.add(0);
+                        dataList.add(new BigDecimal(dataRow[i-1].toString()));
                     } else {
                         dataList.add(new BigDecimal(dataRow[i++].toString()));
                     }
@@ -1247,14 +1264,31 @@ public class FinanceController {
              */
             for (int index = dataList.size() - 1; index > 12; index--) {
                 if (overdue.compareTo(BigDecimal.ZERO) < 1) {  // 逾期金额小于等于0，所有账期逾期金额都是0
-                    dataList.set(index, 0);
+                    //dataList.set(index, 0);
                 } else {  // 逾期金额大于0，从最后一个开始分摊逾期金额
                     if (overdue.compareTo(new BigDecimal(dataList.get(index).toString())) > -1) {
                         overdue = overdue.subtract(new BigDecimal(dataList.get(index).toString()));
+                        //dataList.set(index, dataList.get(index));
+                    } else {
+                        //dataList.set(index, overdue);
+                        overdue = BigDecimal.ZERO;
+                    }
+                }
+            }
+
+            // 销售需要显示未逾期得应收款
+            // 当前逾期金额
+            BigDecimal receivable = new BigDecimal(dataRow[10].toString());
+            for (int index = dataList.size() - 1; index > 12; index--) {
+                if (receivable.compareTo(BigDecimal.ZERO) < 1) {
+                    dataList.set(index, 0);
+                } else {
+                    if (receivable.compareTo(new BigDecimal(dataList.get(index).toString())) > -1) {
+                        receivable = receivable.subtract(new BigDecimal(dataList.get(index).toString()));
                         dataList.set(index, dataList.get(index));
                     } else {
-                        dataList.set(index, overdue);
-                        overdue = BigDecimal.ZERO;
+                        dataList.set(index, receivable);
+                        receivable = BigDecimal.ZERO;
                     }
                 }
             }
@@ -1268,10 +1302,10 @@ public class FinanceController {
             }
 
             // 期初等于减去显示的月份的逾期款，小于0期初显示0
-            if (overdue.compareTo(BigDecimal.ZERO) < 0) {
+            if (receivable.compareTo(BigDecimal.ZERO) < 0) {
                 dataList.set(9, 0);
             } else {
-                dataList.set(9, overdue);
+                dataList.set(9, receivable);
             }
 
             // 设置数据列
