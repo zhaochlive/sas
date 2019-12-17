@@ -3,7 +3,6 @@ package com.js.sas.task;
 import com.js.sas.entity.OrderProductBackInfo;
 import com.js.sas.service.OrderProductBackInfoService;
 import com.js.sas.utils.DateTimeUtils;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -102,4 +101,10 @@ public class ScheduledTask {
         }
         return ints;
     }
+
+
+//    @Scheduled(cron = "0 50 10 1-31 * ? ")
+//    public void demo(){
+//        log.info("时间{}执行了一次定时任务",DateTimeUtils.convert(new Date()));
+//    }
 }

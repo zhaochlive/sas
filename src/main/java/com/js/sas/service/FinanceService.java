@@ -666,7 +666,7 @@ public class FinanceService {
         return mapList;
     }
 
-    public List<Map<String, Object>> getPurchaseArrivalDetail(Map<String, Object> requestMap) {
+    /*public List<Map<String, Object>> getPurchaseArrivalDetail(Map<String, Object> requestMap) {
         StringBuilder builder = new StringBuilder();
         List<Object> list = new ArrayList<>();
         System.out.println(requestMap.toString());
@@ -677,7 +677,7 @@ public class FinanceService {
         list.add(requestMap.get("name"));
         List<Map<String, Object>> maps = jdbcTemplate.queryForList(builder.toString(), list.toArray());
         return maps;
-    }
+    }*/
 
     public Object getAccountspayable(Map<String, String > requestMap, String explan) {
         Map<String, Object> result = new HashMap<>();
@@ -742,14 +742,14 @@ public class FinanceService {
         return result;
     }
 
-    private List<Map<String, Object>> getAccountspayableList(Map<String, String> requestMap, String explan) {
+    /*private List<Map<String, Object>> getAccountspayableList(Map<String, String> requestMap, String explan) {
         StringBuilder sb = new StringBuilder();
         ArrayList<Object> list = new ArrayList<>();
         sb.append(" select ss.* from (");
         sb.append(" select code,voucherdate,OrigTotalTaxAmount Amount,'1' type,IdPartner,");
-        sb.append(" (case pubuserdefnvc1 when '限时购' then '线上' when '线上' then '线上' else '线下' END) pubuserdefnvc1 from PU_PurchaseArrival where voucherState =189 and voucherdate >='2018/12/28 00:00:00'");
+        sb.append(" (case pubuserdefnvc1 when '平台直发' then '线上' when '线上' then '线上' else '线下' END) pubuserdefnvc1 from PU_PurchaseArrival where voucherState =189 and voucherdate >='2018/12/28 00:00:00'");
         sb.append(" union all select ppi.purchaseInvoiceNo code,ppi.voucherdate,ppi.totalTaxAmount Amount,'2' type,ppi.IdPartner,");
-        sb.append(" (case ppa.pubuserdefnvc1 when '限时购' then '线上' when '线上' then '线上' else '线下' END) pubuserdefnvc1 from pu_PurchaseInvoice ppi");
+        sb.append(" (case ppa.pubuserdefnvc1 when '平台直发' then '线上' when '线上' then '线上' else '线下' END) pubuserdefnvc1 from pu_PurchaseInvoice ppi");
         sb.append(" left join PU_PurchaseArrival ppa on ppi.sourceVoucherCode = ppa.code where ppi.voucherState =189");
         sb.append(" union all select code,voucherdate,Amount,'3' type,IdPartner,'线下' pubuserdefnvc1 from ARAP_ReceivePayment where idbusitype =80");
         sb.append(" ) ss left join AA_Partner AA on ss.IdPartner = AA.ID where 1=1 and AA.name =? and pubuserdefnvc1 = ?");
@@ -768,11 +768,49 @@ public class FinanceService {
         sb.append(" sum(case type when '0' then Amount when '1' then Amount when '2' then -Amount end) initInvoiceBalance from (");
         sb.append(" select code,origDate voucherdate,Amount,'0' type,IdPartner,'线下' pubuserdefnvc1 from ARAP_OriginalAmount_ApDetail UNION ALL");
         sb.append(" select code,voucherdate,OrigTotalTaxAmount Amount,'1' type,IdPartner,");
-        sb.append(" (case pubuserdefnvc1 when '限时购' then '线上' when '线上' then '线上' else '线下' END) pubuserdefnvc1 from PU_PurchaseArrival where voucherState =189 and voucherdate >='2018/12/28 00:00:00'");
+        sb.append(" (case pubuserdefnvc1 when '平台直发' then '线上' when '线上' then '线上' else '线下' END) pubuserdefnvc1 from PU_PurchaseArrival where voucherState =189 and voucherdate >='2018/12/28 00:00:00'");
         sb.append(" union all select ppi.purchaseInvoiceNo code,ppi.voucherdate,ppi.totalTaxAmount Amount,'2' type,ppi.IdPartner,");
-        sb.append(" (case ppa.pubuserdefnvc1 when '限时购' then '线上' when '线上' then '线上' else '线下' END) pubuserdefnvc1 from pu_PurchaseInvoice ppi");
+        sb.append(" (case ppa.pubuserdefnvc1 when '平台直发' then '线上' when '线上' then '线上' else '线下' END) pubuserdefnvc1 from pu_PurchaseInvoice ppi");
         sb.append(" left join PU_PurchaseArrival ppa on ppi.sourceVoucherCode = ppa.code where ppi.voucherState =189");
         sb.append(" union all select code,voucherdate,Amount,'3' type,IdPartner,'线下' pubuserdefnvc1 from ARAP_ReceivePayment where idbusitype =80");
+        sb.append(" ) ss left join AA_Partner AA on ss.IdPartner = AA.ID where 1=1 and AA.name =? and pubuserdefnvc1 = ?");
+        list.add(requestMap.get("customerName"));
+        list.add(explan);
+        sb.append(" and voucherdate <'"+requestMap.get("startDate")+"'");
+        System.out.println(sb.toString());
+        return  jdbcTemplate.queryForMap(sb.toString(), list.toArray());
+    }*/
+    private List<Map<String, Object>> getAccountspayableList(Map<String, String> requestMap, String explan) {
+        StringBuilder sb = new StringBuilder();
+        ArrayList<Object> list = new ArrayList<>();
+        sb.append(" select ss.* from (");
+        sb.append(" select code,voucherdate,OrigTotalTaxAmount Amount,'1' type,IdPartner,");
+        sb.append(" '线上' pubuserdefnvc1 from PU_PurchaseArrival where voucherState =189 and voucherdate >='2018/12/28 00:00:00'");
+        sb.append(" union all select ppi.purchaseInvoiceNo code,ppi.voucherdate,ppi.totalTaxAmount Amount,'2' type,ppi.IdPartner,");
+        sb.append(" '线上' pubuserdefnvc1 from pu_PurchaseInvoice ppi");
+        sb.append(" left join PU_PurchaseArrival ppa on ppi.sourceVoucherCode = ppa.code where ppi.voucherState =189");
+        sb.append(" union all select code,voucherdate,Amount,'3' type,IdPartner,'线上' pubuserdefnvc1 from ARAP_ReceivePayment where idbusitype =80");
+        sb.append(" ) ss left join AA_Partner AA on ss.IdPartner = AA.ID where 1=1 and AA.name =? and pubuserdefnvc1 = ?");
+        list.add(requestMap.get("customerName"));
+        list.add(explan);
+        sb.append(" and voucherdate >='"+requestMap.get("startDate")+"'");
+        sb.append(" and voucherdate <='"+requestMap.get("endDate")+"'");
+        sb.append( " order by voucherdate");
+        return  jdbcTemplate.queryForList(sb.toString(), list.toArray());
+    }
+
+    private Map<String, Object> getAccountspayableCount(Map<String, String> requestMap, String explan) {
+        StringBuilder sb = new StringBuilder();
+        ArrayList<Object> list = new ArrayList<>();
+        sb.append(" select sum(case type when '0' then Amount when '1' then Amount when '3' then -Amount end) initPaymentBalance,");
+        sb.append(" sum(case type when '0' then Amount when '1' then Amount when '2' then -Amount end) initInvoiceBalance from (");
+        sb.append(" select code,origDate voucherdate,Amount,'0' type,IdPartner,'线上' pubuserdefnvc1 from ARAP_OriginalAmount_ApDetail UNION ALL");
+        sb.append(" select code,voucherdate,OrigTotalTaxAmount Amount,'1' type,IdPartner,");
+        sb.append(" '线上' pubuserdefnvc1 from PU_PurchaseArrival where voucherState =189 and voucherdate >='2018/12/28 00:00:00'");
+        sb.append(" union all select ppi.purchaseInvoiceNo code,ppi.voucherdate,ppi.totalTaxAmount Amount,'2' type,ppi.IdPartner,");
+        sb.append(" '线上' pubuserdefnvc1 from pu_PurchaseInvoice ppi");
+        sb.append(" left join PU_PurchaseArrival ppa on ppi.sourceVoucherCode = ppa.code where ppi.voucherState =189");
+        sb.append(" union all select code,voucherdate,Amount,'3' type,IdPartner,'线上' pubuserdefnvc1 from ARAP_ReceivePayment where idbusitype =80");
         sb.append(" ) ss left join AA_Partner AA on ss.IdPartner = AA.ID where 1=1 and AA.name =? and pubuserdefnvc1 = ?");
         list.add(requestMap.get("customerName"));
         list.add(explan);
