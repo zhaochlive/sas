@@ -450,15 +450,12 @@ public class SalesController {
         }
         if (request.getParameter("brand2") != null && StringUtils.isNotBlank(request.getParameter("brand2"))) {
             params.put("brand", request.getParameter("brand2"));
-            System.out.println(request.getParameter("brand2"));
         }
         if (request.getParameter("show2") != null && StringUtils.isNotBlank(request.getParameter("show2"))) {
             params.put("show", request.getParameter("show2"));
-            System.out.println(request.getParameter("show2"));
         }
         if (request.getParameter("level2") != null && StringUtils.isNotBlank(request.getParameter("level2"))) {
             params.put("level", request.getParameter("level2"));
-            System.out.println(request.getParameter("level2"));
         }
         params.put("limit", "99999999");
         params.put("offset", "0");

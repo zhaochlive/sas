@@ -8,11 +8,10 @@ import com.alibaba.excel.metadata.Table;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.js.sas.dto.OverdueDTO;
 import com.js.sas.dto.SettlementSummaryDTO;
-import com.js.sas.entity.DeptStaff;
+import com.js.sas.entity.*;
 import com.js.sas.entity.Dictionary;
-import com.js.sas.entity.PartnerEntity;
-import com.js.sas.entity.SettlementSummaryEntity;
 import com.js.sas.repository.DeptStaffRepository;
+import com.js.sas.repository.MemberSalemanRepository;
 import com.js.sas.service.DictionaryService;
 import com.js.sas.service.FinanceService;
 import com.js.sas.service.PartnerService;
@@ -20,9 +19,15 @@ import com.js.sas.utils.*;
 import com.js.sas.utils.constant.ExcelPropertyEnum;
 import com.js.sas.utils.upload.ExcelListener;
 import com.js.sas.utils.upload.UploadData;
+import com.js.sas.utils.upload.UploadDataListener;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -72,7 +77,10 @@ public class FinanceController {
     private final DataSource dataSource;
 
     @Autowired
-    DeptStaffRepository deptStaffRepository;
+    private DeptStaffRepository deptStaffRepository;
+
+    @Autowired
+    private MemberSalemanRepository memberSalemanRepository;
 
     public FinanceController(FinanceService financeService, DictionaryService dictionaryService, DataSource dataSource, PartnerService partnerService) {
         this.financeService = financeService;
@@ -217,7 +225,6 @@ public class FinanceController {
             return ResultUtils.getResult(ResultCode.系统异常);
         }
     }
-
 
 
     /**
@@ -465,7 +472,7 @@ public class FinanceController {
         // 列名
         List<String> columnsList = financeService.findOverdueAllColumns().get("columns");
         // 数据
-        List<List<Object>> rowsList = (List<List<Object>>)financeService.findOverdueAllData(null).get("list");
+        List<List<Object>> rowsList = (List<List<Object>>) financeService.findOverdueAllData(null).get("list");
 
         String fileName = "逾期统计表";
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
@@ -1070,7 +1077,6 @@ public class FinanceController {
         //初期开票余额
         BigDecimal initInvoiceAmount = BigDecimal.ZERO;
         if (initial != null && initial.size() > 0) {
-            System.out.println(initial.toString());
             initPayableAmount = new BigDecimal(initial.get("payable") == null ? "0" : initial.get("payable").toString());
             initInvoiceAmount = new BigDecimal(initial.get("invoice") == null ? "0" : initial.get("invoice").toString());
         }
@@ -1253,7 +1259,6 @@ public class FinanceController {
     public String upload(MultipartFile file) throws IOException {
         // 新版
         // EasyExcel.read(file.getInputStream(), UploadData.class, new UploadDataListener(deptStaffRepository)).sheet().doRead();
-
         // 旧版
         InputStream inputStream = file.getInputStream();
         ExcelListener listener = new ExcelListener();
@@ -1271,4 +1276,60 @@ public class FinanceController {
         deptStaffRepository.saveAll(deptStaffList);
         return "success";
     }
+
+    @PostMapping("uploadSalesman")
+    @ResponseBody
+    public String uploadSalesman(MultipartFile file) throws IOException {
+        // 旧版
+        InputStream is = null;
+        try {
+            is = file.getInputStream();
+
+            Workbook book = new XSSFWorkbook(is);
+            org.apache.poi.ss.usermodel.Sheet sheet = book.getSheetAt(0);
+            int rows = sheet.getLastRowNum();
+            List memberSalesmans = new ArrayList<MemberSalesman>();
+            MemberSalesman memberSalesman = null;
+            for (int i = 1; i <= rows; i++) {
+                Row r = sheet.getRow(i);
+//                System.out.println(r.getCell(0)+"==="+r.getCell(1)+"==="+r.getCell(2));
+                memberSalesman = new MemberSalesman();
+                String name  = null;
+                switch (r.getCell(0).getCellTypeEnum()) {
+                    case NUMERIC:
+                        int numericCellValue = (int) r.getCell(0).getNumericCellValue();
+                        name = numericCellValue+"";
+                        break;
+                    case STRING:
+                        name = r.getCell(0).getStringCellValue();
+                        break;
+                    default:
+                        break;
+                }
+                memberSalesman.setName(name);
+                memberSalesman.setTopSaleman(r.getCell(1) == null ? null : r.getCell(1).getStringCellValue().trim());
+                memberSalesman.setSecondSaleman(r.getCell(2) == null ? null : r.getCell(2).getStringCellValue());
+                memberSalesmans.add(memberSalesman);
+            }
+            memberSalemanRepository.deleteAll();
+            memberSalemanRepository.flush();
+            memberSalemanRepository.saveAll(memberSalesmans);
+
+        } catch (IOException e) {
+            return "err";
+        } finally {
+            try {
+                if (is != null) {
+                    is.close();
+                }
+            } catch (IOException e) {
+
+            }
+        }
+
+        return "success";
+    }
+
+
+
 }

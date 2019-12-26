@@ -72,11 +72,10 @@ public class ScheduledTask {
                 Date backtime = DateTimeUtils.convert(map.get("backtime").toString(),DateTimeUtils.DATE_TIME_FORMAT);
                 info.setBacktime(backtime);
                 OrderProductBackInfo byId = orderProductBackInfoService.findById((Long) map.get("id"));
-                System.out.printf(info.toString());
                 if (byId == null) {
                     infos.add(info);
                 } else {
-                    System.out.println("已存在数据:" + byId.toString());
+                    log.info("已存在数据:" + byId.toString());
                 }
             }
         }

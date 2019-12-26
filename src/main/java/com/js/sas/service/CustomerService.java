@@ -60,7 +60,6 @@ public class CustomerService {
             builder.append(" offset 0 ;");
         }
 
-        System.out.println(builder.toString());
         List<Map<String,Object>> customers = jdbcTemplate.queryForList(builder.toString(),list.toArray());
 
         List<CustomerOfOrder> customerOfOrders = new ArrayList<>();

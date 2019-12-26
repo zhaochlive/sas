@@ -243,7 +243,7 @@ public class RepurchaseRateController {
         Double moreThanOne = repurchaseRateService.getRepurchaseNum(">", 1, params);
         Double all = repurchaseRateService.getRepurchaseNum(">=", 1, params);
 
-        System.out.println(moreThanOne  + ""+all);
+//        System.out.println(moreThanOne  + ""+all);
         return moreThanOne/all*100;
     }
 

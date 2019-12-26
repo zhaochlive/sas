@@ -815,7 +815,6 @@ public class FinanceService {
         list.add(requestMap.get("customerName"));
         list.add(explan);
         sb.append(" and voucherdate <'"+requestMap.get("startDate")+"'");
-        System.out.println(sb.toString());
         return  jdbcTemplate.queryForMap(sb.toString(), list.toArray());
     }
 

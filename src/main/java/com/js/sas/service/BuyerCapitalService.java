@@ -572,7 +572,6 @@ public class BuyerCapitalService {
         BigDecimal OtherAmount = new BigDecimal(0);
         BigDecimal Invoice = new BigDecimal(0);
         BigDecimal Receivable = new BigDecimal(0);
-        System.out.println(settlementSql);
         Map<String, Object> settlement = jdbcTemplate.queryForMap(settlementSql);//Deliveryamount Receiptamount OtherAmount
         if (settlement.containsKey("Deliveryamount")){
             Deliveryamount = CommonUtils.getBigDecimal(settlement.get("Deliveryamount") == null ? 0.00 : settlement.get("Deliveryamount"));
