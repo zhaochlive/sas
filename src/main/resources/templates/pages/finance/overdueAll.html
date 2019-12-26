@@ -102,10 +102,21 @@
                         <div class="ibox-content">
                             <div class="row">
                                 <div class="box-footer">
-                                    <a id="template" href="../../template/员工部门模板.xlsx" target="_blank" class="btn btn-default pull-right">模板下载</a>
+                                    <a id="template" href="../../template/员工部门模板.xlsx" target="_blank" class="btn btn-default pull-right">员工部门模板下载</a>
                                     <input type="file" name="file" id="file" value=""
                                            class="btn btn-default pull-right">
                                     <input type="button" id="upload" value="提交" name="upload"
+                                           class="btn btn-default pull-right">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ibox-content">
+                            <div class="row">
+                                <div class="box-footer">
+                                    <a id="templateSalesman" href="../../template/紧商客户对应业务员表.xlsx" target="_blank" class="btn btn-default pull-right">客户对应业务员模板下载</a>
+                                    <input type="file" name="file" id="file2" value=""
+                                           class="btn btn-default pull-right">
+                                    <input type="button" id="uploadSalesman" value="提交" name="upload"
                                            class="btn btn-default pull-right">
                                 </div>
                             </div>
@@ -387,6 +398,28 @@
                     toastr.success('部门更新成功');
                 } else {
                     toastr.error('更新失败，请检查上传文件内容。第一列：姓名，第二列：部门');
+                    console.log(result);
+                }
+            }
+        });
+    });
+
+    // 上传紧商对应业务员
+    $("input[id='uploadSalesman']").click(function () {
+        var formData = new FormData();
+        formData.append("file", $("#file2")[0].files[0]);
+        formData.append("enctype", "multipart/form-data");
+        $.ajax({
+            url: '/finance/uploadSalesman',
+            type: 'post',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (result) {
+                if (result == "success") {
+                    toastr.success('紧商客户和业务员关系更新成功');
+                } else {
+                    toastr.error('更新失败，请检查上传文件内容。第一列：紧商客户，第二列：首要业务员，第二列：辅助业务员');
                     console.log(result);
                 }
             }
