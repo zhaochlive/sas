@@ -16,7 +16,7 @@ public interface MemberSalemanRepository extends JpaRepository<MemberSalesman, S
      * 清空表
      */
     @Modifying(clearAutomatically = true)
-    @Query(nativeQuery = true, value = "TRUNCATE dept_staff")
+    @Query(nativeQuery = true, value = "TRUNCATE YY_Member_Saleman")
     void deleteAll();
 
 }
