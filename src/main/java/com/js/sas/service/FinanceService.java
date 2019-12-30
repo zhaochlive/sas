@@ -8,7 +8,7 @@ import com.js.sas.dto.OverdueDTO;
 import com.js.sas.repository.PartnerRepository;
 import com.js.sas.utils.CommonUtils;
 import com.js.sas.utils.DateTimeUtils;
-import com.js.sas.utils.StyleExcelHandler;
+import com.js.sas.utils.excel.StyleExcelHandler;
 import com.js.sas.utils.constant.ExcelPropertyEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -22,7 +22,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import springfox.documentation.annotations.ApiIgnore;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -184,7 +183,7 @@ public class FinanceService {
             origin.add(Calendar.MONTH, 1);
         }
         // 如果日期大于27日，则需要多计算下一个月
-        if (now.get(Calendar.DATE) > 27 ) {
+        if (now.get(Calendar.DATE) > 27) {
             columnList.add(origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月");
         }
 
@@ -220,7 +219,7 @@ public class FinanceService {
         }
 
         // 如果日期大于27日，则需要多计算下一个月
-        if (now.get(Calendar.DATE) > 27 ) {
+        if (now.get(Calendar.DATE) > 27) {
             sqlStringBuilder.append(", SUM(CASE months WHEN '" + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月销售' THEN vssm.amount ELSE 0 END) AS " + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月 ");
             sqlStringBuilder.append(", SUM(CASE months WHEN '" + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月退货' THEN vssm.amount ELSE 0 END) AS " + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月退货 ");
         }
@@ -296,13 +295,13 @@ public class FinanceService {
 
         // 当前时间
         Calendar now = Calendar.getInstance();
-        // 如果日期大于27日，则需要多计算下一个月
-        //if (now.get(Calendar.DATE) > 27 ) {
-            // 加1个月
-            now.add(Calendar.MONTH, 1);
-        //}
-        // 减2个月
-        now.add(Calendar.MONTH, -2);
+        // 加1个月
+        now.add(Calendar.MONTH, 1);
+        // 减3个月
+        now.add(Calendar.MONTH, -3);
+        columnList.add(now.get(Calendar.YEAR) + "年" + (now.get(Calendar.MONTH) + 1) + "月");
+        // 加1个月
+        now.add(Calendar.MONTH, 1);
         columnList.add(now.get(Calendar.YEAR) + "年" + (now.get(Calendar.MONTH) + 1) + "月");
         // 加1个月
         now.add(Calendar.MONTH, 1);
@@ -318,7 +317,7 @@ public class FinanceService {
 
     /**
      * 逾期统计（销售版）
-     *
+     * <p>
      * 这里的第一个字段，yap.warehouse_sign，已经废弃
      *
      * @param partner
@@ -348,11 +347,9 @@ public class FinanceService {
             origin.add(Calendar.MONTH, 1);
         }
         // 多统计一个月
-        //if (now.get(Calendar.DATE) > 27 ) {
-            sqlStringBuilder.append(", MAX(CASE months WHEN '" + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月销售' THEN vssm.amount ELSE 0 END) AS " + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月 ");
-            sqlStringBuilder.append(", MIN(CASE months WHEN '" + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月退货' THEN vssm.amount ELSE 0 END) AS " + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月退货 ");
-            sqlStringBuilder.append(", MIN( CASE vsr.months_received WHEN '" + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月收款' THEN vsr.amount_received ELSE 0 END ) AS " + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月收款 ");
-        //}
+        sqlStringBuilder.append(", MAX(CASE months WHEN '" + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月销售' THEN vssm.amount ELSE 0 END) AS " + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月 ");
+        sqlStringBuilder.append(", MIN(CASE months WHEN '" + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月退货' THEN vssm.amount ELSE 0 END) AS " + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月退货 ");
+        sqlStringBuilder.append(", MIN( CASE vsr.months_received WHEN '" + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月收款' THEN vsr.amount_received ELSE 0 END ) AS " + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月收款 ");
 
         sqlStringBuilder.append(" FROM YY_AA_Partner yap ");
         sqlStringBuilder.append(" LEFT JOIN v_settlement_sales_months_v3 vssm ON yap.id = vssm.settlementId ");
@@ -387,7 +384,7 @@ public class FinanceService {
      * 销售版逾期统计
      *
      * @param partner OverdueDTO
-     * @return List<List<Object>>
+     * @return List<List < Object>>
      */
     public List<List<Object>> getOverdueSalesList(OverdueDTO partner) {
         /**
@@ -486,9 +483,9 @@ public class FinanceService {
 
             if (cash) {
                 /**
-                 * 现款计算两个月即可
+                 * 现款计算三个月即可
                  */
-                for (int index = dataList.size() - 1 - overdueMonths; index > 13; index--) {
+                for (int index = dataList.size() - 1 - overdueMonths; index > 12; index--) {
                     // 逾期款等于0，所有账期逾期金额都是0
                     if (overdue.compareTo(BigDecimal.ZERO) == 0) {
                         dataList.set(index, 0);
@@ -503,9 +500,9 @@ public class FinanceService {
                         // dataList.size()-index ：倒数第几个，从倒数第一个开始。
                         int dataIndex = dataList.size() - index;
                         // dataRow从最后一个向前，每3列一个收款金额. receiveIndex表示dataRow的倒数第几个，比如倒数第一个，倒数第四个。
-                        int receiveIndex = ((dataIndex-1) * 3) + 1;
+                        int receiveIndex = ((dataIndex - 1) * 3) + 1;
                         // dataRow从倒数第二个向前，每3列一个退款金额. refundIndex表示dataRow的倒数第几个，比如倒数第二个，倒数第五个。
-                        int refundIndex = ((dataIndex-1) * 3) + 2;
+                        int refundIndex = ((dataIndex - 1) * 3) + 2;
 
                         // 收款金额 + 退款金额
                         BigDecimal receiveAndRefundAmount = new BigDecimal(dataRow[dataRow.length - receiveIndex].toString()).add(new BigDecimal(dataRow[dataRow.length - refundIndex].toString()));
@@ -546,7 +543,7 @@ public class FinanceService {
                 for (int index = dataList.size() - 1; index > dataList.size() - overdueMonths; index--) {
                     if (receivable.compareTo(BigDecimal.ZERO) == 0) { // 等于0
                         dataList.set(index, 0);
-                    } else if (receivable.compareTo(BigDecimal.ZERO) > 0){ // 大于0
+                    } else if (receivable.compareTo(BigDecimal.ZERO) > 0) { // 大于0
                         if (receivable.compareTo(new BigDecimal(dataList.get(index).toString())) > -1) {
                             receivable = receivable.subtract(new BigDecimal(dataList.get(index).toString()));
                             dataList.set(index, dataList.get(index));
@@ -569,43 +566,82 @@ public class FinanceService {
                 }
 
                 /**
+                 * 如果有未到账期的应收款，则后面未到账期的金额应该抵扣逾期款。
+                 * 例如：当前逾期款-1000远，说明有1000的预收（多收的钱）。下个账期有2000的发货（应收款）。那么逾期款应显示2000-1000>0，则显示0。下个账期的应收显示2000-1000 = 1000。
+                 *      如果下个账期只发货500，那么逾期款应显示500-1000 = -500，小于0，则逾期款显示-500，下个账期的应收款显示0。
+                 *
+                 * 只取未到账期的部分
+                 */
+                for (int index = dataList.size() - overdueMonths; index < dataList.size(); index++) {
+                    if (overdue.compareTo(BigDecimal.ZERO) < 0) { // 逾期金额小于0
+                        // 逾期金额，加上未到账期应收款
+                        overdue = overdue.add(new BigDecimal(dataList.get(index).toString()));
+                        if (overdue.compareTo(BigDecimal.ZERO) >= 0) { // 如果扣除未到账期应收款，逾期金额大于等于0
+                            // 未到期应收款，设置为去掉预付款的金额
+                            dataList.set(index, overdue);
+                            // 逾期金额设置为0
+                            overdue = BigDecimal.ZERO;
+                            break;
+                        } else { // 如果扣除未到账期应收款，逾期金额小于0，继续扣除下一个未到账期月份的应收款
+                            // 未到期应收款，设置为0
+                            dataList.set(index, BigDecimal.ZERO);
+                        }
+                    }
+                }
+
+                // 判断逾期金额是否有变化，也就是判断逾期金额是否抵扣未到期的预付款。如果没有变化，则逾期款可以显示负数。如果有变化，小于0的逾期款显示0。
+                boolean overdueChanged = false;
+                if (overdue.compareTo(new BigDecimal(dataList.get(8).toString())) != 0) {
+                    overdueChanged = true;
+                }
+
+                // 设置逾期款
+                dataList.set(8, overdue);
+
+                /**
                  * 功能只需要显示3个月的，但是涉及账期问题，如果账期一个月，需要多计算1个月，也就是4个月。目前按多算3个月，也就是6个月的数据。
                  * 因为是6个月的数据，所以逾期的分摊只需要算三个月，从第13列开始。
                  * 需要去掉未到账期的月份
                  */
-                for (int index = dataList.size() - 1 - overdueMonths; index > 12; index--) {
+                for (int index = dataList.size() - 1 - overdueMonths; index > 11; index--) {
                     // 逾期款等于0，所有账期逾期金额都是0
                     if (overdue.compareTo(BigDecimal.ZERO) == 0) {
                         dataList.set(index, 0);
                     } else if (overdue.compareTo(BigDecimal.ZERO) == -1) {  // 逾期金额小于0
-                        /**
-                         * 逾期款小于0，有预收款
-                         *
-                         * 规则：
-                         * 仓库标记客户：收款和退货都记录在当月
-                         * 普通客户：
-                         */
-                        // dataList.size()-index ：倒数第几个，从倒数第一个开始。
-                        int dataIndex = dataList.size() - index;
-                        // dataRow从最后一个向前，每3列一个收款金额. receiveIndex表示dataRow的倒数第几个，比如倒数第一个，倒数第四个。
-                        int receiveIndex = ((dataIndex-1) * 3) + 1;
-                        // dataRow从倒数第二个向前，每3列一个退款金额. refundIndex表示dataRow的倒数第几个，比如倒数第二个，倒数第五个。
-                        int refundIndex = ((dataIndex-1) * 3) + 2;
-
-                        // 收款金额 + 退款金额
-                        BigDecimal receiveAndRefundAmount = new BigDecimal(dataRow[dataRow.length - receiveIndex].toString()).add(new BigDecimal(dataRow[dataRow.length - refundIndex].toString()));
-
-                        if (receiveAndRefundAmount.compareTo(BigDecimal.ZERO) == 0) {
-                            // 如果收款和退货都是0，跳过，本月就是0
+                        if (overdueChanged) {
                             dataList.set(index, 0);
-                        } else if (overdue.compareTo(receiveAndRefundAmount) > -1) {
-                            // 对比收款，如果逾期金额大于等于当月收款金额+退款金额，那么显示逾期的数量（因为是负数，所以和正数的逻辑是反的）
-                            dataList.set(index, overdue);
                             overdue = BigDecimal.ZERO;
+                            dataList.set(8, overdue);
                         } else {
-                            // 如果逾期金额小于当月收款金额+退款金额，那么显示收款金额+退货金额，相减得到新的逾期金额
-                            dataList.set(index, receiveAndRefundAmount);
-                            overdue = overdue.subtract(receiveAndRefundAmount);
+                            /**
+                             * 逾期款小于0，有预收款
+                             *
+                             * 规则：
+                             * 仓库标记客户：收款和退货都记录在当月
+                             * 普通客户：
+                             */
+                            // dataList.size()-index ：倒数第几个，从倒数第一个开始。
+                            int dataIndex = dataList.size() - index;
+                            // dataRow从最后一个向前，每3列一个收款金额. receiveIndex表示dataRow的倒数第几个，比如倒数第一个，倒数第四个。
+                            int receiveIndex = ((dataIndex - 1) * 3) + 1;
+                            // dataRow从倒数第二个向前，每3列一个退款金额. refundIndex表示dataRow的倒数第几个，比如倒数第二个，倒数第五个。
+                            int refundIndex = ((dataIndex - 1) * 3) + 2;
+
+                            // 收款金额 + 退款金额
+                            BigDecimal receiveAndRefundAmount = new BigDecimal(dataRow[dataRow.length - receiveIndex].toString()).add(new BigDecimal(dataRow[dataRow.length - refundIndex].toString()));
+
+                            if (receiveAndRefundAmount.compareTo(BigDecimal.ZERO) == 0) {
+                                // 如果收款和退货都是0，跳过，本月就是0
+                                dataList.set(index, 0);
+                            } else if (overdue.compareTo(receiveAndRefundAmount) > -1) {
+                                // 对比收款，如果逾期金额大于等于当月收款金额+退款金额，那么显示逾期的数量（因为是负数，所以和正数的逻辑是反的）
+                                dataList.set(index, overdue);
+                                overdue = BigDecimal.ZERO;
+                            } else {
+                                // 如果逾期金额小于当月收款金额+退款金额，那么显示收款金额+退货金额，相减得到新的逾期金额
+                                dataList.set(index, receiveAndRefundAmount);
+                                overdue = overdue.subtract(receiveAndRefundAmount);
+                            }
                         }
                     } else {  // 逾期金额大于0，从最后一个开始分摊逾期金额
                         // 大于等于当月发货，设置当月发货金额
@@ -623,7 +659,7 @@ public class FinanceService {
 
             for (int overdueIndex = 0; overdueIndex < month; overdueIndex++) {
                 // 插入0
-                dataList.add(13, 0);
+                dataList.add(12, 0);
                 // 删除最后一位
                 dataList.remove(dataList.size() - 1);
             }
@@ -637,8 +673,8 @@ public class FinanceService {
             for (int index = 0; index < 10; index++) {
                 resultList.add(dataList.get(index));
             }
-            // 动态部分
-            for (int index = 3; index > 0; index--) {
+            // 动态部分，4个月
+            for (int index = 4; index > 0; index--) {
                 // 按账期日补-
                 int date = 0;
                 if (StringUtils.isNumeric(dataList.get(5).toString())) {
@@ -692,9 +728,7 @@ public class FinanceService {
             }
 
             rowsList.add(resultList);
-
         }
-
 
         return rowsList;
     }
@@ -982,66 +1016,67 @@ public class FinanceService {
         return maps;
     }*/
 
-    public Object getAccountspayable(Map<String, String > requestMap, String explan) {
+    public Object getAccountspayable(Map<String, String> requestMap, String explan) {
         Map<String, Object> result = new HashMap<>();
-        result.put("customerName",requestMap.get("customerName"));
-        result.put("queryStartDate",requestMap.get("startDate"));
-        result.put("queryEndDate",requestMap.get("endDate"));
-        result.put("explan",explan);
+        result.put("customerName", requestMap.get("customerName"));
+        result.put("queryStartDate", requestMap.get("startDate"));
+        result.put("queryEndDate", requestMap.get("endDate"));
+        result.put("explan", explan);
         //应付列表
         List<Map<String, Object>> mapList = this.getAccountspayableList(requestMap, explan);
         //应付前期结转
         Map<String, Object> accountspayableCount = this.getAccountspayableCount(requestMap, explan);
-        BigDecimal initInvoiceBalance = new BigDecimal(accountspayableCount.get("initPaymentBalance")==null?
-                "0":accountspayableCount.get("initPaymentBalance").toString());//还应付款
-        BigDecimal  initPaymentBalance = new BigDecimal(accountspayableCount.get("initInvoiceBalance")==null?
-                "0":accountspayableCount.get("initInvoiceBalance").toString());//还应开票
+        BigDecimal initInvoiceBalance = new BigDecimal(accountspayableCount.get("initPaymentBalance") == null ?
+                "0" : accountspayableCount.get("initPaymentBalance").toString());//还应付款
+        BigDecimal initPaymentBalance = new BigDecimal(accountspayableCount.get("initInvoiceBalance") == null ?
+                "0" : accountspayableCount.get("initInvoiceBalance").toString());//还应开票
 
-        result.put("initInvoiceBalance",initInvoiceBalance);
-        result.put("initPaymentBalance",initPaymentBalance);
+        result.put("initInvoiceBalance", initInvoiceBalance);
+        result.put("initPaymentBalance", initPaymentBalance);
         BigDecimal deliverTotalAmount = new BigDecimal(0);
         BigDecimal invoiceBalanceTotalAmount = new BigDecimal(0);
         BigDecimal collectTotalAmount = new BigDecimal(0);
         BigDecimal receivableTotalAmount = new BigDecimal(0);
         BigDecimal invoiceTotalAmount = new BigDecimal(0);
-        if (mapList!=null&&mapList.size()>0) {
+        if (mapList != null && mapList.size() > 0) {
             for (Map<String, Object> map : mapList) {
                 String type = map.get("type").toString();
                 BigDecimal amount = new BigDecimal(map.get("Amount").toString());
-    //
-                map.put("voucherdate",map.get("voucherdate").toString().substring(0,10));
-                switch (type){
-                    case "1" :
+                //
+                map.put("voucherdate", map.get("voucherdate").toString().substring(0, 10));
+                switch (type) {
+                    case "1":
                         initPaymentBalance = initPaymentBalance.add(amount);
                         initInvoiceBalance = initInvoiceBalance.add(amount);
                         collectTotalAmount = collectTotalAmount.add(amount);
                         break;
-                    case "2" :
+                    case "2":
                         initPaymentBalance = initPaymentBalance.subtract(amount);
                         receivableTotalAmount = receivableTotalAmount.add(amount);
                         break;
-                    case "3" :
+                    case "3":
                         initInvoiceBalance = initInvoiceBalance.subtract(amount);
                         invoiceTotalAmount = invoiceTotalAmount.add(amount);
                         break;
-                    default:break;
+                    default:
+                        break;
                 }
-                map.put("invoiceBalanceAmount",initInvoiceBalance);
-                map.put("receivableBalance",initPaymentBalance);
+                map.put("invoiceBalanceAmount", initInvoiceBalance);
+                map.put("receivableBalance", initPaymentBalance);
             }
 
-            deliverTotalAmount = (BigDecimal) mapList.get(mapList.size() -  1).get("receivableBalance");
+            deliverTotalAmount = (BigDecimal) mapList.get(mapList.size() - 1).get("receivableBalance");
             invoiceBalanceTotalAmount = (BigDecimal) mapList.get(mapList.size() - 1).get("invoiceBalanceAmount");
-        }else{
+        } else {
             deliverTotalAmount = initPaymentBalance;
             invoiceBalanceTotalAmount = initInvoiceBalance;
         }
-        result.put("deliverTotalAmount",deliverTotalAmount);
-        result.put("invoiceBalanceTotalAmount",invoiceBalanceTotalAmount);
-        result.put("collectTotalAmount",collectTotalAmount);
-        result.put("receivableTotalAmount",receivableTotalAmount);
-        result.put("invoiceTotalAmount",invoiceTotalAmount);
-        result.put("arrDetail",mapList);
+        result.put("deliverTotalAmount", deliverTotalAmount);
+        result.put("invoiceBalanceTotalAmount", invoiceBalanceTotalAmount);
+        result.put("collectTotalAmount", collectTotalAmount);
+        result.put("receivableTotalAmount", receivableTotalAmount);
+        result.put("invoiceTotalAmount", invoiceTotalAmount);
+        result.put("arrDetail", mapList);
         return result;
     }
 
@@ -1096,10 +1131,10 @@ public class FinanceService {
         sb.append(" ) ss left join AA_Partner AA on ss.IdPartner = AA.ID where 1=1 and AA.name =? and pubuserdefnvc1 = ?");
         list.add(requestMap.get("customerName"));
         list.add(explan);
-        sb.append(" and voucherdate >='"+requestMap.get("startDate")+"'");
-        sb.append(" and voucherdate <='"+requestMap.get("endDate")+"'");
-        sb.append( " order by voucherdate");
-        return  jdbcTemplate.queryForList(sb.toString(), list.toArray());
+        sb.append(" and voucherdate >='" + requestMap.get("startDate") + "'");
+        sb.append(" and voucherdate <='" + requestMap.get("endDate") + "'");
+        sb.append(" order by voucherdate");
+        return jdbcTemplate.queryForList(sb.toString(), list.toArray());
     }
 
     private Map<String, Object> getAccountspayableCount(Map<String, String> requestMap, String explan) {
@@ -1117,8 +1152,8 @@ public class FinanceService {
         sb.append(" ) ss left join AA_Partner AA on ss.IdPartner = AA.ID where 1=1 and AA.name =? and pubuserdefnvc1 = ?");
         list.add(requestMap.get("customerName"));
         list.add(explan);
-        sb.append(" and voucherdate <'"+requestMap.get("startDate")+"'");
-        return  jdbcTemplate.queryForMap(sb.toString(), list.toArray());
+        sb.append(" and voucherdate <'" + requestMap.get("startDate") + "'");
+        return jdbcTemplate.queryForMap(sb.toString(), list.toArray());
     }
 
     public void downloadOverdueCredit(HttpServletResponse httpServletResponse) {

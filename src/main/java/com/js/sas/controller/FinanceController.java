@@ -17,6 +17,8 @@ import com.js.sas.service.FinanceService;
 import com.js.sas.service.PartnerService;
 import com.js.sas.utils.*;
 import com.js.sas.utils.constant.ExcelPropertyEnum;
+import com.js.sas.utils.excel.SalesOverdueStyleExcelHandler;
+import com.js.sas.utils.excel.StyleExcelHandler;
 import com.js.sas.utils.upload.ExcelListener;
 import com.js.sas.utils.upload.UploadData;
 import io.swagger.annotations.ApiOperation;
@@ -584,7 +586,7 @@ public class FinanceController {
             }
             // 动态部分
             for (int index = 1; index <= columnsList.size() - 10; index++) {
-                if (index > 3) {
+                if (index > 4) {
                     dataMap.put(columnsList.get(columnsList.size() - index), objectList.get(objectList.size() - index));
                 } else {
                     // 按账期日，每5天划分一列，向后合并。例如：账期日7显示在10日列。
@@ -594,17 +596,17 @@ public class FinanceController {
                         date = Integer.parseInt(dataMap.get("账期日").toString());
                     }
                     if (date <= 5) {
-                        dataMap.put((4 - index) + "05", objectList.get(objectList.size() - index));
+                        dataMap.put((5 - index) + "05", objectList.get(objectList.size() - index));
                     } else if (date <= 10) {
-                        dataMap.put((4 - index) + "10", objectList.get(objectList.size() - index));
+                        dataMap.put((5 - index) + "10", objectList.get(objectList.size() - index));
                     } else if (date <= 15) {
-                        dataMap.put((4 - index) + "15", objectList.get(objectList.size() - index));
+                        dataMap.put((5 - index) + "15", objectList.get(objectList.size() - index));
                     } else if (date <= 20) {
-                        dataMap.put((4 - index) + "20", objectList.get(objectList.size() - index));
+                        dataMap.put((5 - index) + "20", objectList.get(objectList.size() - index));
                     } else if (date <= 25) {
-                        dataMap.put((4 - index) + "25", objectList.get(objectList.size() - index));
+                        dataMap.put((5 - index) + "25", objectList.get(objectList.size() - index));
                     } else {
-                        dataMap.put((4 - index) + "30", objectList.get(objectList.size() - index));
+                        dataMap.put((5 - index) + "30", objectList.get(objectList.size() - index));
                     }
                 }
             }
@@ -687,8 +689,6 @@ public class FinanceController {
         /**
          * 以下处理数据
          */
-        // 数据List
-        List<Object[]> resultDataList = financeService.findOverdueSales(null);
         // 数据
         List<List<Object>> rowsList = financeService.getOverdueSalesList(null);
 
@@ -702,13 +702,27 @@ public class FinanceController {
         BigDecimal totalOverdue = BigDecimal.ZERO;
         // 期初应收
         BigDecimal totalOpeningBalance = BigDecimal.ZERO;
-
+        // 四个月的小计金额
         BigDecimal tatalAmount1 = BigDecimal.ZERO;
         BigDecimal tatalAmount2 = BigDecimal.ZERO;
         BigDecimal tatalAmount3 = BigDecimal.ZERO;
-
+        BigDecimal tatalAmount4 = BigDecimal.ZERO;
         // 计数器
         int num = 0;
+        // 小计合并行号List
+        List<Integer> mergeRowNumList = new ArrayList<>();
+        // 背景色行
+        List<Integer> backgroundColorList = new ArrayList<>();
+        backgroundColorList.add(0);
+        backgroundColorList.add(1);
+        // 居中行
+        List<Integer> centerList = new ArrayList<>();
+        backgroundColorList.add(0);
+        backgroundColorList.add(1);
+        // 加粗
+        List<Integer> boldList = new ArrayList<>();
+        boldList.add(0);
+        boldList.add(1);
 
         for (int index = 0; index < rowsList.size(); index++) {
             if (index == 0) {
@@ -722,7 +736,7 @@ public class FinanceController {
 
                 int monthDataIndex = 1;
 
-                for (int dataIndex = 10; dataIndex < 28; dataIndex++) {
+                for (int dataIndex = 10; dataIndex < rowsList.get(0).size(); dataIndex++) {
                     // 不等于-，说明是结算日
                     if (!rowsList.get(index).get(dataIndex).toString().equals("-")) {
                         if (monthDataIndex == 1) {
@@ -734,6 +748,9 @@ public class FinanceController {
                         } else if (monthDataIndex == 3) {
                             tatalAmount3 = tatalAmount3.add(new BigDecimal(rowsList.get(index).get(dataIndex).toString()));
                             monthDataIndex++;
+                        } else if (monthDataIndex == 4) {
+                            tatalAmount4 = tatalAmount4.add(new BigDecimal(rowsList.get(index).get(dataIndex).toString()));
+                            monthDataIndex++;
                         }
                     }
                 }
@@ -741,20 +758,20 @@ public class FinanceController {
             } else {
                 if (num > 1) {
                     List innerDataList = new ArrayList();
-                    innerDataList.add("");
-                    innerDataList.add("");
-                    innerDataList.add("");
-                    innerDataList.add("");
-                    innerDataList.add("");
-                    innerDataList.add("");
                     innerDataList.add(lastParentName + " 小计");
+                    innerDataList.add("");
+                    innerDataList.add("");
+                    innerDataList.add("");
+                    innerDataList.add("");
+                    innerDataList.add("");
+                    innerDataList.add("");
                     innerDataList.add(totalReceivables);
                     innerDataList.add(totalOverdue);
                     innerDataList.add(totalOpeningBalance);
 
                     int monthDataIndex = 1;
                     //
-                    for (int dataIndex = 10; dataIndex < 28; dataIndex++) {
+                    for (int dataIndex = 10; dataIndex < rowsList.get(0).size(); dataIndex++) {
                         // 不等于-，说明是结算日
                         if (index == 0) {
                             continue;
@@ -768,6 +785,9 @@ public class FinanceController {
                                 monthDataIndex++;
                             } else if (monthDataIndex == 3) {
                                 innerDataList.add(tatalAmount3);
+                                monthDataIndex++;
+                            } else if (monthDataIndex == 4) {
+                                innerDataList.add(tatalAmount4);
                                 monthDataIndex++;
                             }
                         } else {
@@ -783,7 +803,14 @@ public class FinanceController {
                     tatalAmount1 = BigDecimal.ZERO;
                     tatalAmount2 = BigDecimal.ZERO;
                     tatalAmount3 = BigDecimal.ZERO;
+                    tatalAmount4 = BigDecimal.ZERO;
                     num = 0;
+                    // 需要合并的行号，加2因为有2行标题
+                    mergeRowNumList.add(index + 2);
+                    // 背景色，加2因为有2行标题
+                    backgroundColorList.add(index + 2);
+                    // 居中，加2因为有2行标题
+                    centerList.add(index + 2);
                 } else {
                     totalReceivables = BigDecimal.ZERO;
                     totalOverdue = BigDecimal.ZERO;
@@ -791,13 +818,14 @@ public class FinanceController {
                     tatalAmount1 = BigDecimal.ZERO;
                     tatalAmount2 = BigDecimal.ZERO;
                     tatalAmount3 = BigDecimal.ZERO;
+                    tatalAmount4 = BigDecimal.ZERO;
                     totalReceivables = totalReceivables.add(new BigDecimal(rowsList.get(index).get(7).toString()));
                     totalOverdue = totalOverdue.add(new BigDecimal(rowsList.get(index).get(8).toString()));
                     totalOpeningBalance = totalOpeningBalance.add(new BigDecimal(rowsList.get(index).get(9).toString()));
 
                     int monthDataIndex = 1;
 
-                    for (int dataIndex = 10; dataIndex < 28; dataIndex++) {
+                    for (int dataIndex = 10; dataIndex < rowsList.get(0).size(); dataIndex++) {
                         // 不等于-，说明是结算日
                         if (!rowsList.get(index).get(dataIndex).toString().equals("-")) {
                             if (monthDataIndex == 1) {
@@ -809,6 +837,9 @@ public class FinanceController {
                             } else if (monthDataIndex == 3) {
                                 tatalAmount3 = tatalAmount3.add(new BigDecimal(rowsList.get(index).get(dataIndex).toString()));
                                 monthDataIndex++;
+                            } else if (monthDataIndex == 4) {
+                                tatalAmount4 = tatalAmount4.add(new BigDecimal(rowsList.get(index).get(dataIndex).toString()));
+                                monthDataIndex++;
                             }
                         }
                     }
@@ -819,9 +850,16 @@ public class FinanceController {
             }
         }
 
+        // excel样式
+        SalesOverdueStyleExcelHandler handler = new SalesOverdueStyleExcelHandler(backgroundColorList, boldList);
         // 写入数据
-        ExcelWriter writer = new ExcelWriter(out, ExcelTypeEnum.XLSX, true);
+        ExcelWriter writer = new ExcelWriter(null, out, ExcelTypeEnum.XLSX, true, handler);
         writer.write1(rowsList, sheet, table);
+
+        // 合并“小计”行
+        for (int index : mergeRowNumList) {
+            writer.merge(index, index, 0, 6);
+        }
 
         writer.finish();
         out.flush();
@@ -1229,11 +1267,11 @@ public class FinanceController {
                 Row r = sheet.getRow(i);
 //                System.out.println(r.getCell(0)+"==="+r.getCell(1)+"==="+r.getCell(2));
                 memberSalesman = new MemberSalesman();
-                String name  = null;
+                String name = null;
                 switch (r.getCell(0).getCellTypeEnum()) {
                     case NUMERIC:
                         int numericCellValue = (int) r.getCell(0).getNumericCellValue();
-                        name = numericCellValue+"";
+                        name = numericCellValue + "";
                         break;
                     case STRING:
                         name = r.getCell(0).getStringCellValue();
@@ -1264,7 +1302,6 @@ public class FinanceController {
 
         return "success";
     }
-
 
 
 }
