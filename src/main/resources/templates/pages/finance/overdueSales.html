@@ -221,7 +221,7 @@
             processData: false,
             success: function (result) {
                 $.each(result.columns, function (index, value) {
-                    if (index < 10) {
+                    if (index < 9) {
                         upColumns.push({field: value, title: value, rowspan: 2, sortable: true, align: 'center', valign: 'middle'});
                     } else {
                         upColumns.push({title: value, colspan: 6, sortable: true, align: 'center'});

@@ -45,6 +45,23 @@ public class SalesOverdueStyleExcelHandler implements WriteHandler {
             cellStyle.setBorderTop(BorderStyle.THIN);
             // 右边框
             cellStyle.setBorderRight(BorderStyle.THIN);
+            // 居中
+            cellStyle.setAlignment(HorizontalAlignment.CENTER);
+        } else {
+            // 单元格位置
+            if (i < 3) {
+                // 靠左
+                cellStyle.setAlignment(HorizontalAlignment.LEFT);
+            } else if (i < 5) {
+                // 靠右
+                cellStyle.setAlignment(HorizontalAlignment.RIGHT);
+            } else if (i == 5) {
+                // 靠左
+                cellStyle.setAlignment(HorizontalAlignment.LEFT);
+            } else {
+                // 靠右
+                cellStyle.setAlignment(HorizontalAlignment.RIGHT);
+            }
         }
 
         if (boldList != null) {
@@ -64,8 +81,6 @@ public class SalesOverdueStyleExcelHandler implements WriteHandler {
             }
         }
 
-        // 全部居中
-        cellStyle.setAlignment(HorizontalAlignment.CENTER);
         cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
 
         cell.getRow().getCell(i).setCellStyle(cellStyle);

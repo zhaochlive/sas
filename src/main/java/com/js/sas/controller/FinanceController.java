@@ -550,7 +550,12 @@ public class FinanceController {
     @ApiIgnore
     @PostMapping("/overdueSalesColumns")
     public Object overdueSalesColumns() {
-        return financeService.findOverdueSalesColumns();
+        // 页面不需要显示往来单位编码列，在此删除，需要优化
+        Map<String, List<String>> columnMap = financeService.findOverdueSalesColumns();
+        List<String> columnList = columnMap.get("columns");
+        columnList.remove(2);
+        columnMap.put("columns", columnList);
+        return columnMap;
     }
 
     @ApiOperation(value = "客户逾期统计（销售版本）", notes = "数据来源：用友；数据截止日期：昨天")
@@ -611,6 +616,9 @@ public class FinanceController {
                 }
             }
 
+            // 页面不需要显示往来单位编码列，在此删除，需要优化
+            dataMap.remove("用友往来单位编码");
+
             rowsList.add(dataMap);
         }
 
@@ -626,6 +634,8 @@ public class FinanceController {
         String fileName = "逾期统计表";
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
         List<String> columnsList = financeService.findOverdueSalesColumns().get("columns");
+        // 页面不需要显示往来单位编码列，在此删除，需要优化
+        columnsList.remove(2);
         // 表单
         Sheet sheet = new Sheet(1, 0);
         sheet.setSheetName(fileName);
@@ -635,7 +645,7 @@ public class FinanceController {
         List<List<String>> headList = new ArrayList<>();
         // 拼接表头
         for (int index = 0; index < columnsList.size(); index++) {
-            if (index < 10) {
+            if (index < 9) {
                 List<String> headTitle = new ArrayList<>();
                 headTitle.add(columnsList.get(index));
                 headTitle.add(columnsList.get(index));
@@ -696,6 +706,10 @@ public class FinanceController {
          * 20191226：关联客户最下面添加一行小计金额
          */
         String lastParentName = "";
+        // 账期月
+        int month = 0;
+        // 账期日
+        int day = 0;
         // 应收
         BigDecimal totalReceivables = BigDecimal.ZERO;
         // 逾期
@@ -703,10 +717,7 @@ public class FinanceController {
         // 期初应收
         BigDecimal totalOpeningBalance = BigDecimal.ZERO;
         // 四个月的小计金额
-        BigDecimal tatalAmount1 = BigDecimal.ZERO;
-        BigDecimal tatalAmount2 = BigDecimal.ZERO;
-        BigDecimal tatalAmount3 = BigDecimal.ZERO;
-        BigDecimal tatalAmount4 = BigDecimal.ZERO;
+        BigDecimal[] tatalAmountArray = new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
         // 计数器
         int num = 0;
         // 小计合并行号List
@@ -725,6 +736,10 @@ public class FinanceController {
         boldList.add(1);
 
         for (int index = 0; index < rowsList.size(); index++) {
+            month = Integer.parseInt(rowsList.get(index).get(4).toString());
+            if (StringUtils.isNumeric(rowsList.get(index).get(5).toString())) {
+                day = Integer.parseInt(rowsList.get(index).get(5).toString());
+            }
             if (index == 0) {
                 lastParentName = rowsList.get(index).get(6).toString();
             }
@@ -740,16 +755,16 @@ public class FinanceController {
                     // 不等于-，说明是结算日
                     if (!rowsList.get(index).get(dataIndex).toString().equals("-")) {
                         if (monthDataIndex == 1) {
-                            tatalAmount1 = tatalAmount1.add(new BigDecimal(rowsList.get(index).get(dataIndex).toString()));
+                            tatalAmountArray[0] = tatalAmountArray[0].add(new BigDecimal(rowsList.get(index).get(dataIndex).toString()));
                             monthDataIndex++;
                         } else if (monthDataIndex == 2) {
-                            tatalAmount2 = tatalAmount2.add(new BigDecimal(rowsList.get(index).get(dataIndex).toString()));
+                            tatalAmountArray[1] = tatalAmountArray[1].add(new BigDecimal(rowsList.get(index).get(dataIndex).toString()));
                             monthDataIndex++;
                         } else if (monthDataIndex == 3) {
-                            tatalAmount3 = tatalAmount3.add(new BigDecimal(rowsList.get(index).get(dataIndex).toString()));
+                            tatalAmountArray[2] = tatalAmountArray[2].add(new BigDecimal(rowsList.get(index).get(dataIndex).toString()));
                             monthDataIndex++;
                         } else if (monthDataIndex == 4) {
-                            tatalAmount4 = tatalAmount4.add(new BigDecimal(rowsList.get(index).get(dataIndex).toString()));
+                            tatalAmountArray[3] = tatalAmountArray[3].add(new BigDecimal(rowsList.get(index).get(dataIndex).toString()));
                             monthDataIndex++;
                         }
                     }
@@ -757,6 +772,89 @@ public class FinanceController {
                 num++;
             } else {
                 if (num > 1) {
+
+                    /**
+                     * 如果有未到账期的应收款，则后面未到账期的金额应该抵扣逾期款。
+                     * 例如：当前逾期款-1000远，说明有1000的预收（多收的钱）。下个账期有2000的发货（应收款）。那么逾期款应显示2000-1000>0，则显示0。下个账期的应收显示2000-1000 = 1000。
+                     *      如果下个账期只发货500，那么逾期款应显示500-1000 = -500，小于0，则逾期款显示-500，下个账期的应收款显示0。
+                     *
+                     * 只取未到账期的部分
+                     *
+                     * ！！！仓库客户的单独明细不需要此规则，小计需要此规则。所以小计需要再次单独计算！！！
+                     */
+                    BigDecimal tempTotalOverdue = totalOverdue;
+                    for (int arrayIndex = 0; arrayIndex < tatalAmountArray.length; arrayIndex++) {
+                        if (tempTotalOverdue.compareTo(BigDecimal.ZERO) < 0) { // 逾期金额小于0
+                            // 第1个月（共4个月）
+                            // 逾期金额，加上未到账期应收款
+                            tempTotalOverdue = tempTotalOverdue.add(tatalAmountArray[arrayIndex]);
+                            if (tempTotalOverdue.compareTo(BigDecimal.ZERO) >= 0) { // 如果扣除未到账期应收款，逾期金额大于等于0
+                                // 未到期应收款，设置为去掉预付款的金额
+                                tatalAmountArray[arrayIndex] = tempTotalOverdue;
+                                // 逾期金额设置为0
+                                tempTotalOverdue = BigDecimal.ZERO;
+                                break;
+                            } else { // 如果扣除未到账期应收款，逾期金额小于0，继续扣除下一个未到账期月份的应收款
+                                // 未到期应收款，设置为0
+                                tatalAmountArray[arrayIndex] = BigDecimal.ZERO;
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+
+                    // 应减去的结算周期数
+                    int overdueMonths = CommonUtils.overdueMonth(month, day);
+                    if (Calendar.getInstance().get(Calendar.getInstance().DATE) > 27) {
+                        overdueMonths = overdueMonths - 1;
+
+                    }
+
+                    // 逾期款小于0
+                    if (totalOverdue.compareTo(BigDecimal.ZERO) < 0) {
+                        // 判断逾期金额是否有变化，也就是判断逾期金额是否抵扣未到期的预付款。如果没有变化，则逾期款可以显示负数。如果有变化，小于0的逾期款，显示0。
+                        if (tempTotalOverdue.compareTo(totalOverdue) != 0) {
+                            totalOverdue = BigDecimal.ZERO;
+                            // 小计期初也是0
+                            totalOpeningBalance = BigDecimal.ZERO;
+                            for (int arrayIndex = 0; arrayIndex < tatalAmountArray.length - overdueMonths; arrayIndex++) {
+                                // 已到期的月小计，也应该都是0
+                                tatalAmountArray[arrayIndex] = BigDecimal.ZERO;
+                            }
+                        }
+
+                        for (int arrayIndex = 0; arrayIndex < tatalAmountArray.length - overdueMonths; arrayIndex++) {
+                            // 逾期款等于0，所有账期逾期金额都是0
+                            if (totalOverdue.compareTo(BigDecimal.ZERO) == 0) {
+                                tatalAmountArray = new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
+                                break;
+                            } else if (totalOverdue.compareTo(BigDecimal.ZERO) == -1) {  // 逾期金额小于0
+                                // 当月小计
+                                BigDecimal receiveAndRefundAmount = tatalAmountArray[arrayIndex];
+                                if (receiveAndRefundAmount.compareTo(BigDecimal.ZERO) == 0) {
+                                    // 如果是0，跳过，本月就是0
+                                    // dataList.set(index, 0);
+                                } else if (totalOverdue.compareTo(receiveAndRefundAmount) > 0) { // 小计逾期金额大于当月小计，那么显示逾期的数量（因为是负数，所以和正数的逻辑是反的）
+                                    tatalAmountArray[arrayIndex] = totalOverdue;
+                                    totalOverdue = BigDecimal.ZERO;
+                                } else {
+                                    // 如果逾期金额小于当月金额，那么显示当月金额，相减得到新的逾期金额
+                                    tatalAmountArray[arrayIndex] = receiveAndRefundAmount;
+                                    totalOverdue = totalOverdue.subtract(receiveAndRefundAmount);
+                                }
+                            } else {  // 逾期金额大于0，从最后一个开始分摊逾期金额
+                                // 大于等于当月小计，设置当月发货金额
+                                if (totalOverdue.compareTo(tatalAmountArray[arrayIndex]) > -1) {
+                                    totalOverdue = totalOverdue.subtract(tatalAmountArray[arrayIndex]);
+                                } else {
+                                    // 小于当月小计，设置逾期金额，并置零
+                                    tatalAmountArray[arrayIndex] = totalOverdue;
+                                    totalOverdue = BigDecimal.ZERO;
+                                }
+                            }
+                        }
+                    }
+
                     List innerDataList = new ArrayList();
                     innerDataList.add(lastParentName + " 小计");
                     innerDataList.add("");
@@ -771,23 +869,23 @@ public class FinanceController {
 
                     int monthDataIndex = 1;
                     //
-                    for (int dataIndex = 10; dataIndex < rowsList.get(0).size(); dataIndex++) {
+                    for (int dataIndex = 9; dataIndex < rowsList.get(0).size(); dataIndex++) {
                         // 不等于-，说明是结算日
                         if (index == 0) {
                             continue;
                         }
                         if (!rowsList.get(index - 1).get(dataIndex).toString().equals("-")) {
                             if (monthDataIndex == 1) {
-                                innerDataList.add(tatalAmount1);
+                                innerDataList.add(tatalAmountArray[0]);
                                 monthDataIndex++;
                             } else if (monthDataIndex == 2) {
-                                innerDataList.add(tatalAmount2);
+                                innerDataList.add(tatalAmountArray[1]);
                                 monthDataIndex++;
                             } else if (monthDataIndex == 3) {
-                                innerDataList.add(tatalAmount3);
+                                innerDataList.add(tatalAmountArray[2]);
                                 monthDataIndex++;
                             } else if (monthDataIndex == 4) {
-                                innerDataList.add(tatalAmount4);
+                                innerDataList.add(tatalAmountArray[3]);
                                 monthDataIndex++;
                             }
                         } else {
@@ -800,10 +898,7 @@ public class FinanceController {
                     totalReceivables = BigDecimal.ZERO;
                     totalOverdue = BigDecimal.ZERO;
                     totalOpeningBalance = BigDecimal.ZERO;
-                    tatalAmount1 = BigDecimal.ZERO;
-                    tatalAmount2 = BigDecimal.ZERO;
-                    tatalAmount3 = BigDecimal.ZERO;
-                    tatalAmount4 = BigDecimal.ZERO;
+                    tatalAmountArray = new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
                     num = 0;
                     // 需要合并的行号，加2因为有2行标题
                     mergeRowNumList.add(index + 2);
@@ -815,10 +910,7 @@ public class FinanceController {
                     totalReceivables = BigDecimal.ZERO;
                     totalOverdue = BigDecimal.ZERO;
                     totalOpeningBalance = BigDecimal.ZERO;
-                    tatalAmount1 = BigDecimal.ZERO;
-                    tatalAmount2 = BigDecimal.ZERO;
-                    tatalAmount3 = BigDecimal.ZERO;
-                    tatalAmount4 = BigDecimal.ZERO;
+                    tatalAmountArray = new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
                     totalReceivables = totalReceivables.add(new BigDecimal(rowsList.get(index).get(7).toString()));
                     totalOverdue = totalOverdue.add(new BigDecimal(rowsList.get(index).get(8).toString()));
                     totalOpeningBalance = totalOpeningBalance.add(new BigDecimal(rowsList.get(index).get(9).toString()));
@@ -829,16 +921,16 @@ public class FinanceController {
                         // 不等于-，说明是结算日
                         if (!rowsList.get(index).get(dataIndex).toString().equals("-")) {
                             if (monthDataIndex == 1) {
-                                tatalAmount1 = tatalAmount1.add(new BigDecimal(rowsList.get(index).get(dataIndex).toString()));
+                                tatalAmountArray[0] = tatalAmountArray[0].add(new BigDecimal(rowsList.get(index).get(dataIndex).toString()));
                                 monthDataIndex++;
                             } else if (monthDataIndex == 2) {
-                                tatalAmount2 = tatalAmount2.add(new BigDecimal(rowsList.get(index).get(dataIndex).toString()));
+                                tatalAmountArray[1] = tatalAmountArray[1].add(new BigDecimal(rowsList.get(index).get(dataIndex).toString()));
                                 monthDataIndex++;
                             } else if (monthDataIndex == 3) {
-                                tatalAmount3 = tatalAmount3.add(new BigDecimal(rowsList.get(index).get(dataIndex).toString()));
+                                tatalAmountArray[2] = tatalAmountArray[2].add(new BigDecimal(rowsList.get(index).get(dataIndex).toString()));
                                 monthDataIndex++;
                             } else if (monthDataIndex == 4) {
-                                tatalAmount4 = tatalAmount4.add(new BigDecimal(rowsList.get(index).get(dataIndex).toString()));
+                                tatalAmountArray[3] = tatalAmountArray[3].add(new BigDecimal(rowsList.get(index).get(dataIndex).toString()));
                                 monthDataIndex++;
                             }
                         }
@@ -848,17 +940,21 @@ public class FinanceController {
                 }
                 lastParentName = rowsList.get(index).get(6).toString();
             }
+
+            // 页面不需要显示往来单位编码列，在此删除，需要优化
+            rowsList.get(index).remove(2);
         }
 
         // excel样式
         SalesOverdueStyleExcelHandler handler = new SalesOverdueStyleExcelHandler(backgroundColorList, boldList);
         // 写入数据
         ExcelWriter writer = new ExcelWriter(null, out, ExcelTypeEnum.XLSX, true, handler);
+
         writer.write1(rowsList, sheet, table);
 
         // 合并“小计”行
         for (int index : mergeRowNumList) {
-            writer.merge(index, index, 0, 6);
+            writer.merge(index, index, 0, 5);
         }
 
         writer.finish();

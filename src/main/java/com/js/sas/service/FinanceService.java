@@ -483,9 +483,9 @@ public class FinanceService {
 
             if (cash) {
                 /**
-                 * 现款计算三个月即可
+                 * 现款计算四个月即可
                  */
-                for (int index = dataList.size() - 1 - overdueMonths; index > 12; index--) {
+                for (int index = dataList.size() - 1; index > 11; index--) {
                     // 逾期款等于0，所有账期逾期金额都是0
                     if (overdue.compareTo(BigDecimal.ZERO) == 0) {
                         dataList.set(index, 0);
@@ -571,20 +571,26 @@ public class FinanceService {
                  *      如果下个账期只发货500，那么逾期款应显示500-1000 = -500，小于0，则逾期款显示-500，下个账期的应收款显示0。
                  *
                  * 只取未到账期的部分
+                 *
+                 * ！！！仓库客户的单独明细不需要此规则，小计需要此规则。所以小计需要再次单独计算！！！
                  */
-                for (int index = dataList.size() - overdueMonths; index < dataList.size(); index++) {
-                    if (overdue.compareTo(BigDecimal.ZERO) < 0) { // 逾期金额小于0
-                        // 逾期金额，加上未到账期应收款
-                        overdue = overdue.add(new BigDecimal(dataList.get(index).toString()));
-                        if (overdue.compareTo(BigDecimal.ZERO) >= 0) { // 如果扣除未到账期应收款，逾期金额大于等于0
-                            // 未到期应收款，设置为去掉预付款的金额
-                            dataList.set(index, overdue);
-                            // 逾期金额设置为0
-                            overdue = BigDecimal.ZERO;
+                if(!warehouse) {
+                    for (int index = dataList.size() - overdueMonths; index < dataList.size(); index++) {
+                        if (overdue.compareTo(BigDecimal.ZERO) < 0) { // 逾期金额小于0
+                            // 逾期金额，加上未到账期应收款
+                            overdue = overdue.add(new BigDecimal(dataList.get(index).toString()));
+                            if (overdue.compareTo(BigDecimal.ZERO) >= 0) { // 如果扣除未到账期应收款，逾期金额大于等于0
+                                // 未到期应收款，设置为去掉预付款的金额
+                                dataList.set(index, overdue);
+                                // 逾期金额设置为0
+                                overdue = BigDecimal.ZERO;
+                                break;
+                            } else { // 如果扣除未到账期应收款，逾期金额小于0，继续扣除下一个未到账期月份的应收款
+                                // 未到期应收款，设置为0
+                                dataList.set(index, BigDecimal.ZERO);
+                            }
+                        } else {
                             break;
-                        } else { // 如果扣除未到账期应收款，逾期金额小于0，继续扣除下一个未到账期月份的应收款
-                            // 未到期应收款，设置为0
-                            dataList.set(index, BigDecimal.ZERO);
                         }
                     }
                 }
@@ -633,7 +639,7 @@ public class FinanceService {
                             if (receiveAndRefundAmount.compareTo(BigDecimal.ZERO) == 0) {
                                 // 如果收款和退货都是0，跳过，本月就是0
                                 dataList.set(index, 0);
-                            } else if (overdue.compareTo(receiveAndRefundAmount) > -1) {
+                            } else if (overdue.compareTo(receiveAndRefundAmount) > 0) {
                                 // 对比收款，如果逾期金额大于等于当月收款金额+退款金额，那么显示逾期的数量（因为是负数，所以和正数的逻辑是反的）
                                 dataList.set(index, overdue);
                                 overdue = BigDecimal.ZERO;
