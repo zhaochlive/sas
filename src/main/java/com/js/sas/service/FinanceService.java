@@ -326,7 +326,7 @@ public class FinanceService {
     public List<Object[]> findOverdueSales(OverdueDTO partner) {
 
         StringBuilder sqlStringBuilder = new StringBuilder("SELECT yap.warehouse_sign, yap.parent_code, yap.amount_delivery, yap.amount_collected, IFNULL(ds.department,'') AS 部门, " +
-                "IFNULL( yapp.customer_service_staff, IFNULL( yap.customer_service_staff, '' ) ) AS 业务员, yap.code AS 用友往来单位编码, yap.name AS 往来单位名称, yap.payment_month AS 账期月, " +
+                "IFNULL( yap.customer_service_staff, '' ) AS 业务员, yap.code AS 用友往来单位编码, yap.name AS 往来单位名称, yap.payment_month AS 账期月, " +
                 "IF(yap.parent_name IS NULL OR (yap.parent_name = '' AND yap.settlement_type != '2') OR (yap.settlement_type = '1' AND yap.parent_code = '0'), '现款', yap.payment_date) AS 账期日, IF(yap.parent_name IS NULL OR yap.parent_name = '' OR (yap.settlement_type = '1' AND yap.parent_code = '0'), yap.NAME, yap.parent_name) AS 订货客户, yap.receivables AS 应收总计, " +
                 "yap.amount_delivery + yap.opening_balance - yap.amount_collected + yap.amount_refund AS 逾期款, yap.opening_balance AS 期初应收 ");
         // 当前时间
@@ -355,7 +355,7 @@ public class FinanceService {
         sqlStringBuilder.append(" LEFT JOIN v_settlement_sales_months_v3 vssm ON yap.id = vssm.settlementId ");
         sqlStringBuilder.append(" LEFT JOIN v_settlement_received vsr ON yap.id = vsr.settlementId ");
         sqlStringBuilder.append(" LEFT JOIN YY_AA_Partner yapp ON yapp.`code` = yap.parent_code ");
-        sqlStringBuilder.append(" LEFT JOIN dept_staff ds ON yapp.customer_service_staff = ds.NAME OR yap.customer_service_staff = ds.NAME ");
+        sqlStringBuilder.append(" LEFT JOIN dept_staff ds ON yap.customer_service_staff = ds.NAME ");
         sqlStringBuilder.append(" WHERE yap.status = 0 ");
         if (partner != null && StringUtils.isNotBlank(partner.getCode())) {
             sqlStringBuilder.append(" AND yap.code = '" + partner.getCode() + "' ");
@@ -430,7 +430,7 @@ public class FinanceService {
                 if (i > 13) {  // 计算每个周期的发货和应收
                     if (i >= dataRow.length - overdueMonths * 3) {
                         /**
-                         * 20191206修改：
+                         * 20191226修改：
                          * 1. 预期总额等于各月逾期金额之和。
                          * 2. 仓库特殊用户，退款金额不抵扣之前的欠款，只计算当月。
                          *
@@ -608,6 +608,8 @@ public class FinanceService {
                  * 功能只需要显示3个月的，但是涉及账期问题，如果账期一个月，需要多计算1个月，也就是4个月。目前按多算3个月，也就是6个月的数据。
                  * 因为是6个月的数据，所以逾期的分摊只需要算三个月，从第13列开始。
                  * 需要去掉未到账期的月份
+                 *
+                 * 20191227：修改为显示4个月
                  */
                 for (int index = dataList.size() - 1 - overdueMonths; index > 11; index--) {
                     // 逾期款等于0，所有账期逾期金额都是0
