@@ -345,12 +345,9 @@
                 boundaryGap: true,
                 data: (function () {
                     var now = new Date();
-
                     if (firstDay) {
                         now.setMonth(now.getMonth() - 1);
-                        console.log(now);
                     }
-
                     var res = [];
                     var len = 12;
                     while (len--) {
@@ -463,7 +460,7 @@
                 data: (function () {
                     var now = new Date();
                     var res = [];
-                    var len = 2;
+                    var len = Math.abs(new Date().getFullYear() - 2017);
                     while (len--) {
                         res.unshift(now.getFullYear() + '年');
                         now.setYear(now.getFullYear() - 1);
@@ -476,7 +473,7 @@
                 boundaryGap: true,
                 data: (function () {
                     var res = [];
-                    var len = 2;
+                    var len = Math.abs(new Date().getFullYear() - 2017);
                     while (len--) {
                         res.push('');
                     }
