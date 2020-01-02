@@ -26,7 +26,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -97,7 +96,37 @@ public class SalesController {
      */
     @PostMapping("/getProvinceOfSales")
     public Object getProvinceOfSales() {
-        List<RegionalSalesDTO> provinceOfSalesList = salesService.getRegionalSales("2019-01-01", "2019-12-31 23:59:59");
+        // 格式化日期
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        // 开始日期
+        Calendar beginDate = Calendar.getInstance();
+        // 设置年份
+        beginDate.set(Calendar.YEAR, beginDate.get(Calendar.YEAR));
+        // 1月
+        beginDate.set(Calendar.MONTH, 0);
+        // 1日
+        beginDate.set(Calendar.DAY_OF_MONTH, 1);
+        // 0点
+        beginDate.set(Calendar.HOUR_OF_DAY, 0);
+        // 0分
+        beginDate.set(Calendar.MINUTE, 0);
+        // 0秒
+        beginDate.set(Calendar.SECOND, 0);
+        // 结束日期
+        Calendar endDate = Calendar.getInstance();
+        // 设置年份
+        endDate.set(Calendar.YEAR, endDate.get(Calendar.YEAR));
+        // 12月
+        endDate.set(Calendar.MONTH, 11);
+        // 31日
+        endDate.set(Calendar.DAY_OF_MONTH, 31);
+        // 23点
+        endDate.set(Calendar.HOUR_OF_DAY, 23);
+        // 59分
+        endDate.set(Calendar.MINUTE, 59);
+        // 59秒
+        endDate.set(Calendar.SECOND, 59);
+        List<RegionalSalesDTO> provinceOfSalesList = salesService.getRegionalSales(sdf.format(beginDate.getTime()), sdf.format(endDate.getTime()));
         return ResultUtils.getResult(ResultCode.成功, provinceOfSalesList);
     }
 
@@ -110,19 +139,14 @@ public class SalesController {
     @PostMapping("/getProductValueOfSales")
     public Object getProductValueOfSales(OrderProductDTO orderProductDTO) {
         List<Tuple> resultList = salesService.getProductValueOfSales(orderProductDTO);
-
         HashMap[] rowsArray = new HashMap[1];
         HashMap<String, Object> data = new HashMap<>();
-
         data.put("count", resultList.get(0).get(0));
         data.put("amount", resultList.get(0).get(1));
-
         rowsArray[0] = data;
-
         HashMap<String, Object> result = new HashMap<>();
         result.put("rows", rowsArray);
         result.put("total", 1);
-
         return result;
     }
 
@@ -141,13 +165,10 @@ public class SalesController {
             }
             return ResultUtils.getResult(ResultCode.参数错误, errorMap);
         }
-
         List<RegionalSalesDTO> regionalSales = salesService.getRegionalSales(regionalSalesDTO.getStartCreateTime(), regionalSalesDTO.getEndCreateTime() + " 23:59:59");
-
         HashMap<String, Object> resultHashMap = new HashMap<>();
         resultHashMap.put("rows", regionalSales);
         resultHashMap.put("total", 1);
-
         return resultHashMap;
     }
 
@@ -159,18 +180,14 @@ public class SalesController {
      */
     @PostMapping("/exportRegionalSales")
     public void exportRegionalSales(RegionalSalesDTO regionalSalesDTO, HttpServletResponse httpServletResponse) {
-
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-
         if (StringUtils.isBlank(regionalSalesDTO.getStartCreateTime())) {
             regionalSalesDTO.setStartCreateTime("2018-01-01");
         }
         if (StringUtils.isBlank(regionalSalesDTO.getEndCreateTime())) {
             regionalSalesDTO.setEndCreateTime(sdf.format(new Date()));
         }
-
         List<RegionalSalesDTO> regionalSalesList = salesService.getRegionalSales(regionalSalesDTO.getStartCreateTime(), regionalSalesDTO.getEndCreateTime() + " 23:59:59");
-
         try {
             CommonUtils.export(httpServletResponse, regionalSalesList, "区域销售额", new RegionalSalesDTO());
         } catch (IOException e) {
@@ -294,7 +311,6 @@ public class SalesController {
         ExcelWriter writer = new ExcelWriter(out, ExcelTypeEnum.XLSX, true);
         writer.write1(dataList, sheet1);
         writer.finish();
-
         if (out != null) {
             try {
                 out.flush();
@@ -303,8 +319,6 @@ public class SalesController {
                 e.printStackTrace();
             }
         }
-
-
     }
 
 
@@ -379,7 +393,6 @@ public class SalesController {
             params.put("offset", "0");
         }
         List<Map<String, Object>> list = salesService.getSaleAmount(params);
-
         return list;
     }
 
@@ -439,14 +452,14 @@ public class SalesController {
         return salesService.getShopNum();
     }
 
-    @RequestMapping(value = "/download/productCategory",method = {RequestMethod.GET,RequestMethod.POST})
+    @RequestMapping(value = "/download/productCategory", method = {RequestMethod.GET, RequestMethod.POST})
     public void productCategory(HttpServletResponse response, HttpServletRequest request) {
         Map<String, String> params = new HashMap<String, String>();
         String year = null;
         if (request.getParameter("year") != null || StringUtils.isNotBlank(request.getParameter("year"))) {
             year = request.getParameter("year");
         } else {
-            return ;
+            return;
         }
         if (request.getParameter("brand2") != null && StringUtils.isNotBlank(request.getParameter("brand2"))) {
             params.put("brand", request.getParameter("brand2"));
@@ -460,7 +473,7 @@ public class SalesController {
         params.put("limit", "99999999");
         params.put("offset", "0");
         List<List<Object>> result = new ArrayList<>();
-        List<String > columnNameList = new ArrayList<>();
+        List<String> columnNameList = new ArrayList<>();
         columnNameList.add("分类");
         columnNameList.add("合计");
         columnNameList.add("品牌");
@@ -479,9 +492,8 @@ public class SalesController {
         columnNameList.add("十二月份");
         try {
             List<Map<String, Object>> list = salesService.getCategorySalesPage(params, year);
-//            System.out.println(list.toString());
-            List<Object> objects ;
-            for (Map<String,Object> order : list) {
+            List<Object> objects;
+            for (Map<String, Object> order : list) {
                 objects = new ArrayList<>();
                 objects.add(order.get("name"));
                 objects.add(order.get("sss"));
