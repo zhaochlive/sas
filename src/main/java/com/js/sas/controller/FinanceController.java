@@ -18,7 +18,6 @@ import com.js.sas.service.PartnerService;
 import com.js.sas.utils.*;
 import com.js.sas.utils.constant.ExcelPropertyEnum;
 import com.js.sas.utils.excel.SalesOverdueStyleExcelHandler;
-import com.js.sas.utils.excel.StyleExcelHandler;
 import com.js.sas.utils.upload.ExcelListener;
 import com.js.sas.utils.upload.UploadData;
 import io.swagger.annotations.ApiOperation;
@@ -27,7 +26,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.hibernate.type.BigDecimalType;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -185,7 +183,6 @@ public class FinanceController {
             e.printStackTrace();
         }
     }
-
 
     /**
      * 账期逾期客户导出
@@ -567,21 +564,11 @@ public class FinanceController {
         }
         // 列名
         List<String> columnsList = financeService.findOverdueSalesColumns().get("columns");
-
-        List<List<Object>> objectRowsList = financeService.getOverdueSalesList(partner);
-
         // 数据
+        List<List<Object>> objectRowsList = financeService.getOverdueSalesList(partner);
         ArrayList<Map<String, Object>> rowsList = new ArrayList<>();
-
         for (List<Object> objectList : objectRowsList) {
             Map<String, Object> dataMap = new HashMap<>();
-//            // 去掉-数据，需要优化，前两列不需要去掉
-//            for (int index = 2; index < objectList.size(); index++) {
-//                if (objectList.get(index).toString().equals("-")) {
-//                    objectList.remove(index--);
-//                }
-//            }
-
             // 设置数据列
             // 前面固定部分和后面月份动态部门分别处理
             for (int index = 0; index < 9; index++) {
@@ -692,10 +679,7 @@ public class FinanceController {
         /**
          * 以下处理数据
          */
-        // 数据
         List<List<Object>> originalRowsList = financeService.getOverdueSalesList(null);
-
-
         /**
          * 20191226：关联客户最下面添加一行小计金额
          */
@@ -728,122 +712,6 @@ public class FinanceController {
         List<Integer> boldList = new ArrayList<>();
         boldList.add(0);
         boldList.add(1);
-
-//        for (int index = 0; index < originalRowsList.size(); index++) {
-//            if (index == 0) {
-//                lastParentName = originalRowsList.get(index).get(5).toString();
-//            }
-//            // 订货客户
-//            if (lastParentName.equals(originalRowsList.get(index).get(5).toString())) {
-//                num++;
-//            } else {
-//                if (num > 1 && !originalRowsList.get(index).get(4).toString().equals("现款")) {
-//                    /**
-//                     * Service方法计算的逻辑：逾期款如果是负数，显示在最后一个账期。
-//                     * 财务要求：如果有关联账户，需要判单所有关联账户最后一个账期是否都为负数，如果都为负数，需要显示在下一个月。如果下个月也都是负数，需要显示在下下个月。
-//                     *
-//                     * 20190104：逾期款为负（有预收款），如果所有关联客户都没有欠款，那么每个月都不会有应收款，未到账期的每个月都是0
-//                     * 如果有一个关联客户有欠款，那就按正常逻辑进行计算。
-//                     */
-//                    // 上一条数据的关联的订货客户
-//                    String tempParentName = originalRowsList.get(index - 1).get(5).toString();
-//                    // 账期月
-//                    month = Integer.parseInt(originalRowsList.get(index - 1).get(3).toString());
-//                    // 账期日
-//                    if (StringUtils.isNumeric(originalRowsList.get(index - 1).get(4).toString())) {
-//                        day = Integer.parseInt(originalRowsList.get(index - 1).get(4).toString());
-//                    }
-//                    // 是否向后顺延
-//                    boolean next = true;
-//                    // 没有逾期款标记
-//                    boolean noOverdue = true;
-//                    // 账期时间
-//                    int overdueMonths = CommonUtils.overdueMonth(month, day);
-//                    // 最后一个到期账期月序号
-//                    int lastMonthIndex = originalRowsList.get(index - 1).size() - overdueMonths - 1;
-//                    // 需要获取的账期序号index，减1是因为循环开始有个++
-//                    int monthIndex = lastMonthIndex - 1;
-//
-//                    // 循环查询出之前所有订货客户相同的数据，也就是所有关联客户
-//                    for (int innerIndex = index - 1; innerIndex >= 0; innerIndex--) {
-//                        // 如果不相等，说明关联客户已经循环结束，跳出循环
-//                        if (!tempParentName.equals(originalRowsList.get(innerIndex).get(5).toString())) {
-//                            break;
-//                        }
-//                        // 存在关联的客户有逾期款，也就是逾期款大于0
-//                        if (new BigDecimal(originalRowsList.get(innerIndex).get(6).toString()).compareTo(BigDecimal.ZERO) > 0) {
-//                            noOverdue = false;
-//                            break;
-//                        }
-//                    }
-//                    // 如果所有关联客户都没有欠款，那么每个月都不会有应收款，未到账期的每个月都是0
-//                    if (noOverdue) {
-//                        // 循环设置
-//                        for (int innerIndex = index - 1; innerIndex >= 0; innerIndex--) {
-//                            // 如果不相等，说明关联客户已经循环结束，跳出循环
-//                            if (!tempParentName.equals(originalRowsList.get(innerIndex).get(5).toString())) {
-//                                break;
-//                            }
-//                            for (int dataIndex = lastMonthIndex + 1; dataIndex < originalRowsList.get(innerIndex).size(); dataIndex++) {
-//                                originalRowsList.get(innerIndex).set(dataIndex, BigDecimal.ZERO);
-//                            }
-//                        }
-//                    }
-//
-//                    do {
-//                        monthIndex++;
-//                        // 循环查询出之前所有订货客户相同的数据，也就是所有关联客户
-//                        for (int innerIndex = index - 1; innerIndex >= 0; innerIndex--) {
-//                            // 如果不相等，说明关联客户已经循环结束，跳出循环
-//                            if (!tempParentName.equals(originalRowsList.get(innerIndex).get(5).toString())) {
-//                                break;
-//                            }
-//                            // 存在大于零的逾期数据，不需要顺延，并跳出循环
-//                            if (new BigDecimal(originalRowsList.get(innerIndex).get(monthIndex).toString()).compareTo(BigDecimal.ZERO) > 0) {
-//                                next = false;
-//                                break;
-//                            }
-//                            // 存在关联的客户有逾期款，也就是逾期款大于0
-//                            if (new BigDecimal(originalRowsList.get(innerIndex).get(6).toString()).compareTo(BigDecimal.ZERO) > 0) {
-//                                noOverdue = true;
-//                            }
-//                            // innerIndex等于1，说明到最后一个了，跳出循环
-//                            if (innerIndex == 1 || monthIndex >= originalRowsList.get(innerIndex).size() - 1) {
-//                                next = false;
-//                                break;
-//                            }
-//                        }
-//                    } while (next);
-//
-//                    // 如果和最后一个账期序号不相等，把最后一个账期的金额设置为0，全部移到新的序号。
-//                    if (monthIndex != lastMonthIndex) {
-//                        // 循环设置
-//                        for (int innerIndex = index - 1; innerIndex >= 0; innerIndex--) {
-//                            // 如果不相等，说明关联客户已经循环结束，跳出循环
-//                            if (!tempParentName.equals(originalRowsList.get(innerIndex).get(5).toString())) {
-//                                break;
-//                            }
-//                            BigDecimal monthOverdue = new BigDecimal(originalRowsList.get(innerIndex).get(lastMonthIndex).toString());
-//                            originalRowsList.get(innerIndex).set(lastMonthIndex, BigDecimal.ZERO);
-//                            if (noOverdue) { // 如果关联客户均没有欠款，应该显示应收款总计，逾期金额是0
-//                                originalRowsList.get(innerIndex).set(monthIndex, new BigDecimal(originalRowsList.get(innerIndex).get(6).toString()));
-//                                originalRowsList.get(innerIndex).set(7, BigDecimal.ZERO);
-//                            } else {
-//                                originalRowsList.get(innerIndex).set(monthIndex, monthOverdue);
-//                            }
-//
-//                        }
-//                    }
-//                    num = 0;
-//                } else {
-//                    num = 1;
-//                }
-//                lastParentName = originalRowsList.get(index).get(5).toString();
-//            }
-//        }
-//
-//        lastParentName = "";
-//        num = 0;
 
         for (int index = 0; index < originalRowsList.size(); index++) {
             if (index == 0) {
@@ -1027,19 +895,15 @@ public class FinanceController {
             rowsList.add(resultList);
         }
 
-
         // excel样式
         SalesOverdueStyleExcelHandler handler = new SalesOverdueStyleExcelHandler(backgroundColorList, boldList);
         // 写入数据
         ExcelWriter writer = new ExcelWriter(null, out, ExcelTypeEnum.XLSX, true, handler);
-
         writer.write1(rowsList, sheet, table);
-
         // 合并“小计”行
         for (int index : mergeRowNumList) {
             writer.merge(index, index, 0, 5);
         }
-
         writer.finish();
         out.flush();
         out.close();

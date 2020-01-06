@@ -559,87 +559,6 @@ public class FinanceService {
                     }
                 }
 
-                /**
-                 * 如果有未到账期的应收款，则后面未到账期的金额应该抵扣逾期款。
-                 * 例如：当前逾期款-1000远，说明有1000的预收（多收的钱）。下个账期有2000的发货（应收款）。那么逾期款应显示2000-1000>0，则显示0。下个账期的应收显示2000-1000 = 1000。
-                 *      如果下个账期只发货500，那么逾期款应显示500-1000 = -500，小于0，则逾期款显示-500，下个账期的应收款显示0。
-                 *
-                 * 只取未到账期的部分
-                 *
-                 * ！！！仓库客户的单独明细不需要此规则，小计需要此规则。所以小计需要再次单独计算！！！
-                 */
-//                if (!warehouse) {
-//                    for (int index = dataList.size() - overdueMonths; index < dataList.size(); index++) {
-//                        if (overdue.compareTo(BigDecimal.ZERO) < 0) { // 逾期金额小于0
-//                            // 逾期金额，加上未到账期应收款
-//                            overdue = overdue.add(new BigDecimal(dataList.get(index).toString()));
-//                            if (overdue.compareTo(BigDecimal.ZERO) >= 0) { // 如果扣除未到账期应收款，逾期金额大于等于0
-//                                // 未到期应收款，设置为去掉预付款的金额
-//                                dataList.set(index, overdue);
-//                                // 逾期金额设置为0
-//                                overdue = BigDecimal.ZERO;
-//                                break;
-//                            } else { // 如果扣除未到账期应收款，逾期金额小于0，继续扣除下一个未到账期月份的应收款
-//                                // 未到期应收款，设置为0
-//                                dataList.set(index, BigDecimal.ZERO);
-//                            }
-//                        } else {
-//                            break;
-//                        }
-//                    }
-//                }
-
-
-                /**
-                 * 20200103：
-                 * 应收总计为负数，也就是有预付款，那么金额永远显示在下一个月，也就是表格的最后一个月。
-                 * 逾期款项为0，除了下一个月的其他月份也都为0
-                 */
-                // 如果应收总计大于零，但是逾期款小于零，那么设置未到账期的应收款，且逾期款设置为0
-//                if (receivables.compareTo(BigDecimal.ZERO) > 0) {
-//                    if (overdue.compareTo(BigDecimal.ZERO) < 0) {
-//                        // 从最后一个月开始向前
-//                        for (int index = dataList.size() - 1; index > 11; index--) {
-//                            // 如果当前月的款项为0，跳过
-//                            if (new BigDecimal(dataList.get(index).toString()).compareTo(BigDecimal.ZERO) == 0) {
-//                                continue;
-//                            } else {
-//                                // 设置总应收款，并结束循环
-//                                dataList.set(index, receivables);
-//                            }
-//                        }
-//
-//                        overdue = BigDecimal.ZERO;
-//                        dataList.set(8, overdue);
-//                    }
-//                } else { // 应收总计小于等于0
-//                    if (overdue.compareTo(BigDecimal.ZERO) < 0) { // 逾期款小于0
-//                        // 从最后一个月开始向前
-//                        for (int index = dataList.size() - 1; index > 11; index--) {
-//                            // 如果当前月的款项为0，跳过
-//
-//
-//                            // dataList.size()-index ：倒数第几个，从倒数第一个开始。
-//                            int dataIndex = dataList.size() - index;
-//                            // dataRow从最后一个向前，每3列一个收款金额. receiveIndex表示dataRow的倒数第几个，比如倒数第三个，倒数第六个。
-//                            int deliveryIndex = ((dataIndex - 1) * 3) + 1;
-//                            // dataRow从倒数第二个向前，每3列一个退款金额. refundIndex表示dataRow的倒数第几个，比如倒数第二个，倒数第五个。
-//                            int refundIndex = ((dataIndex - 1) * 3) + 2;
-//
-//
-//                            if (new BigDecimal(dataList.get(index).toString()).compareTo(BigDecimal.ZERO) == 0) {
-//                                continue;
-//                            } else {
-//                                // 设置总逾期款，并结束循环
-//                                dataList.set(index, overdue);
-//                            }
-//                        }
-//
-//                        overdue = BigDecimal.ZERO;
-//                        dataList.set(8, overdue);
-//                    }
-//                }
-
                 // 设置逾期款
                 dataList.set(7, overdue);
 
@@ -654,7 +573,12 @@ public class FinanceService {
                  * 1.逾期月份的金额先设置为0；
                  * 2.讲逾期金额（预付款）放在最后一个账期，！！！注意:如果最后一个账期，所有相关联的用户都没有正数的应收款，则后移，按此规则一直移到统计当月的下个月
                  */
-                for (int index = dataList.size() - 1 - overdueMonths; index > 10 - (overdueMonths - 3); index--) { // 这里的10 - (overdueMonths - 3)，因为1个月账期从10以后开始计算，如果是超过1个月，需要根据账期多计算(overdueMonths - 1)个月
+                int overdueIndex = 0;
+                if (overdueMonths > 3) {
+                    // 这里的10 - (overdueMonths - 3)，因为1个月账期从10以后开始计算，如果是超过1个月，需要根据账期多计算(overdueMonths - 3)个月
+                    overdueIndex = overdueMonths - 3;
+                }
+                for (int index = dataList.size() - 1 - overdueMonths; index > 10 - overdueIndex; index--) {
                     // 逾期款小于等于0，所有账期月、期初应收都是0
                     if (overdue.compareTo(BigDecimal.ZERO) < 1) {
 
@@ -669,30 +593,6 @@ public class FinanceService {
                         }
 
                         overdue = BigDecimal.ZERO;
-
-//                    } else if (overdue.compareTo(BigDecimal.ZERO) == -1) {  // 逾期金额小于0
-//                        // dataList.size()-index ：倒数第几个，从倒数第一个开始。
-//                        int dataIndex = dataList.size() - index;
-//                        // dataRow从最后一个向前，每3列一个收款金额. receiveIndex表示dataRow的倒数第几个，比如倒数第三个，倒数第六个。
-//                        int deliveryIndex = ((dataIndex - 1) * 3) + 3;
-//                        // dataRow从倒数第二个向前，每3列一个退款金额. refundIndex表示dataRow的倒数第几个，比如倒数第二个，倒数第五个。
-//                        int refundIndex = ((dataIndex - 1) * 3) + 2;
-//                        // 当月发货金额
-//                        BigDecimal monthDelivery = new BigDecimal(dataRow[dataRow.length - deliveryIndex].toString());
-//                        // 当月退货金额
-//                        BigDecimal monthRefund = new BigDecimal(dataRow[dataRow.length - refundIndex].toString());
-//
-//                        if (monthDelivery.compareTo(BigDecimal.ZERO) == 0 && monthRefund.compareTo(BigDecimal.ZERO) == 0) { // 如果发货和退货都是0，跳过，本月就是0
-//                            dataList.set(index, 0);
-//                        } else if (overdue.compareTo(new BigDecimal(dataList.get(index).toString())) > -1) {
-//                            // 对比收款，如果逾期金额大于等于当月发货金额+退货金额，那么显示逾期的数量（因为是负数，所以和正数的逻辑是反的）
-//                            dataList.set(index, overdue);
-//                            overdue = BigDecimal.ZERO;
-//                        } else {
-//                            // 如果逾期金额小于当月收款金额+退款金额，那么显示收款金额+退货金额，相减得到新的逾期金额
-//                            dataList.set(index, dataList.get(index).toString());
-//                            overdue = overdue.subtract((new BigDecimal(dataList.get(index).toString())));
-//                        }
                     } else {  // 逾期金额大于0，从最后一个开始分摊逾期金额
                         // 大于等于当月发货，设置当月发货金额
                         if (overdue.compareTo(new BigDecimal(dataList.get(index).toString())) > -1) {
@@ -712,10 +612,8 @@ public class FinanceService {
                 }
 
             }
-
             // 设置期初应收
             dataList.set(8, overdue);
-
             // 账期客户进行账期月设置
             if (!cash) {
                 for (int overdueIndex = 0; overdueIndex < month; overdueIndex++) {
@@ -725,66 +623,6 @@ public class FinanceService {
                     dataList.remove(dataList.size() - 1);
                 }
             }
-
-//            // 设置数据列
-//            List<Object> resultList = new ArrayList<>();
-//            // 前面固定部分和后面月份动态部门分别处理
-//            for (int index = 0; index < 9; index++) {
-//                resultList.add(dataList.get(index));
-//            }
-//            // 动态部分，4个月
-//            for (int index = 4; index > 0; index--) {
-//                // 按账期日补-
-//                int date = 0;
-//                if (StringUtils.isNumeric(dataList.get(4).toString())) {
-//                    date = Integer.parseInt(dataList.get(4).toString());
-//                }
-//                List<Object> zeroList = new ArrayList<>();
-//                if (date <= 5) {
-//                    zeroList.add(dataList.get(dataList.size() - index));
-//                    zeroList.add("-");
-//                    zeroList.add("-");
-//                    zeroList.add("-");
-//                    zeroList.add("-");
-//                    zeroList.add("-");
-//                } else if (date <= 10) {
-//                    zeroList.add("-");
-//                    zeroList.add(dataList.get(dataList.size() - index));
-//                    zeroList.add("-");
-//                    zeroList.add("-");
-//                    zeroList.add("-");
-//                    zeroList.add("-");
-//                } else if (date <= 15) {
-//                    zeroList.add("-");
-//                    zeroList.add("-");
-//                    zeroList.add(dataList.get(dataList.size() - index));
-//                    zeroList.add("-");
-//                    zeroList.add("-");
-//                    zeroList.add("-");
-//                } else if (date <= 20) {
-//                    zeroList.add("-");
-//                    zeroList.add("-");
-//                    zeroList.add("-");
-//                    zeroList.add(dataList.get(dataList.size() - index));
-//                    zeroList.add("-");
-//                    zeroList.add("-");
-//                } else if (date <= 25) {
-//                    zeroList.add("-");
-//                    zeroList.add("-");
-//                    zeroList.add("-");
-//                    zeroList.add("-");
-//                    zeroList.add(dataList.get(dataList.size() - index));
-//                    zeroList.add("-");
-//                } else {
-//                    zeroList.add("-");
-//                    zeroList.add("-");
-//                    zeroList.add("-");
-//                    zeroList.add("-");
-//                    zeroList.add("-");
-//                    zeroList.add(dataList.get(dataList.size() - index));
-//                }
-//                resultList.addAll(zeroList);
-//            }
 
             rowsList.add(dataList);
         }
