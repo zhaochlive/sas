@@ -1,4 +1,4 @@
-package com.js.sas.dto;
+package com.js.sas.entity.dto;
 
 import com.js.sas.utils.validate.groups.GetPartnerListByNameLike;
 import io.swagger.annotations.ApiModelProperty;

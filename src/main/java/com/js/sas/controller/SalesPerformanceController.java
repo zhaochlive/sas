@@ -1,6 +1,6 @@
 package com.js.sas.controller;
 
-import com.js.sas.dto.SalesperHead;
+import com.js.sas.entity.dto.SalesperHead;
 import com.js.sas.service.SalesPerformanceService;
 import com.js.sas.utils.CommonUtils;
 import com.js.sas.utils.DateTimeUtils;

@@ -1,6 +1,6 @@
 package com.js.sas.service;
 
-import com.js.sas.dto.CustomerOfOrder;
+import com.js.sas.entity.dto.CustomerOfOrder;
 import com.js.sas.utils.DateTimeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

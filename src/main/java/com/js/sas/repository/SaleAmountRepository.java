@@ -1,6 +1,6 @@
 package com.js.sas.repository;
 
-import com.js.sas.dto.SaleAmountDTO;
+import com.js.sas.entity.dto.SaleAmountDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

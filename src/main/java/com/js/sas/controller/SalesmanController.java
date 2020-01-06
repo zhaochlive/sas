@@ -1,9 +1,6 @@
 package com.js.sas.controller;
 
-import com.js.sas.dto.PartnerNameDTO;
-import com.js.sas.dto.SalesmanDTO;
-import com.js.sas.service.PartnerService;
-import com.js.sas.service.SalesService;
+import com.js.sas.entity.dto.SalesmanDTO;
 import com.js.sas.service.SalesmanService;
 import com.js.sas.utils.Result;
 import com.js.sas.utils.ResultCode;

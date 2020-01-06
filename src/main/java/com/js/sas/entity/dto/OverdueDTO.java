@@ -1,4 +1,4 @@
-package com.js.sas.dto;
+package com.js.sas.entity.dto;
 
 import com.alibaba.excel.metadata.BaseRowModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 
 /**
  * @ClassName OverdueDTO
- * @Description 现金逾期客户
+ * @Description 逾期客户
  * @Author zc
  * @Date 2019/7/12 15:02
  **/

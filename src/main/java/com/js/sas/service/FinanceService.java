@@ -4,30 +4,26 @@ import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.metadata.Sheet;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.alibaba.fastjson.JSONArray;
-import com.js.sas.dto.OverdueDTO;
-import com.js.sas.repository.PartnerRepository;
+import com.js.sas.entity.dto.OverdueDTO;
 import com.js.sas.utils.CommonUtils;
 import com.js.sas.utils.DateTimeUtils;
 import com.js.sas.utils.excel.StyleExcelHandler;
 import com.js.sas.utils.constant.ExcelPropertyEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.*;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.StoredProcedureQuery;
-import javax.persistence.criteria.Predicate;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
@@ -50,28 +46,20 @@ import java.util.Date;
 @Service
 @Slf4j
 public class FinanceService {
-
     @Value("${yongyou.url}")
     private String url;
-
     @PersistenceContext
     private EntityManager entityManager;
-
-    @Autowired
+    @Resource
     @Qualifier(value = "sqlServerJdbcTemplate")
     private JdbcTemplate jdbcTemplate;
-
-    private final DataSource dataSource;
-
-    private final PartnerRepository partnerRepository;
-
-    public FinanceService(DataSource dataSource, PartnerRepository partnerRepository) {
-        this.dataSource = dataSource;
-        this.partnerRepository = partnerRepository;
-    }
+    @Resource
+    private DataSource dataSource;
 
     /**
      * 结算客户对账单（线上、线下）
+     * <p>
+     * ！！！此方法调用存储过程，需要优化！！！
      *
      * @param name      结算客户名称
      * @param channel   来源（线上、线下）
@@ -85,9 +73,7 @@ public class FinanceService {
      */
     public Map<String, Object> getSettlementSummary(String name, String channel, String startDate, String endDate, int offset, int limit, String sort, String sortOrder) {
         HashMap<String, Object> result = new HashMap<>();
-
         StoredProcedureQuery store = this.entityManager.createNamedStoredProcedureQuery("getSettlementSummary");
-
         store.setParameter("settlementName", name);
         store.setParameter("channel", channel);
         store.setParameter("startDate", startDate);
@@ -96,133 +82,81 @@ public class FinanceService {
         store.setParameter("limitNum", limit);
         store.setParameter("sort", sort);
         store.setParameter("sortOrder", sortOrder);
-
-        List settlementSummaryList = store.getResultList();
-
-        result.put("rows", settlementSummaryList);
+        result.put("rows", store.getResultList());
         result.put("total", store.getOutputParameterValue("totalNum"));
-
         return result;
     }
 
     /**
-     * 逾期客户
+     * 逾期统计:列名List
      *
-     * @param partner 逾期客户
-     * @return 逾期客户列表
+     * @return List<String>
      */
-    public Page findOverdue(OverdueDTO partner) {
-        // 排序规则
-        Sort.Direction sortDirection;
-        if (partner.getSortOrder() == null || partner.getSortOrder().equals("desc")) {
-            sortDirection = Sort.Direction.DESC;
-        } else {
-            sortDirection = Sort.Direction.ASC;
-        }
-        // 判断排序字段
-        if (!StringUtils.isNotBlank(partner.getSort())) {
-            partner.setSort("name");
-        }
-
-        if (partner.getLimit() <= 0) {
-            partner.setLimit(1);
-        }
-
-        Sort sort = new Sort(sortDirection, partner.getSort());
-        Pageable pageable = PageRequest.of(partner.getOffset() / partner.getLimit(), partner.getLimit(), sort);
-
-        Specification<OverdueDTO> specification = (Specification<OverdueDTO>) (root, criteriaQuery, criteriaBuilder) -> {
-            List<Predicate> predicates = new ArrayList<>();
-            if (StringUtils.isNotBlank(partner.getCode())) {
-                predicates.add(criteriaBuilder.equal(root.<String>get("code"), partner.getCode()));
-            }
-            if (StringUtils.isNotBlank(partner.getName())) {
-                predicates.add(criteriaBuilder.equal(root.<String>get("name"), partner.getName()));
-            }
-            if (StringUtils.isNotBlank(partner.getOnlyOverdue()) && "true".equals(partner.getOnlyOverdue())) {
-                predicates.add(criteriaBuilder.greaterThan(root.<BigDecimal>get("receivablesBeforeToday"), new BigDecimal(0)));
-            }
-            predicates.add(criteriaBuilder.equal(root.<String>get("status"), '0'));
-            predicates.add(criteriaBuilder.equal(root.<String>get("settlementType"), 1));
-            predicates.add(criteriaBuilder.equal(root.<String>get("parentCode"), "0"));
-            return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
-        };
-
-        return partnerRepository.findAll(specification, pageable);
-    }
-
-    /**
-     * 逾期统计列名
-     *
-     * @return Map<String, Object>
-     */
-    public Map<String, List<String>> findOverdueAllColumns() {
-        List<String> columnList = new ArrayList<>();
-
-        columnList.add("部门");
-        columnList.add("业务员");
-        columnList.add("往来单位名称");
-        columnList.add("账期月");
-        columnList.add("账期日");
-        columnList.add("订货客户");
-        columnList.add("应收总计");
-        columnList.add("逾期款");
-        columnList.add("期初应收");
-
+    public List<String> findOverdueColumns(int months) {
+        List<String> columnNameList = new ArrayList<>();
+        columnNameList.add("部门");
+        columnNameList.add("业务员");
+        columnNameList.add("往来单位名称");
+        columnNameList.add("账期月");
+        columnNameList.add("账期日");
+        columnNameList.add("订货客户");
+        columnNameList.add("应收总计");
+        columnNameList.add("逾期款");
+        columnNameList.add("期初应收");
         // 当前时间
         Calendar now = Calendar.getInstance();
-        // 初始时间
+        // 开始时间 = 当前时间 - 统计的月数
         Calendar origin = Calendar.getInstance();
-        // 2019-01-01 00:00:00
-        origin.set(2019, 0, 1, 0, 0, 0);
-
+        // 保证至少显示两个月
+        months = Math.abs(months) - 2;
+        if (months < 0) {
+            months = 0;
+        }
+        origin.add(Calendar.MONTH, -months);
         while (origin.before(now)) {
-            columnList.add(origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月");
+            columnNameList.add(origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月");
             // 加1个月
             origin.add(Calendar.MONTH, 1);
         }
-        // 如果日期大于27日，则需要多计算下一个月
-        if (now.get(Calendar.DATE) > 27) {
-            columnList.add(origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月");
-        }
-
-        HashMap<String, List<String>> result = new HashMap<>();
-        result.put("columns", columnList);
-        return result;
+        // 多计算2个月
+        columnNameList.add(origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月");
+        columnNameList.add(origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 2) + "月");
+        return columnNameList;
     }
 
     /**
-     * 20191226：财务需求：不是仓库特殊用户，且应收总计等于0的不显示。
+     * 逾期统计:数据List
      *
-     * @param partner
-     * @return
+     * @param partner 逾期客户DTO
+     * @param months
+     * @return 数据List
      */
-    public List<Object[]> findOverdueAll(OverdueDTO partner) {
-
-        StringBuilder sqlStringBuilder = new StringBuilder("SELECT yap.warehouse_sign, yap.parent_code, yap.amount_delivery, yap.amount_collected, IFNULL(ds.department,'') AS 部门, " +
+    public List<Object[]> findOverdue(OverdueDTO partner, int months) {
+        StringBuilder sqlStringBuilder = new StringBuilder("SELECT yap.parent_code, yap.amount_delivery, yap.amount_collected, IFNULL(ds.department,'') AS 部门, " +
                 "yap.customer_service_staff AS 业务员, yap.code AS 用友往来单位编码, yap.name AS 往来单位名称, yap.payment_month AS 账期月, " +
-                "IF(yap.settlement_type = '1' AND yap.parent_code = '0', '现款', yap.payment_date) AS 账期日, IF(yap.parent_name IS NULL OR yap.parent_name = '' OR (yap.settlement_type = '1' AND yap.parent_code = '0'), yap.NAME, yap.parent_name) AS 订货客户, yap.receivables AS 应收总计, " +
-                "yap.amount_delivery + yap.opening_balance - yap.amount_collected + yap.amount_refund AS 逾期款, yap.opening_balance AS 期初应收 ");
+                "IF(yap.settlement_type = '1' AND yap.parent_code = '0', '现款', yap.payment_date) AS 账期日, IF(yap.parent_name IS NULL OR yap.parent_name = '' OR (yap.settlement_type = '1' AND yap.parent_code = '0'), " +
+                "yap.NAME, yap.parent_name) AS 订货客户, yap.receivables AS 应收总计, yap.amount_delivery + yap.opening_balance - yap.amount_collected + yap.amount_refund AS 逾期款, yap.opening_balance AS 期初应收 ");
         // 当前时间
         Calendar now = Calendar.getInstance();
-        // 初始时间
+        // 开始时间 = 当前时间 - 统计的月数
         Calendar origin = Calendar.getInstance();
-        // 2019-01-01 00:00:00
-        origin.set(2019, 0, 1, 0, 0, 0);
-
+        // 保证至少显示两个月
+        months = Math.abs(months) - 2;
+        if (months < 0) {
+            months = 0;
+        }
+        origin.add(Calendar.MONTH, -months);
         while (origin.before(now)) {
             sqlStringBuilder.append(", SUM(CASE months WHEN '" + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月销售' THEN vssm.amount ELSE 0 END) AS " + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月 ");
             sqlStringBuilder.append(", SUM(CASE months WHEN '" + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月退货' THEN vssm.amount ELSE 0 END) AS " + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月退货 ");
             // 加1个月
             origin.add(Calendar.MONTH, 1);
         }
-
-        // 如果日期大于27日，则需要多计算下一个月
-        if (now.get(Calendar.DATE) > 27) {
-            sqlStringBuilder.append(", SUM(CASE months WHEN '" + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月销售' THEN vssm.amount ELSE 0 END) AS " + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月 ");
-            sqlStringBuilder.append(", SUM(CASE months WHEN '" + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月退货' THEN vssm.amount ELSE 0 END) AS " + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月退货 ");
-        }
-
+        // 多计算2个月
+        sqlStringBuilder.append(", SUM(CASE months WHEN '" + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月销售' THEN vssm.amount ELSE 0 END) AS " + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月 ");
+        sqlStringBuilder.append(", SUM(CASE months WHEN '" + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月退货' THEN vssm.amount ELSE 0 END) AS " + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月退货 ");
+        sqlStringBuilder.append(", SUM(CASE months WHEN '" + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 2) + "月销售' THEN vssm.amount ELSE 0 END) AS " + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 2) + "月 ");
+        sqlStringBuilder.append(", SUM(CASE months WHEN '" + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 2) + "月退货' THEN vssm.amount ELSE 0 END) AS " + origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 2) + "月退货 ");
         sqlStringBuilder.append(" FROM YY_AA_Partner yap ");
         sqlStringBuilder.append(" LEFT JOIN v_settlement_sales_months vssm ON yap.id = vssm.settlementId ");
         sqlStringBuilder.append(" LEFT JOIN dept_staff ds ON yap.customer_service_staff = ds.name ");
@@ -238,21 +172,22 @@ public class FinanceService {
         }
         sqlStringBuilder.append(" GROUP BY ");
         sqlStringBuilder.append(" yap.id, ds.department, yap.code, yap.parent_code, yap.payment_month, yap.payment_date, yap.name, yap.amount_delivery, yap.amount_collected, yap.opening_balance ");
-
         if (partner != null) {
             sqlStringBuilder.append(" ORDER BY yap.parent_code DESC, yap.name ASC LIMIT " + partner.getOffset() + ", " + partner.getLimit());
         } else {
             sqlStringBuilder.append(" ORDER BY yap.parent_code DESC, yap.name ASC ");
         }
-
         Query query = entityManager.createNativeQuery(sqlStringBuilder.toString());
-
-        //query.unwrap(NativeQueryImpl.class).setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP);
-
         return query.getResultList();
     }
 
-    public BigInteger findOverdueAllCount(OverdueDTO partner) {
+    /**
+     * 逾期统计:数据总数量
+     *
+     * @param partner 逾期客户DTO
+     * @return 数量
+     */
+    public BigInteger findOverdueCount(OverdueDTO partner) {
         StringBuilder sqlCountStringBuilder = new StringBuilder("SELECT COUNT(1) FROM ( SELECT 1 ");
         sqlCountStringBuilder.append(" FROM YY_AA_Partner yap ");
         sqlCountStringBuilder.append(" LEFT JOIN v_settlement_sales_months vssm ON yap.id = vssm.settlementId ");
@@ -274,46 +209,6 @@ public class FinanceService {
     }
 
     /**
-     * 逾期统计（销售版）列名
-     *
-     * @return Map<String, Object>
-     */
-    public Map<String, List<String>> findOverdueSalesColumns() {
-        List<String> columnList = new ArrayList<>();
-
-        columnList.add("部门");
-        columnList.add("业务员");
-        columnList.add("往来单位名称");
-        columnList.add("账期月");
-        columnList.add("账期日");
-        columnList.add("订货客户");
-        columnList.add("应收总计");
-        columnList.add("逾期款");
-        columnList.add("期初应收");
-
-        // 当前时间
-        Calendar now = Calendar.getInstance();
-        // 加1个月
-        now.add(Calendar.MONTH, 1);
-        // 减3个月
-        now.add(Calendar.MONTH, -3);
-        columnList.add(now.get(Calendar.YEAR) + "年" + (now.get(Calendar.MONTH) + 1) + "月");
-        // 加1个月
-        now.add(Calendar.MONTH, 1);
-        columnList.add(now.get(Calendar.YEAR) + "年" + (now.get(Calendar.MONTH) + 1) + "月");
-        // 加1个月
-        now.add(Calendar.MONTH, 1);
-        columnList.add(now.get(Calendar.YEAR) + "年" + (now.get(Calendar.MONTH) + 1) + "月");
-        // 加1个月
-        now.add(Calendar.MONTH, 1);
-        columnList.add(now.get(Calendar.YEAR) + "年" + (now.get(Calendar.MONTH) + 1) + "月");
-
-        HashMap<String, List<String>> result = new HashMap<>();
-        result.put("columns", columnList);
-        return result;
-    }
-
-    /**
      * 逾期统计（销售版）
      * <p>
      * 这里的第一个字段，yap.warehouse_sign，已经废弃
@@ -322,7 +217,6 @@ public class FinanceService {
      * @return
      */
     public List<Object[]> findOverdueSales(OverdueDTO partner) {
-
         StringBuilder sqlStringBuilder = new StringBuilder("SELECT yap.parent_code, yap.amount_delivery, yap.amount_collected, IFNULL(ds.department,'-') AS 部门, " +
                 "IFNULL( yap.customer_service_staff, '-' ) AS 业务员, yap.name AS 往来单位名称, yap.payment_month AS 账期月, " +
                 "IF(yap.parent_name IS NULL OR (yap.parent_name = '' AND yap.settlement_type != '2') OR (yap.settlement_type = '1' AND yap.parent_code = '0'), '现款', yap.payment_date) AS 账期日, IF(yap.parent_name IS NULL OR yap.parent_name = '' OR (yap.settlement_type = '1' AND yap.parent_code = '0'), yap.NAME, yap.parent_name) AS 订货客户, yap.receivables AS 应收总计, " +
@@ -900,19 +794,6 @@ public class FinanceService {
         return mapList;
     }
 
-    /*public List<Map<String, Object>> getPurchaseArrivalDetail(Map<String, Object> requestMap) {
-        StringBuilder builder = new StringBuilder();
-        List<Object> list = new ArrayList<>();
-        System.out.println(requestMap.toString());
-
-        builder.append("select top 500 PPA.code,PPb.origTaxAmount,ppb.quantity,ppb.origTaxPrice,PPA.voucherdate from PU_PurchaseArrival PPA ");
-        builder.append(" left join PU_PurchaseArrival_b PPB on ppa.id = PPB.idPurchaseArrivalDTO");
-        builder.append(" left join AA_Partner AA on PPA.IdPartner = AA.ID where AA.name =?");
-        list.add(requestMap.get("name"));
-        List<Map<String, Object>> maps = jdbcTemplate.queryForList(builder.toString(), list.toArray());
-        return maps;
-    }*/
-
     public Object getAccountspayable(Map<String, String> requestMap, String explan) {
         Map<String, Object> result = new HashMap<>();
         result.put("customerName", requestMap.get("customerName"));
@@ -977,44 +858,6 @@ public class FinanceService {
         return result;
     }
 
-    /*private List<Map<String, Object>> getAccountspayableList(Map<String, String> requestMap, String explan) {
-        StringBuilder sb = new StringBuilder();
-        ArrayList<Object> list = new ArrayList<>();
-        sb.append(" select ss.* from (");
-        sb.append(" select code,voucherdate,OrigTotalTaxAmount Amount,'1' type,IdPartner,");
-        sb.append(" (case pubuserdefnvc1 when '平台直发' then '线上' when '线上' then '线上' else '线下' END) pubuserdefnvc1 from PU_PurchaseArrival where voucherState =189 and voucherdate >='2018/12/28 00:00:00'");
-        sb.append(" union all select ppi.purchaseInvoiceNo code,ppi.voucherdate,ppi.totalTaxAmount Amount,'2' type,ppi.IdPartner,");
-        sb.append(" (case ppa.pubuserdefnvc1 when '平台直发' then '线上' when '线上' then '线上' else '线下' END) pubuserdefnvc1 from pu_PurchaseInvoice ppi");
-        sb.append(" left join PU_PurchaseArrival ppa on ppi.sourceVoucherCode = ppa.code where ppi.voucherState =189");
-        sb.append(" union all select code,voucherdate,Amount,'3' type,IdPartner,'线下' pubuserdefnvc1 from ARAP_ReceivePayment where idbusitype =80");
-        sb.append(" ) ss left join AA_Partner AA on ss.IdPartner = AA.ID where 1=1 and AA.name =? and pubuserdefnvc1 = ?");
-        list.add(requestMap.get("customerName"));
-        list.add(explan);
-        sb.append(" and voucherdate >='"+requestMap.get("startDate")+"'");
-        sb.append(" and voucherdate <='"+requestMap.get("endDate")+"'");
-        sb.append( " order by voucherdate");
-        return  jdbcTemplate.queryForList(sb.toString(), list.toArray());
-    }
-
-    private Map<String, Object> getAccountspayableCount(Map<String, String> requestMap, String explan) {
-        StringBuilder sb = new StringBuilder();
-        ArrayList<Object> list = new ArrayList<>();
-        sb.append(" select sum(case type when '0' then Amount when '1' then Amount when '3' then -Amount end) initPaymentBalance,");
-        sb.append(" sum(case type when '0' then Amount when '1' then Amount when '2' then -Amount end) initInvoiceBalance from (");
-        sb.append(" select code,origDate voucherdate,Amount,'0' type,IdPartner,'线下' pubuserdefnvc1 from ARAP_OriginalAmount_ApDetail UNION ALL");
-        sb.append(" select code,voucherdate,OrigTotalTaxAmount Amount,'1' type,IdPartner,");
-        sb.append(" (case pubuserdefnvc1 when '平台直发' then '线上' when '线上' then '线上' else '线下' END) pubuserdefnvc1 from PU_PurchaseArrival where voucherState =189 and voucherdate >='2018/12/28 00:00:00'");
-        sb.append(" union all select ppi.purchaseInvoiceNo code,ppi.voucherdate,ppi.totalTaxAmount Amount,'2' type,ppi.IdPartner,");
-        sb.append(" (case ppa.pubuserdefnvc1 when '平台直发' then '线上' when '线上' then '线上' else '线下' END) pubuserdefnvc1 from pu_PurchaseInvoice ppi");
-        sb.append(" left join PU_PurchaseArrival ppa on ppi.sourceVoucherCode = ppa.code where ppi.voucherState =189");
-        sb.append(" union all select code,voucherdate,Amount,'3' type,IdPartner,'线下' pubuserdefnvc1 from ARAP_ReceivePayment where idbusitype =80");
-        sb.append(" ) ss left join AA_Partner AA on ss.IdPartner = AA.ID where 1=1 and AA.name =? and pubuserdefnvc1 = ?");
-        list.add(requestMap.get("customerName"));
-        list.add(explan);
-        sb.append(" and voucherdate <'"+requestMap.get("startDate")+"'");
-        System.out.println(sb.toString());
-        return  jdbcTemplate.queryForMap(sb.toString(), list.toArray());
-    }*/
     private List<Map<String, Object>> getAccountspayableList(Map<String, String> requestMap, String explan) {
         StringBuilder sb = new StringBuilder();
         ArrayList<Object> list = new ArrayList<>();
@@ -1053,190 +896,17 @@ public class FinanceService {
         return jdbcTemplate.queryForMap(sb.toString(), list.toArray());
     }
 
-    public void downloadOverdueCredit(HttpServletResponse httpServletResponse) {
-        Connection con = null;
-        ResultSet rs = null;
-        try {
-            con = dataSource.getConnection();
-            CallableStatement c = con.prepareCall("{call PROC_settlement_sales_months}");
-            rs = c.executeQuery();
-
-            ResultSetMetaData rsmd = rs.getMetaData();
-            // 数据列数
-            int count = rsmd.getColumnCount();
-
-            // 列名数据
-            ArrayList<String> columnsList = new ArrayList<>();
-            // 移除前3列（关联id列、总发货、总收款）
-            for (int i = 4; i < count; i++) {
-                columnsList.add(rsmd.getColumnLabel(i));
-                if (i > 11) {
-                    i++;
-                }
-            }
-
-            // 数据
-            ArrayList<List<Object>> rowsList = new ArrayList<>();
-            // 需要合并计算的用户序号List，根据code编码判断
-            List<Integer> totalIndexList = new ArrayList<>();
-            // 需要合并的序号List集合
-            List<List<Integer>> totalList = new ArrayList<>();
-            // 关联code
-            String parentCode = "";
-            // 有关联账号标记
-            boolean hasParentCode;
-            // 关联账户总计应收
-            BigDecimal totalReceivables = BigDecimal.ZERO;
-
-            while (rs.next()) {
-                ArrayList<Object> dataList = new ArrayList<>();
-                // 账期月, 目前rs第7列
-                int month = rs.getInt(7);
-                // 账期日，目前rs第8列
-                int day = rs.getInt(8);
-                // 应减去的结算周期数
-                int overdueMonths = CommonUtils.overdueMonth(month, day);
-                // 当前逾期金额
-                BigDecimal overdue = rs.getBigDecimal(10);
-
-                // 设置数据行，移除前3列（关联id列、总发货、总收款）
-                for (int i = 4; i <= count; i++) {
-                    if (i > 11) {  // 计算每个周期的发货和应收
-                        if (i > count - overdueMonths * 2) {
-                            // 有关联的账期客户逾期总金额不计算未到账期的退货金额，无关联关系的账期客户预期总金额计算所有退货金额
-                            // 分月统计全部计算所有退货金额
-                            // 发货金额，未到账期均不计算
-                            overdue = overdue.subtract(rs.getBigDecimal(i));
-                            // 只计算逾期账期数据，如果是未逾期账期数据，需要将逾期款减去相应的发货金额
-                            BigDecimal tempOverdue = BigDecimal.ZERO;
-
-                            if ("0".equals(rs.getString("parent_code"))) {
-                                tempOverdue = new BigDecimal(dataList.get(6).toString()).subtract(rs.getBigDecimal(i++));
-                                dataList.set(6, tempOverdue);
-                            } else {
-                                // 有关联账户不计算未到期的退货
-                                tempOverdue = new BigDecimal(dataList.get(6).toString()).subtract(rs.getBigDecimal(i++));
-                                tempOverdue = tempOverdue.subtract(rs.getBigDecimal(i));
-                                dataList.set(6, tempOverdue);
-                            }
-                            dataList.add(0);
-                        } else {
-                            dataList.add(rs.getBigDecimal(i++));
-                        }
-                    } else if (i == 11) {
-                        dataList.add(rs.getBigDecimal(i));
-                    } else {
-                        dataList.add(rs.getString(i));
-                    }
-                }
-
-                // 根据逾期款，设置excel数据。从后向前，到期初为止。
-                for (int index = dataList.size() - 1; index > 6; index--) {
-                    if (overdue.compareTo(BigDecimal.ZERO) < 1) {  // 逾期金额小于等于0，所有账期逾期金额都是0
-                        dataList.set(index, 0);
-                    } else {  // 逾期金额大于0，从最后一个开始分摊逾期金额
-                        if (overdue.compareTo(new BigDecimal(dataList.get(index).toString())) > -1) {
-                            overdue = overdue.subtract(new BigDecimal(dataList.get(index).toString()));
-                            dataList.set(index, dataList.get(index));
-                        } else {
-                            dataList.set(index, overdue);
-                            overdue = BigDecimal.ZERO;
-                        }
-                    }
-                }
-
-                // 补零数量
-                // int overdueZero = CommonUtils.overdueZero(month, day);
-                // 导出的Excel显示逾期金额，不是发货金额。需要按照账期周期，向后推迟逾期金额，在期初之后补0实现。
-                for (int overdueIndex = 0; overdueIndex < month; overdueIndex++) {
-                    // 插入0
-                    dataList.add(8, 0);
-                    // 删除最后一位
-                    dataList.remove(dataList.size() - 1);
-                }
-
-                // 设置数据列
-                rowsList.add(dataList);
-
-                // 设置逾期金额总计
-                // 如果存在关联code
-                if (!"0".equals(rs.getString("parent_code"))) {
-                    hasParentCode = true;
-                    // 如果两个不相等，说明是新的关联code，重新赋值
-                    if (!parentCode.equals(rs.getString("parent_code"))) {
-                        parentCode = rs.getString("parent_code");
-                        // 此处修改的目的是防止单元格合并之后，数值求和计算错误。
-                        if (!totalIndexList.isEmpty()) {
-                            rowsList.get(totalIndexList.get(0) - 1).set(5, totalReceivables);
-                        }
-                        // 置零
-                        totalReceivables = BigDecimal.ZERO;
-                        // 添加至集合
-                        if (!totalIndexList.isEmpty()) {
-                            totalList.add(totalIndexList);
-                        }
-                        // 序列list置空
-                        totalIndexList = new ArrayList<>();
-                    }
-                } else {
-                    // 最后一个totalIndexList
-                    if (!totalIndexList.isEmpty()) {
-                        // 计算之前应收之和
-                        for (int index : totalIndexList) {
-                            rowsList.get(index - 1).set(5, totalReceivables);
-                        }
-                        // 添加至集合
-                        totalList.add(totalIndexList);
-                        totalIndexList = new ArrayList<>();
-                    } else {
-                        // 如果没有关联客户，将逾期金额赋值到总逾期金额
-                        rowsList.get(rs.getRow() - 1).set(5, rowsList.get(rs.getRow() - 1).get(6));
-                    }
-                    // 置零
-                    hasParentCode = false;
-                    parentCode = "";
-                    totalReceivables = BigDecimal.ZERO;
-                }
-
-                // 设置应收金额合计
-                if (hasParentCode) {
-                    totalIndexList.add(rs.getRow());
-                    totalReceivables = totalReceivables.add(new BigDecimal(dataList.get(6).toString()));
-                }
-
-            }
-
-            // 导出excel
-            exportOverdue(httpServletResponse, columnsList, rowsList, "账期客户逾期统计", totalList);
-
-        } catch (SQLException | IOException e) {
-            log.error("下载账期客户逾期统计异常：{}", e);
-            e.printStackTrace();
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (con != null) {
-                    con.close();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     /**
      * 查询全部逾期数据
      *
      * @param partner
      * @return
      */
-    public Map<String, Object> findOverdueAllData(OverdueDTO partner) {
+    public Map<String, Object> findOverdueData(OverdueDTO partner) {
         // 列名
-        List<String> columnsList = findOverdueAllColumns().get("columns");
+        List<String> columnsList = findOverdueColumns(12);
         // 数据List
-        List<Object[]> resultDataList = findOverdueAll(partner);
+        List<Object[]> resultDataList = findOverdue(partner, 12);
         // 数据
         List<Map<String, Object>> rowsMapList = new ArrayList<>();
         // 数据

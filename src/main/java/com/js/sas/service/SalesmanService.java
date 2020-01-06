@@ -1,8 +1,6 @@
 package com.js.sas.service;
 
-import com.js.sas.dto.PartnerNameDTO;
-import com.js.sas.dto.SalesmanDTO;
-import com.js.sas.repository.PartnerRepository;
+import com.js.sas.entity.dto.SalesmanDTO;
 import com.js.sas.repository.SalesmanRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

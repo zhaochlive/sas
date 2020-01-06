@@ -1,10 +1,8 @@
 package com.js.sas.controller;
 
-import com.js.sas.dto.CustomerOfOrder;
 import com.js.sas.service.RepurchaseRateService;
 import com.js.sas.utils.CommonUtils;
 import com.js.sas.utils.DateTimeUtils;
-import com.js.sas.utils.ResultUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.*;

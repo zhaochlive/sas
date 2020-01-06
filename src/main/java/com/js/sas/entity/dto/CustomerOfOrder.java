@@ -1,4 +1,4 @@
-package com.js.sas.dto;
+package com.js.sas.entity.dto;
 
 import java.util.Date;
 

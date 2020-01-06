@@ -1,7 +1,6 @@
 package com.js.sas.controller;
 
-import com.js.sas.dto.CustomerOfOrder;
-import com.js.sas.dto.SalesperHead;
+import com.js.sas.entity.dto.CustomerOfOrder;
 import com.js.sas.service.CustomerService;
 import com.js.sas.utils.CommonUtils;
 import com.js.sas.utils.DateTimeUtils;
@@ -11,13 +10,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.sql.Timestamp;
-import java.text.ParseException;
 import java.util.*;
 
 @RequestMapping("customer")

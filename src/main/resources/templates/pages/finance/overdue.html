@@ -58,7 +58,9 @@
                                             </div>
                                         </div>
                                         <div class="form-group row col-sm-4">
-                                            <label class="col-sm-3 col-form-label"><input type="checkbox" id="onlyOverdue" value=""/> 只看逾期</label>
+                                            <label class="col-sm-3 col-form-label"><input type="checkbox"
+                                                                                          id="onlyOverdue" value=""/>
+                                                只看逾期</label>
                                             <div class="col-sm-9">
                                             </div>
                                         </div>
@@ -73,19 +75,16 @@
                                     <button type="button" class="btn btn-default pull-right" id="refresh"
                                             style="margin-left:20px;">清 空
                                     </button>
-                                    <button type="button" class="btn btn-default pull-right" id="exportCash"
-                                            style="margin-left:20px;">
-                                        导出<b>现金</b>逾期Excel
-                                    </button>
                                     <button type="button" class="btn btn-default pull-right" id="exportCredit"
                                             style="margin-left:20px;">
-                                        导出<b>账期</b>逾期Excel
+                                        导出逾期Excel
                                     </button>
                                     <button type="button" class="btn btn-default pull-right" id="refreshData"
                                             style="margin-left:20px; float:right;">
                                         刷新数据
                                     </button>
                                 </div>
+
                             </form>
                         </div>
                     </div>
@@ -95,6 +94,30 @@
                                 <div class="tableDisplay" id="dataTable" style="width:98%; margin: auto;">
                                     <table class="table table-bordered" style="margin-bottom:0px;">
                                     </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ibox">
+                        <div class="ibox-content">
+                            <div class="row">
+                                <div class="box-footer">
+                                    <a id="template" href="../../template/员工部门模板.xlsx" target="_blank" class="btn btn-default pull-right">员工部门模板下载</a>
+                                    <input type="file" name="file" id="file" value=""
+                                           class="btn btn-default pull-right">
+                                    <input type="button" id="upload" value="提交" name="upload"
+                                           class="btn btn-default pull-right">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ibox-content">
+                            <div class="row">
+                                <div class="box-footer">
+                                    <a id="templateSalesman" href="../../template/紧商客户对应业务员表.xlsx" target="_blank" class="btn btn-default pull-right">客户对应业务员模板下载</a>
+                                    <input type="file" name="file" id="file2" value=""
+                                           class="btn btn-default pull-right">
+                                    <input type="button" id="uploadSalesman" value="提交" name="upload"
+                                           class="btn btn-default pull-right">
                                 </div>
                             </div>
                         </div>
@@ -157,16 +180,49 @@
             checkboxClass: 'icheckbox_square-green'
         });
 
-        $("#onlyOverdue").on('ifChecked', function(event){
+        $("#onlyOverdue").on('ifChecked', function (event) {
             $("input[id='onlyOverdue']").val("true");
 
             $("#dataTable table").bootstrapTable('refresh');
         });
 
-        $("#onlyOverdue").on('ifUnchecked', function(event){
+        $("#onlyOverdue").on('ifUnchecked', function (event) {
             $("input[id='onlyOverdue']").val("");
 
             $("#dataTable table").bootstrapTable('refresh');
+        });
+
+        // 列名
+        var colums = [];
+
+        var formData = new FormData();
+        formData.append("code", $("input[name='code']").val());
+        formData.append("name", $("input[name='name']").val());
+        formData.append("onlyOverdue", $("input[id='onlyOverdue']").val());
+
+        formData.append("status", '0');
+        formData.append("settlementType", '1');
+        formData.append("code", '1');
+        formData.append("parentCode", '0');
+        formData.append("limit", '10');
+        formData.append("offset", '0');
+        formData.append("sort", 'name');
+        formData.append("sortOrder", 'asc');
+
+        $.ajax({
+            type: 'POST',
+            url: "/finance/overdueColumns",
+            data: formData,
+            async: false,
+            contentType: false,
+            processData: false,
+            success: function (result) {
+                $.each(result.columns, function (index, value) {
+                    colums.push({field: value, title: value, sortable: true, align: 'center'});
+                });
+            }, error: function (error) {
+                console.log(error);
+            }
         });
 
         // 表单设置
@@ -176,7 +232,7 @@
             cache: false,
             clickToSelect: true,
             pagination: true,
-            sortable: true,
+            sortable: false,
             pageNumber: 1,
             pageSize: 10,
             pageList: [10, 20, 50, 100],
@@ -209,52 +265,7 @@
 
                 return params;
             },
-            columns: [{
-                title: '序号',
-                align: 'center',
-                valign: 'middle',
-                width: '10%',
-                formatter: function (value, row, index) {
-                    var pageSize = $('#dataTable table').bootstrapTable('getOptions').pageSize;
-                    var pageNumber = $('#dataTable table').bootstrapTable('getOptions').pageNumber;
-                    return pageSize * (pageNumber - 1) + index + 1;
-                }
-            }, {
-                field: 'salesman',
-                title: '业务员',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true',
-                width: '10%'
-            }, {
-                field: 'customerServiceStaff',
-                title: '客服',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true',
-                width: '10%'
-            }, {
-                field: 'code',
-                title: '编码',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true',
-                width: '15%'
-            }, {
-                field: 'name',
-                title: '结算客户',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true',
-                width: '40%'
-            }, {
-                field: 'receivablesBeforeToday',
-                title: '（现金）逾期金额',
-                align: 'center',
-                valign: 'middle',
-                sortable: 'true',
-                width: '15%'
-            }],
+            columns: colums,
             onLoadSuccess: function (result) {
                 // 设置导出limit值
                 if (result.total) {
@@ -300,14 +311,7 @@
 
         // 账期导出按钮
         $("button[id='exportCredit']").click(function () {
-            $("#form1").attr('action', "/finance/overdueCredit/download/excel");
-            $("#form1").attr('method', "POST");
-            $("#form1").submit();
-        });
-
-        // 现金导出按钮
-        $("button[id='exportCash']").click(function () {
-            $("#form1").attr('action', "/finance/overdueCash/download/excel");
+            $("#form1").attr('action', "/finance/exportOverdue");
             $("#form1").attr('method', "POST");
             $("#form1").submit();
         });
@@ -378,6 +382,51 @@
         }
     });
 
+    // 上传人员部门
+    $("input[id='upload']").click(function () {
+        var formData = new FormData();
+        formData.append("file", $("#file")[0].files[0]);
+        formData.append("enctype", "multipart/form-data");
+        $.ajax({
+            url: '/finance/upload',
+            type: 'post',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (result) {
+                if (result == "success") {
+                    toastr.success('部门更新成功');
+                } else {
+                    toastr.error('更新失败，请检查上传文件内容。第一列：姓名，第二列：部门');
+                    console.log(result);
+                }
+            }
+        });
+    });
+
+    // 上传紧商对应业务员
+    $("input[id='uploadSalesman']").click(function () {
+        var formData = new FormData();
+        formData.append("file", $("#file2")[0].files[0]);
+        formData.append("enctype", "multipart/form-data");
+        $.ajax({
+            url: '/finance/uploadSalesman',
+            type: 'post',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (result) {
+                if (result == "success") {
+                    toastr.success('紧商客户和业务员关系更新成功');
+                } else {
+                    toastr.error('更新失败，请检查上传文件内容。第一列：紧商客户，第二列：首要业务员，第二列：辅助业务员');
+                    console.log(result);
+                }
+            }
+        });
+    });
+
 </script>
+
 
 </html>

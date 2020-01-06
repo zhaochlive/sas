@@ -6,8 +6,8 @@ import com.alibaba.excel.event.WriteHandler;
 import com.alibaba.excel.metadata.Sheet;
 import com.alibaba.excel.metadata.Table;
 import com.alibaba.excel.support.ExcelTypeEnum;
-import com.js.sas.dto.OverdueDTO;
-import com.js.sas.dto.SettlementSummaryDTO;
+import com.js.sas.entity.dto.OverdueDTO;
+import com.js.sas.entity.dto.SettlementSummaryDTO;
 import com.js.sas.entity.*;
 import com.js.sas.entity.Dictionary;
 import com.js.sas.repository.DeptStaffRepository;
@@ -29,7 +29,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -39,10 +38,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.sql.DataSource;
+import javax.validation.constraints.NotBlank;
 import java.io.*;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
@@ -60,32 +60,21 @@ import java.util.zip.ZipOutputStream;
  **/
 @RestController
 @Slf4j
+@Validated
 @RequestMapping("/finance")
 public class FinanceController {
-
     @Value("${yongyou.url}")
     private String url;
-
-    private final FinanceService financeService;
-
-    private final DictionaryService dictionaryService;
-
-    private final PartnerService partnerService;
-
-    private final DataSource dataSource;
-
+    @Resource
+    private FinanceService financeService;
+    @Resource
+    private DictionaryService dictionaryService;
+    @Resource
+    private PartnerService partnerService;
     @Autowired
     private DeptStaffRepository deptStaffRepository;
-
     @Autowired
     private MemberSalemanRepository memberSalemanRepository;
-
-    public FinanceController(FinanceService financeService, DictionaryService dictionaryService, DataSource dataSource, PartnerService partnerService) {
-        this.financeService = financeService;
-        this.dictionaryService = dictionaryService;
-        this.dataSource = dataSource;
-        this.partnerService = partnerService;
-    }
 
     /**
      * 目前调用存储过程实现，后期需要修改实现方法。
@@ -102,7 +91,6 @@ public class FinanceController {
         if (checkResult != null) {
             return checkResult;
         }
-
         return financeService.getSettlementSummary(settlementSummasryDTO.getName(),
                 settlementSummasryDTO.getChannel(),
                 settlementSummasryDTO.getStartDate(),
@@ -125,6 +113,7 @@ public class FinanceController {
      */
     @ApiIgnore
     @PostMapping("/settlementSummary/download/excel")
+    @SuppressWarnings("unchecked")
     public void downloadSettlementSummary(String name, String channel, String startDate, String endDate, String limit, HttpServletResponse httpServletResponse) {
         List<SettlementSummaryEntity> settlementSummaryList = (List<SettlementSummaryEntity>) financeService.getSettlementSummary(
                 name,
@@ -143,62 +132,10 @@ public class FinanceController {
         }
     }
 
-    @ApiOperation(value = "现金客户逾期统计", notes = "数据来源：用友；数据截止日期：昨天")
-    @PostMapping("/overdue")
-    public Object overdue(@Validated OverdueDTO partner, BindingResult bindingResult) {
-        // 参数格式校验
-        Result checkResult = CommonUtils.checkParameter(bindingResult);
-        if (checkResult != null) {
-            return checkResult;
-        }
-        HashMap<String, Object> result = new HashMap<>();
-        Page page = financeService.findOverdue(partner);
-        result.put("rows", page.getContent());
-        result.put("total", page.getTotalElements());
-        return result;
-    }
-
-    /**
-     * 逾期现金客户导出
-     *
-     * @param limit               数量
-     * @param httpServletResponse httpServletResponse
-     */
-    @ApiIgnore
-    @PostMapping("/overdueCash/download/excel")
-    public void downloadOverdueCash(int limit, HttpServletResponse httpServletResponse) {
-        OverdueDTO overdueDTO = new OverdueDTO();
-        overdueDTO.setLimit(limit);
-        overdueDTO.setSort("name");
-        overdueDTO.setSortOrder("asc");
-        overdueDTO.setStatus("0");
-        overdueDTO.setSettlementType("1");
-        overdueDTO.setParentCode("0");
-
-        List overdueList = financeService.findOverdue(overdueDTO).getContent();
-        try {
-            CommonUtils.export(httpServletResponse, overdueList, "现金客户逾期统计", new PartnerEntity());
-        } catch (IOException e) {
-            log.error("下载现金客户逾期统计异常：{}", e);
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * 账期逾期客户导出
-     * 导出表格内容截止到当前月份，动态表格直接调用存储过程实现。
-     * 业务逻辑很复杂
-     *
-     * @param httpServletResponse httpServletResponse
-     */
-    @ApiIgnore
-    @PostMapping("/overdueCredit/download/excel")
-    public void downloadOverdueCredit(HttpServletResponse httpServletResponse) {
-        financeService.downloadOverdueCredit(httpServletResponse);
-    }
-
     /**
      * 更新逾期数据
+     * <p>
+     * 调用服务器的sh文件
      *
      * @return result
      */
@@ -223,7 +160,6 @@ public class FinanceController {
         }
     }
 
-
     /**
      * 用友对账单
      *
@@ -232,10 +168,7 @@ public class FinanceController {
      * @return Result
      */
     @PostMapping("/findYonyouStatement")
-    public Result findYonyouStatement(String period, String name) {
-        if (StringUtils.isBlank(period) || StringUtils.isBlank(name)) {
-            return ResultUtils.getResult(ResultCode.参数错误);
-        }
+    public Result findYonyouStatement(@NotBlank(message = "账期不能为空") String period, @NotBlank(message = "对账名称不能为空") String name) {
         String startDate;
         String endDate;
         String[] dateArray = period.split("-");
@@ -256,14 +189,12 @@ public class FinanceController {
         } else {
             return ResultUtils.getResult(ResultCode.参数错误);
         }
-
         MultiValueMap<String, String> multiValueMap = new LinkedMultiValueMap<>();
         multiValueMap.add("startDate", startDate);
         multiValueMap.add("endDate", endDate);
         multiValueMap.add("settleCustomer", name);
-
+        // POST
         ResponseEntity responseEntity = CommonUtils.sendPostRequest(url, multiValueMap);
-
         return ResultUtils.getResult(ResultCode.成功, responseEntity.getBody());
     }
 
@@ -276,9 +207,8 @@ public class FinanceController {
      */
     @ApiIgnore
     @PostMapping("/exportYonyouStatement")
-    public void exportYonyouStatement(HttpServletResponse response, String period, String name) {
+    public void exportYonyouStatement(HttpServletResponse response, @NotBlank(message = "账期不能为空") String period, @NotBlank(message = "对账名称不能为空") String name) {
         EnumMap<ExcelPropertyEnum, Object> enumMap = financeService.getYonyouStatementExcel(period, name);
-
         ServletOutputStream out = null;
         try {
             out = response.getOutputStream();
@@ -330,7 +260,6 @@ public class FinanceController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     /**
@@ -437,40 +366,49 @@ public class FinanceController {
         }
     }
 
+    /**
+     * 逾期统计（新）：查询列名
+     *
+     * @return 列名Map
+     */
     @ApiIgnore
-    @PostMapping("/overdueAllColumns")
-    public Object overdueAllColumns() {
-        return financeService.findOverdueAllColumns();
+    @PostMapping("/overdueColumns")
+    public Object overdueColumns() {
+        Map<String, List<String>> resultMap = new HashMap<>();
+        resultMap.put("columns", financeService.findOverdueColumns(12));
+        return resultMap;
     }
 
-    @ApiOperation(value = "全部客户逾期统计", notes = "数据来源：用友；数据截止日期：昨天")
-    @PostMapping("/overdueAll")
-    public Object overdueAll(@Validated OverdueDTO partner, BindingResult bindingResult) {
+    @ApiOperation(value = "客户逾期统计", notes = "数据来源：用友；数据截止日期：昨天")
+    @PostMapping("/overdue")
+    public Object overdue(@Validated OverdueDTO partner, BindingResult bindingResult) {
+        /**
+         * 需要优化，添加全局异常。
+         */
         // 参数格式校验
         Result checkResult = CommonUtils.checkParameter(bindingResult);
         if (checkResult != null) {
             return checkResult;
         }
         HashMap<String, Object> result = new HashMap<>();
-        result.put("rows", financeService.findOverdueAllData(partner).get("map"));
-        result.put("total", financeService.findOverdueAllCount(partner));
+        result.put("rows", financeService.findOverdueData(partner).get("map"));
+        result.put("total", financeService.findOverdueCount(partner));
         return result;
     }
 
     /**
-     * 全部客户逾期统计导出
+     * 逾期统计导出
      *
      * @param httpServletResponse HttpServletResponse
      * @throws IOException IOException
      */
     @ApiIgnore
-    @PostMapping("/exportOverdueAll")
-    public void exportOverdueAll(HttpServletResponse httpServletResponse) throws IOException {
+    @PostMapping("/exportOverdue")
+    public void exportOverdue(HttpServletResponse httpServletResponse) throws IOException {
         // 列名
-        List<String> columnsList = financeService.findOverdueAllColumns().get("columns");
+        List<String> columnsList = financeService.findOverdueColumns(12);
         // 数据
-        List<List<Object>> rowsList = (List<List<Object>>) financeService.findOverdueAllData(null).get("list");
-
+        List<List<Object>> rowsList = (List<List<Object>>) financeService.findOverdueData(null).get("list");
         /**
          * 20191226：关联客户最下面添加一行小计金额
          */
@@ -539,7 +477,6 @@ public class FinanceController {
         // 写入数据
         ExcelWriter writer = new ExcelWriter(out, ExcelTypeEnum.XLSX, true);
         writer.write1(rowsList, sheet1);
-
         writer.finish();
         out.flush();
         out.close();
@@ -548,8 +485,8 @@ public class FinanceController {
     @ApiIgnore
     @PostMapping("/overdueSalesColumns")
     public Object overdueSalesColumns() {
-        Map<String, List<String>> columnMap = financeService.findOverdueSalesColumns();
-        List<String> columnList = columnMap.get("columns");
+        Map<String, List<String>> columnMap = new HashMap<>();
+        List<String> columnList = financeService.findOverdueColumns(4);
         columnMap.put("columns", columnList);
         return columnMap;
     }
@@ -557,13 +494,16 @@ public class FinanceController {
     @ApiOperation(value = "客户逾期统计（销售版本）", notes = "数据来源：用友；数据截止日期：昨天")
     @PostMapping("/overdueSales")
     public Object overdueSales(@Validated OverdueDTO partner, BindingResult bindingResult) {
+        /**
+         * 需要优化，添加全局异常。
+         */
         // 参数格式校验
         Result checkResult = CommonUtils.checkParameter(bindingResult);
         if (checkResult != null) {
             return checkResult;
         }
         // 列名
-        List<String> columnsList = financeService.findOverdueSalesColumns().get("columns");
+        List<String> columnsList = financeService.findOverdueColumns(4);
         // 数据
         List<List<Object>> objectRowsList = financeService.getOverdueSalesList(partner);
         ArrayList<Map<String, Object>> rowsList = new ArrayList<>();
@@ -606,7 +546,7 @@ public class FinanceController {
 
         HashMap<String, Object> result = new HashMap<>();
         result.put("rows", rowsList);
-        result.put("total", financeService.findOverdueAllCount(partner));
+        result.put("total", financeService.findOverdueCount(partner));
         return result;
     }
 
@@ -615,7 +555,7 @@ public class FinanceController {
     public void exportOverdueSales(HttpServletResponse httpServletResponse) throws IOException {
         String fileName = "逾期统计表";
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
-        List<String> columnsList = financeService.findOverdueSalesColumns().get("columns");
+        List<String> columnsList = financeService.findOverdueColumns(4);
         // 表单
         Sheet sheet = new Sheet(1, 0);
         sheet.setSheetName(fileName);

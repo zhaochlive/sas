@@ -1,8 +1,8 @@
 package com.js.sas.service;
 
-import com.js.sas.dto.OrderProductDTO;
-import com.js.sas.dto.RegionalSalesDTO;
-import com.js.sas.dto.SaleAmountDTO;
+import com.js.sas.entity.dto.OrderProductDTO;
+import com.js.sas.entity.dto.RegionalSalesDTO;
+import com.js.sas.entity.dto.SaleAmountDTO;
 import com.js.sas.entity.OrderProductEntity;
 import com.js.sas.repository.JsOrdersRepository;
 import com.js.sas.repository.SaleAmountRepository;
@@ -11,10 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowCountCallbackHandler;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.jdbc.support.rowset.SqlRowSetMetaData;
 import org.springframework.stereotype.Service;
@@ -31,9 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.*;
 
 /**
  * @ClassName SalesService

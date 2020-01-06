@@ -46,11 +46,6 @@ public class SystemController {
         return "pages/finance/overdue.html";
     }
 
-    @GetMapping("/overdueAll")
-    public String overdueAll() {
-        return "pages/finance/overdueAll.html";
-    }
-
     @GetMapping("/overdueSales")
     public String overdueSales() {
         return "pages/finance/overdueSales.html";

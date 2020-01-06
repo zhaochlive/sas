@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface DictionaryRepository extends JpaRepository<Dictionary, Integer> {
-    public List<Dictionary> findByCode(String code);
+    List<Dictionary> findByCode(String code);
 }

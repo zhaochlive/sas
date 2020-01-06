@@ -1,6 +1,6 @@
 package com.js.sas.service;
 
-import com.js.sas.dto.PartnerNameDTO;
+import com.js.sas.entity.dto.PartnerNameDTO;
 import com.js.sas.entity.PartnerEntity;
 import com.js.sas.repository.PartnerRepository;
 import lombok.extern.slf4j.Slf4j;
