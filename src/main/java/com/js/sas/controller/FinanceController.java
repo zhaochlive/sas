@@ -32,7 +32,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -77,20 +76,14 @@ public class FinanceController {
     private MemberSalemanRepository memberSalemanRepository;
 
     /**
-     * 目前调用存储过程实现，后期需要修改实现方法。
+     * 目前调用存储过程实现，需要修改实现方法。
      *
      * @param settlementSummasryDTO 结算客户汇总DTO
-     * @param bindingResult         校验结果
      * @return Object
      */
     @ApiOperation(value = "结算客户汇总（线上、线下）", notes = "数据来源：用友；数据截止日期：昨天")
     @PostMapping(value = "/settlementSummary")
-    public Object settlementSummary(@Validated SettlementSummaryDTO settlementSummasryDTO, BindingResult bindingResult) {
-        // 参数格式校验
-        Result checkResult = CommonUtils.checkParameter(bindingResult);
-        if (checkResult != null) {
-            return checkResult;
-        }
+    public Object settlementSummary(@Validated SettlementSummaryDTO settlementSummasryDTO) {
         return financeService.getSettlementSummary(settlementSummasryDTO.getName(),
                 settlementSummasryDTO.getChannel(),
                 settlementSummasryDTO.getStartDate(),
@@ -127,7 +120,7 @@ public class FinanceController {
         try {
             CommonUtils.export(httpServletResponse, settlementSummaryList, "结算客户汇总（线上、线下）", new SettlementSummaryEntity());
         } catch (IOException e) {
-            log.error("下载结算客户汇总（线上、线下）异常：{}", e);
+            log.error("下载结算客户汇总（线上、线下）异常：{}", e.getMessage(), e);
             e.printStackTrace();
         }
     }
@@ -140,9 +133,9 @@ public class FinanceController {
      * @return result
      */
     @PostMapping("/refreshOverdueData")
-    public Result refreshOverdueData() {
+    public Result<String> refreshOverdueData() {
         String result = new RemoteShellExecutor("192.168.8.164", 22, "root", "root", "sudo /usr/local/pentaho/cronjobs/001.sh").exec();
-        return ResultUtils.getResult(ResultCode.成功, result);
+        return Result.getResult(ResultCode.成功, result);
     }
 
     /**
@@ -151,12 +144,12 @@ public class FinanceController {
      * @return 逾期数据更新时间
      */
     @PostMapping("/findeOverdueRefreshTime")
-    public Result findeOverdueRefreshTime() {
+    public Result<String> findeOverdueRefreshTime() {
         List<Dictionary> dictionaryList = dictionaryService.findByCode("001");
         if (!dictionaryList.isEmpty()) {
-            return ResultUtils.getResult(ResultCode.成功, dictionaryList.get(0).getValue());
+            return Result.getResult(ResultCode.成功, dictionaryList.get(0).getValue());
         } else {
-            return ResultUtils.getResult(ResultCode.系统异常);
+            return Result.getResult(ResultCode.系统异常);
         }
     }
 
@@ -168,7 +161,7 @@ public class FinanceController {
      * @return Result
      */
     @PostMapping("/findYonyouStatement")
-    public Result findYonyouStatement(@NotBlank(message = "账期不能为空") String period, @NotBlank(message = "对账名称不能为空") String name) {
+    public Result<Object> findYonyouStatement(@NotBlank(message = "账期不能为空") String period, @NotBlank(message = "对账名称不能为空") String name) {
         String startDate;
         String endDate;
         String[] dateArray = period.split("-");
@@ -181,13 +174,13 @@ public class FinanceController {
                     startDate = (Integer.parseInt(dateArray[0]) - 1) + "-12-28";
                     endDate = period + "-27";
                 } else {
-                    return ResultUtils.getResult(ResultCode.参数错误);
+                    return Result.getResult(ResultCode.参数错误);
                 }
             } else {
-                return ResultUtils.getResult(ResultCode.参数错误);
+                return Result.getResult(ResultCode.参数错误);
             }
         } else {
-            return ResultUtils.getResult(ResultCode.参数错误);
+            return Result.getResult(ResultCode.参数错误);
         }
         MultiValueMap<String, String> multiValueMap = new LinkedMultiValueMap<>();
         multiValueMap.add("startDate", startDate);
@@ -195,7 +188,7 @@ public class FinanceController {
         multiValueMap.add("settleCustomer", name);
         // POST
         ResponseEntity responseEntity = CommonUtils.sendPostRequest(url, multiValueMap);
-        return ResultUtils.getResult(ResultCode.成功, responseEntity.getBody());
+        return Result.getResult(ResultCode.成功, responseEntity.getBody());
     }
 
     /**
@@ -222,7 +215,6 @@ public class FinanceController {
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-
         WriteHandler handler = (WriteHandler) enumMap.get(ExcelPropertyEnum.HANDLER);
         // 写入数据
         ExcelWriter writer = new ExcelWriter(null, out, ExcelTypeEnum.XLSX, true, handler);
@@ -246,7 +238,6 @@ public class FinanceController {
             writer.merge(index + 6, index + 6, 0, 2);
             writer.merge(index + 7, index + 7, 0, 2);
             writer.merge(index + 3, index + 3, 0, 7);
-
             int first = mergeRowNumList.get(0);
             writer.merge(first + 3, first + 3, 0, 7);
         }
@@ -265,16 +256,12 @@ public class FinanceController {
     /**
      * 导出全部用友对账单，并打包ZIP文件
      *
-     * @param response
-     * @param period
+     * @param response HttpServletResponse
+     * @param period   账期
      */
     @ApiIgnore
     @PostMapping("/exportAllYonyouStatement")
-    public void exportAllYonyouStatement(HttpServletResponse response, String period) {
-        // 判断参数
-        if (StringUtils.isBlank(period)) {
-            return;
-        }
+    public void exportAllYonyouStatement(HttpServletResponse response, @NotBlank(message = "账期不能为空") String period) {
         log.info("导出全部用友对账单");
         // 输出流
         OutputStream out = null;
@@ -289,7 +276,6 @@ public class FinanceController {
         if (!sourceFile.exists()) {
             sourceFile.mkdirs();
         }
-
         // 遍历往来单位
         for (PartnerEntity partner : partnerList) {
             EnumMap<ExcelPropertyEnum, Object> enumMap = financeService.getYonyouStatementExcel(period, partner.getName());
@@ -350,6 +336,7 @@ public class FinanceController {
         }
         ZipOutputStream zos = null;
         try {
+            assert servletOutputStream != null;
             zos = new ZipOutputStream(servletOutputStream);
             CommonUtils.compress(sourceFile, zos, zipFileName, true);
             log.info("导出全部用友对账单-压缩完成");
@@ -381,17 +368,25 @@ public class FinanceController {
 
     @ApiOperation(value = "客户逾期统计", notes = "数据来源：用友；数据截止日期：昨天")
     @PostMapping("/overdue")
-    public Object overdue(@Validated OverdueDTO partner, BindingResult bindingResult) {
-        /**
-         * 需要优化，添加全局异常。
-         */
-        // 参数格式校验
-        Result checkResult = CommonUtils.checkParameter(bindingResult);
-        if (checkResult != null) {
-            return checkResult;
+    public Object overdue(@Validated OverdueDTO partner) {
+        // 统计月数
+        int months = 12;
+        // 列名
+        List<String> columnsList = financeService.findOverdueColumns(months);
+        // 数据
+        List<List<Object>> objectRowsList = financeService.getOverdueList(partner, months);
+        ArrayList<Map<String, Object>> rowsList = new ArrayList<>();
+        for (List<Object> objectList : objectRowsList) {
+            Map<String, Object> dataMap = new HashMap<>();
+            // 设置数据列
+            // 前面固定部分和后面月份动态部门分别处理
+            for (int index = 0; index < columnsList.size(); index++) {
+                dataMap.put(columnsList.get(index), objectList.get(index));
+            }
+            rowsList.add(dataMap);
         }
         HashMap<String, Object> result = new HashMap<>();
-        result.put("rows", financeService.findOverdueData(partner).get("map"));
+        result.put("rows", rowsList);
         result.put("total", financeService.findOverdueCount(partner));
         return result;
     }
@@ -405,78 +400,146 @@ public class FinanceController {
     @ApiIgnore
     @PostMapping("/exportOverdue")
     public void exportOverdue(HttpServletResponse httpServletResponse) throws IOException {
-        // 列名
-        List<String> columnsList = financeService.findOverdueColumns(12);
-        // 数据
-        List<List<Object>> rowsList = (List<List<Object>>) financeService.findOverdueData(null).get("list");
-        /**
-         * 20191226：关联客户最下面添加一行小计金额
-         */
-        String lastParentName = "";
-        // 应收
-        BigDecimal totalReceivables = BigDecimal.ZERO;
-        // 逾期
-        BigDecimal overdue = BigDecimal.ZERO;
-        // 计数器
-        int num = 0;
-
-        for (int index = 0; index < rowsList.size(); index++) {
-            if (index == 0) {
-                lastParentName = rowsList.get(index).get(6).toString();
-            }
-            // 订货客户
-            if (lastParentName.equals(rowsList.get(index).get(6).toString())) {
-                totalReceivables = totalReceivables.add(new BigDecimal(rowsList.get(index).get(7).toString()));
-                overdue = overdue.add(new BigDecimal(rowsList.get(index).get(8).toString()));
-                num++;
-            } else {
-                lastParentName = rowsList.get(index).get(6).toString();
-                if (num > 1) {
-                    List dataList = new ArrayList();
-                    dataList.add("小计");
-                    dataList.add("");
-                    dataList.add("");
-                    dataList.add("");
-                    dataList.add("");
-                    dataList.add("");
-                    dataList.add("");
-                    dataList.add(totalReceivables);
-                    dataList.add(overdue);
-                    rowsList.add(index, dataList);
-
-                    totalReceivables = BigDecimal.ZERO;
-                    overdue = BigDecimal.ZERO;
-                } else {
-                    totalReceivables = BigDecimal.ZERO;
-                    overdue = BigDecimal.ZERO;
-                    totalReceivables = totalReceivables.add(new BigDecimal(rowsList.get(index).get(7).toString()));
-                    overdue = overdue.add(new BigDecimal(rowsList.get(index).get(8).toString()));
-                }
-                num = 0;
-            }
-        }
-
+        // 统计月数
+        int months = 12;
         String fileName = "逾期统计表";
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
-
+        List<String> columnsList = financeService.findOverdueColumns(months);
+        // 表单
+        Sheet sheet = new Sheet(1, 0);
+        sheet.setSheetName(fileName);
+        // 创建一个表格
+        Table table = new Table(0);
+        // 表头List
+        List<List<String>> headList = new ArrayList<>();
+        // 拼接表头
+        for (String s : columnsList) {
+            List<String> headTitle = new ArrayList<>();
+            headTitle.add(s);
+            headTitle.add(s);
+            headList.add(headTitle);
+        }
+        table.setHead(headList);
         Sheet sheet1 = new Sheet(1, 0);
         sheet1.setSheetName(fileName);
         sheet1.setAutoWidth(Boolean.TRUE);
-
         fileName = fileName + df.format(new Date());
         ServletOutputStream out = httpServletResponse.getOutputStream();
         httpServletResponse.setContentType("multipart/form-data");
         httpServletResponse.setCharacterEncoding("utf-8");
         httpServletResponse.setHeader("Content-Disposition", "attachment;filename*= UTF-8''" + URLEncoder.encode(fileName, "UTF-8") + ".xlsx");
         // 设置列名
-        if (columnsList != null) {
-            List<List<String>> list = new ArrayList<>();
-            columnsList.forEach(c -> list.add(Collections.singletonList(c)));
-            sheet1.setHead(list);
+        List<List<String>> list = new ArrayList<>();
+        columnsList.forEach(c -> list.add(Collections.singletonList(c)));
+        sheet1.setHead(list);
+        /*
+         * 以下处理数据
+         */
+        List<List<Object>> originalRowsList = financeService.getOverdueList(null, months);
+        /*
+         * 20191226：关联客户最下面添加一行小计金额
+         */
+        String lastParentName = "";
+        // 应收
+        BigDecimal totalReceivables = BigDecimal.ZERO;
+        // 逾期
+        BigDecimal totalOverdue = BigDecimal.ZERO;
+        // 期初应收
+        BigDecimal totalOpeningBalance = BigDecimal.ZERO;
+        // 各月小计金额数组
+        BigDecimal[] tatalAmountArray = new BigDecimal[months];
+        // 初始化为0
+        Arrays.fill(tatalAmountArray, BigDecimal.ZERO);
+        // 计数器
+        int num = 0;
+        // 小计合并行号List
+        List<Integer> mergeRowNumList = new ArrayList<>();
+        // 背景色行
+        List<Integer> backgroundColorList = new ArrayList<>();
+        backgroundColorList.add(0);
+        backgroundColorList.add(1);
+        // 加粗
+        List<Integer> boldList = new ArrayList<>();
+        boldList.add(0);
+        boldList.add(1);
+        for (int index = 0; index < originalRowsList.size(); index++) {
+            if (index == 0) {
+                lastParentName = originalRowsList.get(index).get(5).toString();
+            }
+            // 订货客户
+            if (lastParentName.equals(originalRowsList.get(index).get(5).toString())) {
+                totalReceivables = totalReceivables.add(new BigDecimal(originalRowsList.get(index).get(6).toString()));
+                totalOverdue = totalOverdue.add(new BigDecimal(originalRowsList.get(index).get(7).toString()));
+                totalOpeningBalance = totalOpeningBalance.add(new BigDecimal(originalRowsList.get(index).get(8).toString()));
+
+                int monthDataIndex = 1;
+
+                for (int dataIndex = 9; dataIndex < originalRowsList.get(0).size(); dataIndex++) {
+                    tatalAmountArray[monthDataIndex - 1] = tatalAmountArray[monthDataIndex - 1].add(new BigDecimal(originalRowsList.get(index).get(dataIndex).toString()));
+                    monthDataIndex++;
+                }
+                num++;
+            } else {
+                if (num > 1) {
+                    List<Object> innerDataList = new ArrayList<>();
+                    innerDataList.add(lastParentName + " 小计");
+                    innerDataList.add("");
+                    innerDataList.add("");
+                    innerDataList.add(originalRowsList.get(index - 1).get(3));
+                    innerDataList.add(originalRowsList.get(index - 1).get(4));
+                    innerDataList.add("");
+                    innerDataList.add(totalReceivables);
+                    innerDataList.add(totalOverdue);
+                    innerDataList.add(totalOpeningBalance);
+                    int monthDataIndex = 1;
+                    for (int dataIndex = 9; dataIndex < originalRowsList.get(0).size(); dataIndex++) {
+                        innerDataList.add(tatalAmountArray[monthDataIndex - 1]);
+                        monthDataIndex++;
+                    }
+                    originalRowsList.add(index, innerDataList);
+                    totalReceivables = BigDecimal.ZERO;
+                    totalOverdue = BigDecimal.ZERO;
+                    totalOpeningBalance = BigDecimal.ZERO;
+                    tatalAmountArray = new BigDecimal[months];
+                    // 初始化为0
+                    Arrays.fill(tatalAmountArray, BigDecimal.ZERO);
+                    num = 0;
+                    // 需要合并的行号，加2因为有2行标题
+                    mergeRowNumList.add(index + 2);
+                    // 背景色，加2因为有2行标题
+                    backgroundColorList.add(index + 2);
+                } else {
+                    totalReceivables = BigDecimal.ZERO;
+                    totalOverdue = BigDecimal.ZERO;
+                    totalOpeningBalance = BigDecimal.ZERO;
+                    tatalAmountArray = new BigDecimal[months];
+                    // 初始化为0
+                    Arrays.fill(tatalAmountArray, BigDecimal.ZERO);
+                    totalReceivables = totalReceivables.add(new BigDecimal(originalRowsList.get(index).get(6).toString()));
+                    totalOverdue = totalOverdue.add(new BigDecimal(originalRowsList.get(index).get(7).toString()));
+                    totalOpeningBalance = totalOpeningBalance.add(new BigDecimal(originalRowsList.get(index).get(8).toString()));
+                    int monthDataIndex = 1;
+                    for (int dataIndex = 9; dataIndex < originalRowsList.get(0).size(); dataIndex++) {
+                        // 不等于-，说明是结算日
+                        if (!originalRowsList.get(index).get(dataIndex).toString().equals("-")) {
+                            tatalAmountArray[monthDataIndex - 1] = tatalAmountArray[monthDataIndex - 1].add(new BigDecimal(originalRowsList.get(index).get(dataIndex).toString()));
+                            monthDataIndex++;
+                        }
+                    }
+                    num = 1;
+                }
+                lastParentName = originalRowsList.get(index).get(5).toString();
+            }
         }
+        // excel样式
+        SalesOverdueStyleExcelHandler handler = new SalesOverdueStyleExcelHandler(backgroundColorList, boldList);
         // 写入数据
-        ExcelWriter writer = new ExcelWriter(out, ExcelTypeEnum.XLSX, true);
-        writer.write1(rowsList, sheet1);
+        ExcelWriter writer = new ExcelWriter(null, out, ExcelTypeEnum.XLSX, true, handler);
+        writer.write1(originalRowsList, sheet, table);
+        // 合并“小计”行
+        for (int index : mergeRowNumList) {
+            writer.merge(index, index, 0, 5);
+        }
         writer.finish();
         out.flush();
         out.close();
@@ -493,19 +556,13 @@ public class FinanceController {
 
     @ApiOperation(value = "客户逾期统计（销售版本）", notes = "数据来源：用友；数据截止日期：昨天")
     @PostMapping("/overdueSales")
-    public Object overdueSales(@Validated OverdueDTO partner, BindingResult bindingResult) {
-        /**
-         * 需要优化，添加全局异常。
-         */
-        // 参数格式校验
-        Result checkResult = CommonUtils.checkParameter(bindingResult);
-        if (checkResult != null) {
-            return checkResult;
-        }
+    public Object overdueSales(@Validated OverdueDTO partner) {
+        // 统计月数
+        int months = 4;
         // 列名
-        List<String> columnsList = financeService.findOverdueColumns(4);
+        List<String> columnsList = financeService.findOverdueColumns(months);
         // 数据
-        List<List<Object>> objectRowsList = financeService.getOverdueSalesList(partner);
+        List<List<Object>> objectRowsList = financeService.getOverdueList(partner, months);
         ArrayList<Map<String, Object>> rowsList = new ArrayList<>();
         for (List<Object> objectList : objectRowsList) {
             Map<String, Object> dataMap = new HashMap<>();
@@ -540,10 +597,8 @@ public class FinanceController {
                     }
                 }
             }
-
             rowsList.add(dataMap);
         }
-
         HashMap<String, Object> result = new HashMap<>();
         result.put("rows", rowsList);
         result.put("total", financeService.findOverdueCount(partner));
@@ -553,9 +608,11 @@ public class FinanceController {
     @ApiIgnore
     @PostMapping("/exportOverdueSales")
     public void exportOverdueSales(HttpServletResponse httpServletResponse) throws IOException {
+        // 统计月数
+        int months = 4;
         String fileName = "逾期统计表";
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
-        List<String> columnsList = financeService.findOverdueColumns(4);
+        List<String> columnsList = financeService.findOverdueColumns(months);
         // 表单
         Sheet sheet = new Sheet(1, 0);
         sheet.setSheetName(fileName);
@@ -597,37 +654,27 @@ public class FinanceController {
                 headList.add(headTitle);
             }
         }
-
         table.setHead(headList);
-
         Sheet sheet1 = new Sheet(1, 0);
         sheet1.setSheetName(fileName);
         sheet1.setAutoWidth(Boolean.TRUE);
-
         fileName = fileName + df.format(new Date());
         ServletOutputStream out = httpServletResponse.getOutputStream();
         httpServletResponse.setContentType("multipart/form-data");
         httpServletResponse.setCharacterEncoding("utf-8");
         httpServletResponse.setHeader("Content-Disposition", "attachment;filename*= UTF-8''" + URLEncoder.encode(fileName, "UTF-8") + ".xlsx");
         // 设置列名
-        if (columnsList != null) {
-            List<List<String>> list = new ArrayList<>();
-            columnsList.forEach(c -> list.add(Collections.singletonList(c)));
-            sheet1.setHead(list);
-        }
-
-        /**
+        List<List<String>> list = new ArrayList<>();
+        columnsList.forEach(c -> list.add(Collections.singletonList(c)));
+        sheet1.setHead(list);
+        /*
          * 以下处理数据
          */
-        List<List<Object>> originalRowsList = financeService.getOverdueSalesList(null);
-        /**
+        List<List<Object>> originalRowsList = financeService.getOverdueList(null, months);
+        /*
          * 20191226：关联客户最下面添加一行小计金额
          */
         String lastParentName = "";
-        // 账期月
-        int month;
-        // 账期日
-        int day = 0;
         // 应收
         BigDecimal totalReceivables = BigDecimal.ZERO;
         // 逾期
@@ -644,15 +691,10 @@ public class FinanceController {
         List<Integer> backgroundColorList = new ArrayList<>();
         backgroundColorList.add(0);
         backgroundColorList.add(1);
-        // 居中行
-        List<Integer> centerList = new ArrayList<>();
-        backgroundColorList.add(0);
-        backgroundColorList.add(1);
         // 加粗
         List<Integer> boldList = new ArrayList<>();
         boldList.add(0);
         boldList.add(1);
-
         for (int index = 0; index < originalRowsList.size(); index++) {
             if (index == 0) {
                 lastParentName = originalRowsList.get(index).get(5).toString();
@@ -684,7 +726,7 @@ public class FinanceController {
                 num++;
             } else {
                 if (num > 1) {
-                    List innerDataList = new ArrayList();
+                    List<Object> innerDataList = new ArrayList<>();
                     innerDataList.add(lastParentName + " 小计");
                     innerDataList.add("");
                     innerDataList.add("");
@@ -694,15 +736,9 @@ public class FinanceController {
                     innerDataList.add(totalReceivables);
                     innerDataList.add(totalOverdue);
                     innerDataList.add(totalOpeningBalance);
-
                     int monthDataIndex = 1;
                     //
                     for (int dataIndex = 9; dataIndex < originalRowsList.get(0).size(); dataIndex++) {
-                        // 不等于-，说明是结算日
-                        if (index == 0) {
-                            continue;
-                        }
-
                         if (monthDataIndex == 1) {
                             innerDataList.add(tatalAmountArray[0]);
                             monthDataIndex++;
@@ -716,11 +752,8 @@ public class FinanceController {
                             innerDataList.add(tatalAmountArray[3]);
                             monthDataIndex++;
                         }
-
                     }
-
                     originalRowsList.add(index, innerDataList);
-
                     totalReceivables = BigDecimal.ZERO;
                     totalOverdue = BigDecimal.ZERO;
                     totalOpeningBalance = BigDecimal.ZERO;
@@ -730,8 +763,6 @@ public class FinanceController {
                     mergeRowNumList.add(index + 2);
                     // 背景色，加2因为有2行标题
                     backgroundColorList.add(index + 2);
-                    // 居中，加2因为有2行标题
-                    centerList.add(index + 2);
                 } else {
                     totalReceivables = BigDecimal.ZERO;
                     totalOverdue = BigDecimal.ZERO;
@@ -740,9 +771,7 @@ public class FinanceController {
                     totalReceivables = totalReceivables.add(new BigDecimal(originalRowsList.get(index).get(6).toString()));
                     totalOverdue = totalOverdue.add(new BigDecimal(originalRowsList.get(index).get(7).toString()));
                     totalOpeningBalance = totalOpeningBalance.add(new BigDecimal(originalRowsList.get(index).get(8).toString()));
-
                     int monthDataIndex = 1;
-
                     // 只计算后4个月
                     for (int dataIndex = 12; dataIndex < originalRowsList.get(0).size(); dataIndex++) {
                         // 不等于-，说明是结算日
@@ -767,11 +796,8 @@ public class FinanceController {
                 }
                 lastParentName = originalRowsList.get(index).get(5).toString();
             }
-
         }
-
         List<List<Object>> rowsList = new ArrayList<>();
-
         for (List<Object> dataList : originalRowsList) {
             // 设置数据列
             List<Object> resultList = new ArrayList<>();
@@ -834,7 +860,6 @@ public class FinanceController {
             }
             rowsList.add(resultList);
         }
-
         // excel样式
         SalesOverdueStyleExcelHandler handler = new SalesOverdueStyleExcelHandler(backgroundColorList, boldList);
         // 写入数据
@@ -1224,9 +1249,9 @@ public class FinanceController {
         List<DeptStaff> deptStaffList = new ArrayList<>();
         deptStaffRepository.deleteAll();
         deptStaffRepository.flush();
-        for (int i = 0; i < list.size(); i++) {
+        for (Object o : list) {
             DeptStaff deptStaff = new DeptStaff();
-            BeanUtils.copyProperties((UploadData) list.get(i), deptStaff);
+            BeanUtils.copyProperties((UploadData) o, deptStaff);
             deptStaffList.add(deptStaff);
         }
         deptStaffRepository.saveAll(deptStaffList);

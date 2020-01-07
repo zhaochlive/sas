@@ -17,9 +17,7 @@ import java.io.Serializable;
  **/
 @Data
 public class SettlementSummaryDTO implements Serializable {
-
     private static final long serialVersionUID = 1L;
-
     // 结算客户名称
     @ApiModelProperty(value = "结算客户名称", required = true, example = "结算客户")
     private String name;
@@ -53,5 +51,4 @@ public class SettlementSummaryDTO implements Serializable {
     @NotNull(message = "排序方式错误")
     @ApiModelProperty(value = "排序方式", required = true, allowableValues = "asc, desc")
     private String sortOrder;
-
 }

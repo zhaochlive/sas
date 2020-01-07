@@ -9,23 +9,23 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebMvcConfg implements WebMvcConfigurer {
 
     public final static String SYSTEM_USER = "SYSTEM_USER";
-    
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new LoginHandlerInterceptor())
                 .addPathPatterns("/**")
                 .excludePathPatterns("/"
-                        ,"/login"
+                        , "/login"
 //                        ,"/**"
-                        ,"/api/**"
-                        ,"/login_out"
-                        ,"/login_err"
-                        ,"/static/**"
-                        ,"/css/**"
-                        ,"/plugins/**"
-                        ,"/js/**"
-                        ,"/icon/**"
-                        ,"/image/**"
+                        , "/api/**"
+                        , "/login_out"
+                        , "/login_err"
+                        , "/static/**"
+                        , "/css/**"
+                        , "/plugins/**"
+                        , "/js/**"
+                        , "/icon/**"
+                        , "/image/**"
                 );
     }
 

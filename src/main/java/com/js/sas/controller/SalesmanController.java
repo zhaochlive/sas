@@ -4,7 +4,6 @@ import com.js.sas.entity.dto.SalesmanDTO;
 import com.js.sas.service.SalesmanService;
 import com.js.sas.utils.Result;
 import com.js.sas.utils.ResultCode;
-import com.js.sas.utils.ResultUtils;
 import com.js.sas.utils.validate.groups.GetPartnerListByNameLike;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -38,12 +37,12 @@ public class SalesmanController {
             for (int index = 0; index < result.getFieldErrors().size(); index++) {
                 errorMap.put(index + 1, result.getFieldErrors().get(index).getDefaultMessage());
             }
-            return ResultUtils.getResult(ResultCode.参数错误, errorMap);
+            return Result.getResult(ResultCode.参数错误, errorMap);
         }
 
         Page<SalesmanDTO> markerPage = salesService.findNameList(partner);
 
-        return ResultUtils.getResult(ResultCode.成功, markerPage.getContent());
+        return Result.getResult(ResultCode.成功, markerPage.getContent());
     }
 
 }

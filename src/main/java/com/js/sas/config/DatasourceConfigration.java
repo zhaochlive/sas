@@ -41,6 +41,7 @@ public class DatasourceConfigration {
     public DataSource secodDataSource(@Qualifier(value = "secondProperties") DataSourceProperties dataSourceProperties) {
         return dataSourceProperties.initializeDataSourceBuilder().build();
     }
+
     @Bean(name = "secodJdbcTemplate")
     public JdbcTemplate secondaryJdbcTemplate(@Qualifier("secodDataSource") DataSource dataSource) {
         return new JdbcTemplate(dataSource);
@@ -48,6 +49,7 @@ public class DatasourceConfigration {
 
     /**
      * 用友SQLServer数据源
+     *
      * @return
      */
     @Bean("sqlServerProperties")
@@ -55,10 +57,12 @@ public class DatasourceConfigration {
     public DataSourceProperties sqlServerProperties() {
         return new DataSourceProperties();
     }
+
     @Bean(name = "sqlServerDataSource")
     public DataSource sqlServerDataSource(@Qualifier(value = "sqlServerProperties") DataSourceProperties dataSourceProperties) {
         return dataSourceProperties.initializeDataSourceBuilder().build();
     }
+
     @Bean(name = "sqlServerJdbcTemplate")
     public JdbcTemplate sqlServerJdbcTemplate(@Qualifier("sqlServerDataSource") DataSource dataSource) {
         return new JdbcTemplate(dataSource);

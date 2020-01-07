@@ -272,18 +272,6 @@ public class CommonUtils {
         return (Pattern.compile("[0-9]*")).matcher(String.valueOf(o)).matches();
     }
 
-    public static Result checkParameter(BindingResult result) {
-        if (result.hasErrors()) {
-            LinkedHashMap<String, String> errorMap = new LinkedHashMap<>();
-            for (FieldError fieldError : result.getFieldErrors()) {
-                errorMap.put(fieldError.getCode(), fieldError.getDefaultMessage());
-            }
-            return ResultUtils.getResult(ResultCode.参数错误, errorMap);
-        } else {
-            return null;
-        }
-    }
-
     /**
      * 递归压缩方法
      *

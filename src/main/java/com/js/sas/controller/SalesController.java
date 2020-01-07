@@ -10,7 +10,6 @@ import com.js.sas.service.SalesService;
 import com.js.sas.utils.CommonUtils;
 import com.js.sas.utils.Result;
 import com.js.sas.utils.ResultCode;
-import com.js.sas.utils.ResultUtils;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -60,7 +59,7 @@ public class SalesController {
     @CrossOrigin(origins = "http://localhost:9527", maxAge = 3600)
     public Result getSaleAmountByDay(int limit) {
         List<SaleAmountDTO> saleDeliveryList = salesService.getSaleAmountByDay(limit);
-        return ResultUtils.getResult(ResultCode.成功, saleDeliveryList);
+        return Result.getResult(ResultCode.成功, saleDeliveryList);
     }
 
     /**
@@ -73,7 +72,7 @@ public class SalesController {
     @PostMapping("/getSaleAmountByMonth")
     public Result getSaleAmountByMonth(int limit) {
         List<SaleAmountDTO> saleDeliveryList = salesService.getSaleAmountByMonth(limit);
-        return ResultUtils.getResult(ResultCode.成功, saleDeliveryList);
+        return Result.getResult(ResultCode.成功, saleDeliveryList);
     }
 
     /**
@@ -86,7 +85,7 @@ public class SalesController {
     @PostMapping("/getSaleAmountByYear")
     public Result getSaleAmountByYear(int limit) {
         List<SaleAmountDTO> saleDeliveryList = salesService.getSaleAmountByYear(limit);
-        return ResultUtils.getResult(ResultCode.成功, saleDeliveryList);
+        return Result.getResult(ResultCode.成功, saleDeliveryList);
     }
 
     /**
@@ -127,7 +126,7 @@ public class SalesController {
         // 59秒
         endDate.set(Calendar.SECOND, 59);
         List<RegionalSalesDTO> provinceOfSalesList = salesService.getRegionalSales(sdf.format(beginDate.getTime()), sdf.format(endDate.getTime()));
-        return ResultUtils.getResult(ResultCode.成功, provinceOfSalesList);
+        return Result.getResult(ResultCode.成功, provinceOfSalesList);
     }
 
     /**
@@ -163,7 +162,7 @@ public class SalesController {
             for (FieldError fieldError : result.getFieldErrors()) {
                 errorMap.put(fieldError.getCode(), fieldError.getDefaultMessage());
             }
-            return ResultUtils.getResult(ResultCode.参数错误, errorMap);
+            return Result.getResult(ResultCode.参数错误, errorMap);
         }
         List<RegionalSalesDTO> regionalSales = salesService.getRegionalSales(regionalSalesDTO.getStartCreateTime(), regionalSalesDTO.getEndCreateTime() + " 23:59:59");
         HashMap<String, Object> resultHashMap = new HashMap<>();
@@ -224,7 +223,7 @@ public class SalesController {
     public Object findMonthlySalesAmount(String startMonth, String endMonth, String username, String staff, String address, String limit, String offset, String sort, String sortOrder) {
         // 参数不能为空
         if (StringUtils.isBlank(startMonth) || StringUtils.isBlank(endMonth) || StringUtils.isBlank(limit) || StringUtils.isBlank(offset)) {
-            return ResultUtils.getResult(ResultCode.参数错误);
+            return Result.getResult(ResultCode.参数错误);
         }
         int limitInt = 10;
         int offsetInt = 0;
@@ -234,7 +233,7 @@ public class SalesController {
             limitInt = Integer.parseInt(limit);
             offsetInt = Integer.parseInt(offset);
         } else {
-            return ResultUtils.getResult(ResultCode.参数错误);
+            return Result.getResult(ResultCode.参数错误);
         }
         // 判断月份格式
         String str = "(\\b[1-3]\\d{3})-(0[1-9]|1[0-2])";
@@ -244,7 +243,7 @@ public class SalesController {
         if (matcherStart.find() && matcherEnd.find()) {
             return salesService.findMonthlySalesAmount(startMonth, endMonth, username, staff, address, limitInt, offsetInt, sort, sortOrder);
         } else {
-            return ResultUtils.getResult(ResultCode.参数错误);
+            return Result.getResult(ResultCode.参数错误);
         }
     }
 
