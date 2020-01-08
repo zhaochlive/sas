@@ -362,7 +362,7 @@ public class FinanceController {
     @PostMapping("/overdueColumns")
     public Object overdueColumns() {
         Map<String, List<String>> resultMap = new HashMap<>();
-        resultMap.put("columns", financeService.findOverdueColumns(12));
+        resultMap.put("columns", financeService.findOverdueColumns(12, false));
         return resultMap;
     }
 
@@ -372,9 +372,9 @@ public class FinanceController {
         // 统计月数
         int months = 12;
         // 列名
-        List<String> columnsList = financeService.findOverdueColumns(months);
+        List<String> columnsList = financeService.findOverdueColumns(months, false);
         // 数据
-        List<List<Object>> objectRowsList = financeService.getOverdueList(partner, months);
+        List<List<Object>> objectRowsList = financeService.getOverdueList(partner, months, true, false);
         ArrayList<Map<String, Object>> rowsList = new ArrayList<>();
         for (List<Object> objectList : objectRowsList) {
             Map<String, Object> dataMap = new HashMap<>();
@@ -404,7 +404,7 @@ public class FinanceController {
         int months = 12;
         String fileName = "逾期统计表";
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
-        List<String> columnsList = financeService.findOverdueColumns(months);
+        List<String> columnsList = financeService.findOverdueColumns(months, false);
         // 表单
         Sheet sheet = new Sheet(1, 0);
         sheet.setSheetName(fileName);
@@ -435,7 +435,7 @@ public class FinanceController {
         /*
          * 以下处理数据
          */
-        List<List<Object>> originalRowsList = financeService.getOverdueList(null, months);
+        List<List<Object>> originalRowsList = financeService.getOverdueList(null, months, true, false);
         /*
          * 20191226：关联客户最下面添加一行小计金额
          */
@@ -549,7 +549,7 @@ public class FinanceController {
     @PostMapping("/overdueSalesColumns")
     public Object overdueSalesColumns() {
         Map<String, List<String>> columnMap = new HashMap<>();
-        List<String> columnList = financeService.findOverdueColumns(4);
+        List<String> columnList = financeService.findOverdueColumns(4, true);
         columnMap.put("columns", columnList);
         return columnMap;
     }
@@ -560,9 +560,9 @@ public class FinanceController {
         // 统计月数
         int months = 4;
         // 列名
-        List<String> columnsList = financeService.findOverdueColumns(months);
+        List<String> columnsList = financeService.findOverdueColumns(months, true);
         // 数据
-        List<List<Object>> objectRowsList = financeService.getOverdueList(partner, months);
+        List<List<Object>> objectRowsList = financeService.getOverdueList(partner, months, false, true);
         ArrayList<Map<String, Object>> rowsList = new ArrayList<>();
         for (List<Object> objectList : objectRowsList) {
             Map<String, Object> dataMap = new HashMap<>();
@@ -612,7 +612,7 @@ public class FinanceController {
         int months = 4;
         String fileName = "逾期统计表";
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
-        List<String> columnsList = financeService.findOverdueColumns(months);
+        List<String> columnsList = financeService.findOverdueColumns(months, true);
         // 表单
         Sheet sheet = new Sheet(1, 0);
         sheet.setSheetName(fileName);
@@ -670,7 +670,7 @@ public class FinanceController {
         /*
          * 以下处理数据
          */
-        List<List<Object>> originalRowsList = financeService.getOverdueList(null, months);
+        List<List<Object>> originalRowsList = financeService.getOverdueList(null, months, false, true);
         /*
          * 20191226：关联客户最下面添加一行小计金额
          */
@@ -707,21 +707,9 @@ public class FinanceController {
 
                 int monthDataIndex = 1;
 
-                // 只计算后4个月
-                for (int dataIndex = 12; dataIndex < originalRowsList.get(0).size(); dataIndex++) {
-                    if (monthDataIndex == 1) {
-                        tatalAmountArray[0] = tatalAmountArray[0].add(new BigDecimal(originalRowsList.get(index).get(dataIndex).toString()));
-                        monthDataIndex++;
-                    } else if (monthDataIndex == 2) {
-                        tatalAmountArray[1] = tatalAmountArray[1].add(new BigDecimal(originalRowsList.get(index).get(dataIndex).toString()));
-                        monthDataIndex++;
-                    } else if (monthDataIndex == 3) {
-                        tatalAmountArray[2] = tatalAmountArray[2].add(new BigDecimal(originalRowsList.get(index).get(dataIndex).toString()));
-                        monthDataIndex++;
-                    } else if (monthDataIndex == 4) {
-                        tatalAmountArray[3] = tatalAmountArray[3].add(new BigDecimal(originalRowsList.get(index).get(dataIndex).toString()));
-                        monthDataIndex++;
-                    }
+                for (int dataIndex = 9; dataIndex < originalRowsList.get(0).size(); dataIndex++) {
+                    tatalAmountArray[monthDataIndex - 1] = tatalAmountArray[monthDataIndex - 1].add(new BigDecimal(originalRowsList.get(index).get(dataIndex).toString()));
+                    monthDataIndex++;
                 }
                 num++;
             } else {
@@ -739,19 +727,8 @@ public class FinanceController {
                     int monthDataIndex = 1;
                     //
                     for (int dataIndex = 9; dataIndex < originalRowsList.get(0).size(); dataIndex++) {
-                        if (monthDataIndex == 1) {
-                            innerDataList.add(tatalAmountArray[0]);
-                            monthDataIndex++;
-                        } else if (monthDataIndex == 2) {
-                            innerDataList.add(tatalAmountArray[1]);
-                            monthDataIndex++;
-                        } else if (monthDataIndex == 3) {
-                            innerDataList.add(tatalAmountArray[2]);
-                            monthDataIndex++;
-                        } else if (monthDataIndex == 4) {
-                            innerDataList.add(tatalAmountArray[3]);
-                            monthDataIndex++;
-                        }
+                        innerDataList.add(tatalAmountArray[monthDataIndex - 1]);
+                        monthDataIndex++;
                     }
                     originalRowsList.add(index, innerDataList);
                     totalReceivables = BigDecimal.ZERO;
@@ -772,26 +749,13 @@ public class FinanceController {
                     totalOverdue = totalOverdue.add(new BigDecimal(originalRowsList.get(index).get(7).toString()));
                     totalOpeningBalance = totalOpeningBalance.add(new BigDecimal(originalRowsList.get(index).get(8).toString()));
                     int monthDataIndex = 1;
-                    // 只计算后4个月
-                    for (int dataIndex = 12; dataIndex < originalRowsList.get(0).size(); dataIndex++) {
+                    for (int dataIndex = 9; dataIndex < originalRowsList.get(0).size(); dataIndex++) {
                         // 不等于-，说明是结算日
                         if (!originalRowsList.get(index).get(dataIndex).toString().equals("-")) {
-                            if (monthDataIndex == 1) {
-                                tatalAmountArray[0] = tatalAmountArray[0].add(new BigDecimal(originalRowsList.get(index).get(dataIndex).toString()));
-                                monthDataIndex++;
-                            } else if (monthDataIndex == 2) {
-                                tatalAmountArray[1] = tatalAmountArray[1].add(new BigDecimal(originalRowsList.get(index).get(dataIndex).toString()));
-                                monthDataIndex++;
-                            } else if (monthDataIndex == 3) {
-                                tatalAmountArray[2] = tatalAmountArray[2].add(new BigDecimal(originalRowsList.get(index).get(dataIndex).toString()));
-                                monthDataIndex++;
-                            } else if (monthDataIndex == 4) {
-                                tatalAmountArray[3] = tatalAmountArray[3].add(new BigDecimal(originalRowsList.get(index).get(dataIndex).toString()));
-                                monthDataIndex++;
-                            }
+                            tatalAmountArray[monthDataIndex - 1] = tatalAmountArray[monthDataIndex - 1].add(new BigDecimal(originalRowsList.get(index).get(dataIndex).toString()));
+                            monthDataIndex++;
                         }
                     }
-
                     num = 1;
                 }
                 lastParentName = originalRowsList.get(index).get(5).toString();
