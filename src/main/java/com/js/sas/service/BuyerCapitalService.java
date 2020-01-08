@@ -38,6 +38,7 @@ public class BuyerCapitalService {
     public Map<String, Object> getAccountsPayable(Map<String, String> params){
         Map<String, Object> result = new LinkedHashMap();
         long count = 0L;
+        BigDecimal toMinus = new BigDecimal(-1);
         List<AccountsPayable> accountsPayables = null;
         if(params.containsKey("invoiceName")||params.containsKey("userNo")||params.containsKey("userName")
                 ||params.containsKey("seller")||params.containsKey("startDate")||params.containsKey("endDate")
@@ -109,21 +110,9 @@ public class BuyerCapitalService {
                                     || buyerCapital.getPayType() == BuyerCapitalConst.PAYMETHOD_BANKCARD) {
                                 //当记录为网络支付时，先添加一条收款记录，【应收账款】减钱
                                 accountsPayable = transitionToAccountsPayable(buyerCapital);
-//                                accountsPayable.setDeliveryAmount(null);
-//                                accountsPayable.setOtherAmount(null);
                                 accountsPayable.setCapitalTypeName("收款");
-//                                Receivableaccount = Receivableaccount.subtract(buyerCapital.getCapital());
-//                                accountsPayable.setReceivableAccount(Receivableaccount);
-//                                accountsPayable.setInvoicebalance(InvoiceBalance);
-//                                accountsPayable.setRemark(buyerCapital.getInvoiceHeadUp() == null ? "" : buyerCapital.getInvoiceHeadUp()
-//                                        + "\r\n" + buyerCapital.getMemberId() + "\r\n" + buyerCapital.getMemberUserName());
-//                                accountsPayables.add(accountsPayable);
-                                //然后再添加一条发货记录，【应收账款】加钱
-//                                accountsPayable = transitionToAccountsPayable(buyerCapital);
                                 accountsPayable.setCapitalTypeName("收款/发货");
-//                                accountsPayable.setReceivingAmount(null);
                                 accountsPayable.setOtherAmount(null);
-//                                Receivableaccount = Receivableaccount.add(buyerCapital.getCapital());
                                 accountsPayable.setReceivableAccount(Receivableaccount);
                                 InvoiceBalance = InvoiceBalance.add(buyerCapital.getCapital());
                                 accountsPayable.setInvoicebalance(InvoiceBalance);
@@ -165,34 +154,33 @@ public class BuyerCapitalService {
                         //6 //买家违约，金额归为其他，进行相加
                         case BuyerCapitalConst.CAPITALTYPE_PENALTY: {
                             accountsPayable = transitionToAccountsPayable(buyerCapital);
-                            accountsPayable.setDeliveryAmount(null);
+                            accountsPayable.setDeliveryAmount(buyerCapital.getCapital());
                             accountsPayable.setReceivingAmount(null);
-                            accountsPayable.setCapitalTypeName("违约金");
-                            Receivableaccount = Receivableaccount.add(buyerCapital.getCapital());
+                            accountsPayable.setOtherAmount(null);
+                            accountsPayable.setCapitalTypeName("买家违约金");
+                            InvoiceBalance = InvoiceBalance.add(buyerCapital.getCapital());
                             accountsPayable.setReceivableAccount(Receivableaccount);
                             accountsPayable.setInvoicebalance(InvoiceBalance);
                             accountsPayable.setPaytype(5);
                             accountsPayable.setRemark("买家违约");
-
-
+                            accountsPayables.add(accountsPayable);
                             //查询出这笔违约金是否有对应的退货记录存在，有的话，则插入一条退货记录
                             List<OrderProductBackInfo> productBackInfoByOrderno = orderProductBackInfoRepository.findOrderProductBackInfoByOrderno(buyerCapital.getOrderNo());
                             if (productBackInfoByOrderno != null && productBackInfoByOrderno.size() > 0) {
-//                                accountsPayable = transitionToAccountsPayable(buyerCapital);
-                                accountsPayable.setDeliveryAmount(buyerCapital.getCapital().multiply(new BigDecimal(-1)));
-//                                accountsPayable.setOtherAmount(null);
-//                                accountsPayable.setReceivingAmount(null);
+                                accountsPayable = transitionToAccountsPayable(buyerCapital);
+                                accountsPayable.setDeliveryAmount(buyerCapital.getCapital().multiply(toMinus));
+                                accountsPayable.setOtherAmount(null);
+                                accountsPayable.setReceivingAmount(null);
                                 accountsPayable.setCapitalTypeName("违约金/退货");
-                                Receivableaccount = Receivableaccount.add(accountsPayable.getDeliveryAmount());
                                 accountsPayable.setReceivableAccount(Receivableaccount);
                                 InvoiceBalance = InvoiceBalance.add(accountsPayable.getDeliveryAmount());
                                 accountsPayable.setInvoicebalance(InvoiceBalance);
                                 accountsPayable.setPaytype(5);
                                 accountsPayable.setRemark(buyerCapital.getInvoiceHeadUp() == null ? "" : buyerCapital.getInvoiceHeadUp()
                                         + "\r\n" + buyerCapital.getMemberId() + "\r\n" + buyerCapital.getMemberUserName());
-//                                accountsPayables.add(accountsPayable);
+                                accountsPayables.add(accountsPayable);
                             }
-                            accountsPayables.add(accountsPayable);
+//                            accountsPayables.add(accountsPayable);
                             break;
                         }
                         //10 卖家违约金
@@ -200,8 +188,8 @@ public class BuyerCapitalService {
                             accountsPayable = transitionToAccountsPayable(buyerCapital);
                             accountsPayable.setDeliveryAmount(null);
                             accountsPayable.setReceivingAmount(null);
-                            accountsPayable.setCapitalTypeName("违约金");
-                            accountsPayable.setOtherAmount(accountsPayable.getOtherAmount().multiply(new BigDecimal(-1)));
+                            accountsPayable.setCapitalTypeName("卖家违约金");
+                            accountsPayable.setOtherAmount(accountsPayable.getOtherAmount().multiply(toMinus));
                             Receivableaccount = Receivableaccount.add(buyerCapital.getCapital());
                             accountsPayable.setReceivableAccount(Receivableaccount);
                             accountsPayable.setInvoicebalance(InvoiceBalance);
@@ -217,7 +205,7 @@ public class BuyerCapitalService {
                                     || buyerCapital.getPayType() == BuyerCapitalConst.PAYMETHOD_WEIXIN
                                     || buyerCapital.getPayType() == BuyerCapitalConst.PAYMETHOD_BANKCARD) {
                                 accountsPayable = transitionToAccountsPayable(buyerCapital);
-                                accountsPayable.setDeliveryAmount(accountsPayable.getDeliveryAmount().multiply(new BigDecimal(-1)));
+                                accountsPayable.setDeliveryAmount(accountsPayable.getDeliveryAmount().multiply(toMinus));
                                 accountsPayable.setOtherAmount(null);
                                 accountsPayable.setCapitalTypeName("退货/退款");
 
@@ -227,15 +215,12 @@ public class BuyerCapitalService {
                                 InvoiceBalance = InvoiceBalance.add(accountsPayable.getDeliveryAmount());
 //                                accountsPayable.setInvoicebalance(InvoiceBalance);
                                 accountsPayable.setPaytype(5);
-//                                accountsPayable.setRemark(buyerCapital.getInvoiceHeadUp() != null ? "" : buyerCapital.getInvoiceHeadUp()
-//                                        + "\r\n" + buyerCapital.getMemberId() + "\r\n" + buyerCapital.getMemberUserName());
-//                                accountsPayables.add(accountsPayable);
                                 //再添加一条记录
 //                                accountsPayable = transitionToAccountsPayable(buyerCapital);
 //                                accountsPayable.setOtherAmount(null);
 //                                accountsPayable.setDeliveryAmount(null);
 //                                accountsPayable.setCapitalTypeName("退款");
-                                accountsPayable.setReceivingAmount(accountsPayable.getReceivingAmount().multiply(new BigDecimal(-1)));
+                                accountsPayable.setReceivingAmount(accountsPayable.getReceivingAmount().multiply(toMinus));
                                 Receivableaccount = Receivableaccount.subtract(accountsPayable.getReceivingAmount());
                                 accountsPayable.setReceivableAccount(Receivableaccount);
                                 accountsPayable.setInvoicebalance(InvoiceBalance);
@@ -245,7 +230,7 @@ public class BuyerCapitalService {
 
                             } else {
                                 accountsPayable = transitionToAccountsPayable(buyerCapital);
-                                accountsPayable.setDeliveryAmount(accountsPayable.getDeliveryAmount().multiply(new BigDecimal(-1)));
+                                accountsPayable.setDeliveryAmount(accountsPayable.getDeliveryAmount().multiply(toMinus));
                                 accountsPayable.setOtherAmount(null);
                                 accountsPayable.setCapitalTypeName("退货");
                                 accountsPayable.setReceivingAmount(null);
@@ -266,7 +251,7 @@ public class BuyerCapitalService {
                                 accountsPayable.setDeliveryAmount(null);
                                 accountsPayable.setOtherAmount(null);
                                 accountsPayable.setCapitalTypeName(buyerCapital.getCapitalType() == BuyerCapitalConst.PAYMETHOD_BANKCARD ? "退款" : "提现");
-                                accountsPayable.setReceivingAmount(accountsPayable.getReceivingAmount().multiply(new BigDecimal(-1)));
+                                accountsPayable.setReceivingAmount(accountsPayable.getReceivingAmount().multiply(toMinus));
                                 Receivableaccount = Receivableaccount.subtract(buyerCapital.getCapital());
                                 accountsPayable.setReceivableAccount(Receivableaccount);
                                 accountsPayable.setInvoicebalance(InvoiceBalance);
@@ -382,8 +367,8 @@ public class BuyerCapitalService {
                 " WHEN bc.capitaltype = 10 THEN if (bc.scattered = 1 , (bc.capital +bc.scatteredcapital), bc.capital) " +
                 " END ) AS Receivableaccount, " +
                 " SUM(CASE WHEN bc.capitaltype = 0 AND bc.paytype IN (0,1,2,3,4) THEN if(bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital) " +
-                " WHEN bc.capitaltype = 6 THEN  IF(( SELECT COUNT( 1 ) FROM order_product_back_info WHERE orderno = bc.orderno ) > 0," +
-                " -if(bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital), 0 ) " +
+                " WHEN bc.capitaltype = 6 THEN  IF(( SELECT COUNT( 1 ) FROM order_product_back_info WHERE orderno = bc.orderno ) > 0, 0," +
+                " -if(bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital) ) " +
                 " WHEN bc.capitaltype = 2 THEN -if(bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital) " +
                 " END) AS InvoiceBalance  FROM (SELECT ca.capitaltype,ca.capital,ca.tradetime,ca.paytype,ca.orderno,ca.id,ca.rechargestate,ca.tradeno,ca.scattered,ca.scatteredcapital " +
                 " FROM buyer_capital ca WHERE 1 = 1 AND ca.capitaltype in (0,1,2,3,6,10) ");
@@ -505,6 +490,12 @@ public class BuyerCapitalService {
     }
 
 
+    /**
+     * 查询当期结算
+     * @param params
+     * @return
+     * @modify 2020-1-7 by dxf ：调整买家违约情况下计算规则和前期结转计算方式
+     */
     private String getSettlementSql(Map<String, String> params) {
         StringBuilder builder = new StringBuilder();
         String start = "";
@@ -519,17 +510,20 @@ public class BuyerCapitalService {
         builder.append(" if (bc.scattered = 1 ,bc.capital +bc.scatteredcapital,bc.capital)) ");
         builder.append(" WHEN bc.capitaltype = 10 THEN if (bc.scattered = 1 , (bc.capital +bc.scatteredcapital), bc.capital) ");
         builder.append(" END ) AS Receivableaccount, SUM(CASE WHEN bc.capitaltype = 0 AND bc.paytype IN (0,1,2,3,4) THEN if(bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital)");
-        builder.append(" WHEN bc.capitaltype = 6  THEN IF(( SELECT COUNT( 1 ) FROM order_product_back_info WHERE orderno = bc.orderno ) > 0, -if(bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital), 0 ) ");
+        //批注：调整
+        builder.append(" WHEN bc.capitaltype = 6  THEN IF(( SELECT COUNT( 1 ) FROM order_product_back_info WHERE orderno = bc.orderno ) > 0,0, -if(bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital))");
         builder.append(" WHEN bc.capitaltype = 2 THEN -if(bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital) END) AS InvoiceBalance ,");
         builder.append(" SUM(case WHEN bc.capitaltype =0 "+start+" and bc.paytype IN (0,1,2,3,4) THEN if (bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital ) ");
-        builder.append(" WHEN bc.capitaltype = 6 "+start+" THEN IF(( SELECT COUNT(1) FROM order_product_back_info WHERE orderno = bc.orderno ) > 0, -if(bc.scattered = 1 ,bc.capital +bc.scatteredcapital,bc.capital),0)");
+        builder.append(" WHEN bc.capitaltype = 6 "+start+" THEN IF(( SELECT COUNT(1) FROM order_product_back_info WHERE orderno = bc.orderno ) > 0,0, -if(bc.scattered = 1 ,bc.capital +bc.scatteredcapital,bc.capital))");
         builder.append(" WHEN bc.capitaltype = 2 "+start+"  THEN -if(bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital ) end) Deliveryamount,");
         builder.append(" SUM(CASE WHEN bc.capitaltype = 0 "+start+" AND bc.paytype IN (0,1,2)  THEN if (bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital )");
         builder.append(" WHEN bc.capitaltype = 1 "+start+" AND bc.rechargestate = 1  THEN if (bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital )");
         builder.append(" WHEN bc.capitaltype = 2 "+start+" AND bc.paytype IN ( 0, 1, 2 ) THEN if (bc.scattered = 1 ,-(bc.capital+bc.scatteredcapital),-bc.capital )");
         builder.append(" WHEN bc.capitaltype = 3 "+start+" AND bc.rechargestate = 1  THEN if (bc.scattered = 1 ,-(bc.capital+bc.scatteredcapital),-bc.capital )END) Receiptamount,");
         builder.append(" SUM(CASE WHEN bc.capitaltype = 10 "+start+" THEN if (bc.scattered = 1 , (bc.capital+bc.scatteredcapital) , bc.capital )");
-        builder.append(" WHEN bc.capitaltype = 6 "+start+" THEN if (bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital ) END) OtherAmount");
+        //批注: 违约金计算调整为：capitaltype = 6的不计算到其他金额而是记录到发货金额 2020年1月7日 --需求来自沈露丹
+//        builder.append(" WHEN bc.capitaltype = 6 "+start+" THEN if (bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital )");
+        builder.append(" END) OtherAmount");
         builder.append(" FROM (SELECT ca.capitaltype,ca.capital,ca.tradetime,ca.paytype,ca.orderno,ca.id,ca.rechargestate,ca.tradeno,ca.scattered,ca.scatteredcapital");
         builder.append(" FROM buyer_capital ca WHERE 1 = 1 AND ca.capitaltype in (0,1,2,3,6,10) ");
         if(params!=null){
