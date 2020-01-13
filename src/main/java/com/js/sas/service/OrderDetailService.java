@@ -354,7 +354,7 @@ public class OrderDetailService {
         sb.append(" from orders o LEFT JOIN member m on o.saleid=m.id");
         sb.append(" LEFT JOIN member mm on o.memberid=mm.id");
         sb.append(" LEFT JOIN billingrecord br ON br.orderno = o.id :: VARCHAR");
-        sb.append(" LEFT JOIN buyercompanyinfo bc on o.memberid=bc.memberid where 1=1");
+        sb.append(" LEFT JOIN buyercompanyinfo bc on o.memberid=bc.memberid where o.orderstatus <> 7 ");
         if (params.containsKey("username")&&StringUtils.isNotBlank(params.get("username"))) {
             sb.append(" and mm.realname =?");
             list.add(params.get("username"));
