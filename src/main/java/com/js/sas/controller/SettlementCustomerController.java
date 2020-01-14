@@ -92,8 +92,8 @@ public class SettlementCustomerController {
         if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
             params.put("endDate", request.getParameter("endDate"));
         }
-        params.put("sort", "desc");
-        params.put("sortOrder", "total");
+        params.put("sort", "total");
+        params.put("sortOrder", "desc");
         List<String > columnNameList = new ArrayList<>();
         columnNameList.add("品牌");
         columnNameList.add("总计");
