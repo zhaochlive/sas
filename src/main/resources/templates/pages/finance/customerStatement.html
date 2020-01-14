@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="../../css/bootstrap-4.3.1.min.css">
     <link rel="stylesheet" href="../../css/bootstrap-table.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
-    <link rel="stylesheet" type="text/css" href="../../css/daterangepicker.css"/>
+    <link rel="stylesheet" href="../../css/bootstrap-datetimepicker.min.css">
     <link rel="stylesheet" href="../../css/style.css">
 
     <title>统计分析系统 - 财务 - 线上客户对账单</title>
@@ -45,10 +45,17 @@
                                                 <input type="text" placeholder="开票名称" name="invoiceName" id="invoiceName" class="InvoiceHeadUp form-control"/>
                                             </div>
                                         </div>
+<!--                                        <div class="form-group row col-sm-4">-->
+<!--                                            <label class="col-sm-3 col-form-label">日期范围：</label>-->
+<!--                                            <div class="col-sm-9">-->
+<!--                                                <input class="form-control" type="text" placeholder="日期范围" name="dateRange" value=""/>-->
+<!--                                            </div>-->
+<!--                                        </div>-->
                                         <div class="form-group row col-sm-4">
-                                            <label class="col-sm-3 col-form-label">日期范围：</label>
+                                            <label class="col-sm-3 col-form-label">账期：</label>
                                             <div class="col-sm-9">
-                                                <input class="form-control" type="text" placeholder="日期范围" name="dateRange" value=""/>
+                                                <input id="period" name="period" type="text" placeholder="账期"
+                                                       class="form-control form_datetime"/>
                                             </div>
                                         </div>
                                         <div class="form-group row col-sm-4">
@@ -107,16 +114,6 @@
                             <td id="Invoice">发票结余：</td>
                         </tr>
                     </table>
-<!--                    <table class="table table-bordere">-->
-<!--                        <tr>-->
-<!--                            <td><b>上期结转：</b></td>-->
-<!--&lt;!&ndash;                            <td id="DeliveryAmount">发货金额：</td>&ndash;&gt;-->
-<!--&lt;!&ndash;                            <td id="ReceiptAmount">收款金额：</td>&ndash;&gt;-->
-<!--&lt;!&ndash;                            <td id="OtherAmount">其他金额：</td>&ndash;&gt;-->
-<!--                            <td id="surplusReceivable">结转应收账款：</td>-->
-<!--                            <td id="surplusInvoice">结转发票结余：</td>-->
-<!--                        </tr>-->
-<!--                    </table>-->
                     <div class="ibox">
                         <div class="ibox-content">
                             <div class="row">
@@ -154,7 +151,8 @@
 <script src="../../js/common.js"></script>
 
 <script type="text/javascript" src="../../js/moment.min.js"></script>
-<script type="text/javascript" src="../../js/daterangepicker.min.js"></script>
+<script src="../../js/bootstrap-datetimepicker.min.js"></script>
+<script src="../../js/locales/bootstrap-datetimepicker.zh-CN.js"></script>
 <script type="text/javascript" src="../../js/typeahead.min.js"></script>
 
 <script>
@@ -172,7 +170,7 @@
     var startDate = "";
     var endDate = "";
 
-    $('input[name="dateRange"]').daterangepicker({
+  /*  $('input[name="dateRange"]').daterangepicker({
         startDate:firstDayOfMonthSt(),
         endDate:todaySt(),
         timePicker: false,
@@ -233,17 +231,19 @@
         }
         // return value;
     }
-
+*/
 
     $(document).ready(function () {
-        var date = $("input[name='dateRange']").val();
-        if(date==null||date==''){
-            startDate=null;
-            endDate=null;
-        }else{
-            startDate = firstDayOfMonthSt();
-            endDate = todaySt();
-        }
+
+        $('.form_datetime').datetimepicker({
+            format: 'yyyy-mm',
+            autoclose: true,
+            todayBtn: false,
+            startView: 'year',
+            minView: 'year',
+            maxView: 'decade',
+            language: 'zh-CN'
+        });
         var $dataTable = $("#dataTable table").bootstrapTable({
             method: "POST",
             cache: false,
@@ -270,6 +270,7 @@
                     companyname: $("#companyname").val(),
                     startDate: startDate,
                     endDate: endDate,
+                    period:$("#period").val(),
                     limit: params.limit,
                     offset: params.offset,
                     page: (params.offset / params.limit) + 1,
@@ -352,7 +353,6 @@
                             default : v='';
                         }
                     }
-                    // console.info(type+" "+ v);
                     return v;
                 }
             },{
@@ -387,7 +387,6 @@
 });
     //搜索按钮
     $("button[id='search']").click(function () {
-        // $("#dataTable table").bootstrapTable('removeAll');
         $("#dataTable table").bootstrapTable('refresh');
         // strike();
     });

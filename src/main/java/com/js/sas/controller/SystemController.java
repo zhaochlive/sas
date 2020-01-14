@@ -101,6 +101,11 @@ public class SystemController {
         return "pages/operations/storeInfo.html";
     }
 
+    @GetMapping("/receiptList")
+    public String receiptList() {
+        return "pages/finance/receiptList.html";
+    }
+
     @Autowired
     private CouponStrategyService couponStrategyService;
     //优惠策略
