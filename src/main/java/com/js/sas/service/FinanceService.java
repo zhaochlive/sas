@@ -368,8 +368,20 @@ public class FinanceService {
                  * 未逾期，应显示应收金额，每月应收 + 每月逾期 + 期初应收 = 总应收
                  *
                  * 未逾期的应收款 = 应收金额 - 逾期款
+                 *
+                 * 20200114:
+                 * 单结算客户：
+                 * 逾期款小于0：未逾期额应收款 = 应收金额
+                 * 逾期款大于0：未逾期的应收款 = 应收金额 - 逾期款，并设置逾期金额为0
                  */
                 BigDecimal tempReceivables = receivables.subtract(overdue);
+                if (!warehouse) { // 非仓库客户，也就是单结算客户
+                    if (overdue.compareTo(BigDecimal.ZERO) < 0) {
+                        tempReceivables = receivables;
+                        overdue = BigDecimal.ZERO;
+                    }
+                }
+
                 for (int index = dataList.size() - 1; index > dataList.size() - 1 - overdueMonths; index--) {
                     if (tempReceivables.compareTo(BigDecimal.ZERO) == 0 || isZero) { // 等于0，或者未到账期显示0标记为true
                         dataList.set(index, 0);

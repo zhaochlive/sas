@@ -12,13 +12,15 @@ public class SalesOverdueStyleExcelHandler implements WriteHandler {
 
     private List<Integer> backgroundColorList;
     private List<Integer> boldList;
+    private List<Integer> highList;
 
     /**
      * 构造方法
      */
-    public SalesOverdueStyleExcelHandler(List<Integer> backgroundColorList, List<Integer> boldList) {
+    public SalesOverdueStyleExcelHandler(List<Integer> backgroundColorList, List<Integer> boldList, List<Integer> highList) {
         this.backgroundColorList = backgroundColorList;
         this.boldList = boldList;
+        this.highList = highList;
     }
 
     @Override
@@ -27,6 +29,12 @@ public class SalesOverdueStyleExcelHandler implements WriteHandler {
 
     @Override
     public void row(int i, Row row) {
+        if (highList != null) {
+            // 背景色
+            if (highList.contains(i)) {
+                row.setHeight((short) 500);
+            }
+        }
     }
 
     @Override

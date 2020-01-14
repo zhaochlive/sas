@@ -532,7 +532,7 @@ public class FinanceController {
             }
         }
         // excel样式
-        SalesOverdueStyleExcelHandler handler = new SalesOverdueStyleExcelHandler(backgroundColorList, boldList);
+        SalesOverdueStyleExcelHandler handler = new SalesOverdueStyleExcelHandler(backgroundColorList, boldList, null);
         // 写入数据
         ExcelWriter writer = new ExcelWriter(null, out, ExcelTypeEnum.XLSX, true, handler);
         writer.write1(originalRowsList, sheet, table);
@@ -824,8 +824,31 @@ public class FinanceController {
             }
             rowsList.add(resultList);
         }
+
+        // 财务要求空三行
+        rowsList.add(new ArrayList<>());
+        rowsList.add(new ArrayList<>());
+        rowsList.add(new ArrayList<>());
+
+        List<Object> remarkList = new ArrayList<>();
+        remarkList.add("1、逾期款即客户到期未付的货款，到期货款如为负数，则表示该客户有预收款，反之表示该客户有逾期款。应收总计和逾期款同时小于等于0的客户不在此表显示；");
+        rowsList.add(remarkList);
+        remarkList = new ArrayList<>();
+        remarkList.add("2、针对单一结算客户统计：客户在账期日前付款，且付款金额大于当期欠款金额时，逾期款显示0；");
+        rowsList.add(remarkList);
+        remarkList = new ArrayList<>();
+        remarkList.add("3、针对多结算客户统计：当期退货不减前期逾期款, 未有逾期款时以负数显示。");
+        rowsList.add(remarkList);
+        // 行高列
+        List<Integer> highList = new ArrayList<>();
+        // 最后的备注背景色，加行高
+        for (int index = 1; index <= 3; index++) {
+            // +2因为有标题行
+            backgroundColorList.add(rowsList.size() - index + 2);
+            highList.add(rowsList.size() - index + 2);
+        }
         // excel样式
-        SalesOverdueStyleExcelHandler handler = new SalesOverdueStyleExcelHandler(backgroundColorList, boldList);
+        SalesOverdueStyleExcelHandler handler = new SalesOverdueStyleExcelHandler(backgroundColorList, boldList, highList);
         // 写入数据
         ExcelWriter writer = new ExcelWriter(null, out, ExcelTypeEnum.XLSX, true, handler);
         writer.write1(rowsList, sheet, table);
@@ -833,6 +856,11 @@ public class FinanceController {
         for (int index : mergeRowNumList) {
             writer.merge(index, index, 0, 5);
         }
+        // 合并最后说明行
+        for (int index = 1; index <= 3; index++) {
+            writer.merge(rowsList.size() - index + 2, rowsList.size() - index + 2, 0, 32);
+        }
+
         writer.finish();
         out.flush();
         out.close();
