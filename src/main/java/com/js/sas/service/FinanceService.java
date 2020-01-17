@@ -218,9 +218,10 @@ public class FinanceService {
      * @param months  统计的月份
      * @param isZero  true - 未到账期显示0
      * @param oneMore 是否多统计1个月
+     * @param all   true - 导出全部，不进行删减
      * @return 逾期列表
      */
-    public List<List<Object>> getOverdueList(OverdueDTO partner, int months, boolean isZero, boolean oneMore) {
+    public List<List<Object>> getOverdueList(OverdueDTO partner, int months, boolean isZero, boolean oneMore, boolean all) {
         // 数据List
         List<Object[]> overdueSalesList = findOverdue(partner, months, oneMore);
         // 数据结果列表
@@ -307,8 +308,8 @@ public class FinanceService {
                 overdue = new BigDecimal(dataList.get(6).toString());
                 dataList.set(7, overdue);
             }
-            // 导出数据，按规则删除不需要的数据
-            if (partner == null) {
+            // 导出数据，如果不是需要全部数据，按规则删除不需要的数据
+            if (!all && partner == null) {
                 // 去掉应收总计、逾期款都为0的
                 if (overdue.compareTo(BigDecimal.ZERO) == 0 && receivables.compareTo(BigDecimal.ZERO) == 0) {
                     continue;

@@ -5,6 +5,7 @@ import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.event.WriteHandler;
 import com.alibaba.excel.metadata.Sheet;
 import com.alibaba.excel.metadata.Table;
+import com.alibaba.excel.metadata.TableStyle;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.js.sas.entity.dto.OverdueDTO;
 import com.js.sas.entity.dto.SettlementSummaryDTO;
@@ -374,7 +375,7 @@ public class FinanceController {
         // 列名
         List<String> columnsList = financeService.findOverdueColumns(months, false);
         // 数据
-        List<List<Object>> objectRowsList = financeService.getOverdueList(partner, months, true, false);
+        List<List<Object>> objectRowsList = financeService.getOverdueList(partner, months, true, false, true);
         ArrayList<Map<String, Object>> rowsList = new ArrayList<>();
         for (List<Object> objectList : objectRowsList) {
             Map<String, Object> dataMap = new HashMap<>();
@@ -399,7 +400,7 @@ public class FinanceController {
      */
     @ApiIgnore
     @PostMapping("/exportOverdue")
-    public void exportOverdue(HttpServletResponse httpServletResponse) throws IOException {
+    public void exportOverdue(boolean all, HttpServletResponse httpServletResponse) throws IOException {
         // 统计月数
         int months = 12;
         String fileName = "逾期统计表";
@@ -435,7 +436,7 @@ public class FinanceController {
         /*
          * 以下处理数据
          */
-        List<List<Object>> originalRowsList = financeService.getOverdueList(null, months, true, false);
+        List<List<Object>> originalRowsList = financeService.getOverdueList(null, months, true, false, all);
         /*
          * 20191226：关联客户最下面添加一行小计金额
          */
@@ -562,7 +563,7 @@ public class FinanceController {
         // 列名
         List<String> columnsList = financeService.findOverdueColumns(months, true);
         // 数据
-        List<List<Object>> objectRowsList = financeService.getOverdueList(partner, months, false, true);
+        List<List<Object>> objectRowsList = financeService.getOverdueList(partner, months, false, true, false);
         ArrayList<Map<String, Object>> rowsList = new ArrayList<>();
         for (List<Object> objectList : objectRowsList) {
             Map<String, Object> dataMap = new HashMap<>();
@@ -670,7 +671,7 @@ public class FinanceController {
         /*
          * 以下处理数据
          */
-        List<List<Object>> originalRowsList = financeService.getOverdueList(null, months, false, true);
+        List<List<Object>> originalRowsList = financeService.getOverdueList(null, months, false, true, false);
         /*
          * 20191226：关联客户最下面添加一行小计金额
          */

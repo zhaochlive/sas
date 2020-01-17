@@ -30,7 +30,6 @@ public class SalesOverdueStyleExcelHandler implements WriteHandler {
     @Override
     public void row(int i, Row row) {
         if (highList != null) {
-            // 背景色
             if (highList.contains(i)) {
                 row.setHeight((short) 500);
             }
@@ -39,10 +38,9 @@ public class SalesOverdueStyleExcelHandler implements WriteHandler {
 
     @Override
     public void cell(int i, Cell cell) {
-        // 从第二行开始设置格式，第一行是表头
         Workbook workbook = cell.getSheet().getWorkbook();
-        CellStyle cellStyle = workbook.createCellStyle();
-
+        CellStyle cellStyle = cell.getCellStyle();
+        //CellStyle cellStyle = workbook.createCellStyle();
         // 前两行标题加边框
         if (cell.getRowIndex() < 2) {
             // 下边框
@@ -71,7 +69,6 @@ public class SalesOverdueStyleExcelHandler implements WriteHandler {
                 cellStyle.setAlignment(HorizontalAlignment.RIGHT);
             }
         }
-
         if (boldList != null) {
             // 加粗
             if (boldList.contains(cell.getRowIndex())) {
@@ -80,17 +77,17 @@ public class SalesOverdueStyleExcelHandler implements WriteHandler {
                 cellStyle.setFont(font);
             }
         }
-
         if (backgroundColorList != null) {
             // 背景色
             if (backgroundColorList.contains(cell.getRowIndex())) {
+                if (cell.getRowIndex() > 1) {
+                    cellStyle = workbook.createCellStyle();
+                }
                 cellStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
                 cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
             }
         }
-
         cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-
         cell.getRow().getCell(i).setCellStyle(cellStyle);
     }
 

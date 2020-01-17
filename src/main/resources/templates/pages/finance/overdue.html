@@ -77,7 +77,11 @@
                                     </button>
                                     <button type="button" class="btn btn-default pull-right" id="exportCredit"
                                             style="margin-left:20px;">
-                                        导出逾期Excel
+                                        导出精简版Excel
+                                    </button>
+                                    <button type="button" class="btn btn-default pull-right" id="exportCreditAll"
+                                            style="margin-left:20px;">
+                                        导出全部Excel
                                     </button>
                                     <button type="button" class="btn btn-default pull-right" id="refreshData"
                                             style="margin-left:20px; float:right;">
@@ -298,10 +302,19 @@
             $("#dataTable table").bootstrapTable('refresh');
         });
 
-        // 账期导出按钮
+        // 账期导出按钮精简版
         $("button[id='exportCredit']").click(function () {
             $("#form1").attr('action', "/finance/exportOverdue");
             $("#form1").attr('method', "POST");
+            $("#form1").submit();
+        });
+
+        // 账期导出按钮全部
+        $("button[id='exportCreditAll']").click(function () {
+            var inputValue = $("<input type='text' name='all' value='true' hidden='hidden'/>");
+            $("#form1").attr('action', "/finance/exportOverdue");
+            $("#form1").attr('method', "POST");
+            $("#form1").append(inputValue);
             $("#form1").submit();
         });
 
