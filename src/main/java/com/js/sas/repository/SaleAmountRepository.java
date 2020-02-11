@@ -27,6 +27,8 @@ public interface SaleAmountRepository extends JpaRepository<SaleAmountDTO, Integ
             " FROM" +
             " (SELECT @rownum \\:= 0) r," +
             " YY_SA_SaleDelivery sasd" +
+            " WHERE" +
+            " sasd.create_time > DATE_ADD(NOW(),INTERVAL -30 DAY)" +
             " GROUP BY" +
             " days" +
             " ORDER BY" +
