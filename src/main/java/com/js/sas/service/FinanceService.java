@@ -185,6 +185,71 @@ public class FinanceService {
     }
 
     /**
+     * 逾期统计:数据List，客服版本
+     *
+     * @param partner 逾期客户DTO
+     * @param months  统计月数
+     * @param oneMore 是否多统计一个月
+     * @return 数据List
+     */
+    public List<Object[]> findOverdueStaff(OverdueDTO partner, int months, boolean oneMore) {
+        StringBuilder sqlStringBuilder = new StringBuilder("SELECT yap.parent_code, yap.amount_delivery, yap.amount_collected, IFNULL( ds.department, '-' ) AS 部门, " +
+                "yap.customer_service_staff AS 业务员, yap.NAME AS 往来单位名称, yap.payment_month AS 账期月, " +
+                "IF(yap.parent_name IS NULL OR ( yap.parent_name = '' AND yap.settlement_type != '2' ) OR ( yap.settlement_type = '1' AND yap.parent_code = '0' ), '现款', yap.payment_date) AS 账期日, IF ( yap.parent_name IS NULL OR yap.parent_name = '' OR ( yap.settlement_type = '1' AND yap.parent_code = '0' ), yap.NAME, yap.parent_name) AS 订货客户, " +
+                "yap.receivables AS 应收总计, yap.amount_delivery + yap.opening_balance - yap.amount_collected + yap.amount_refund AS 逾期款, yap.opening_balance AS 期初应收 ");
+        // 当前时间
+        Calendar now = Calendar.getInstance();
+        // 开始时间 = 当前时间 - 统计的月数
+        Calendar origin = Calendar.getInstance();
+        // 保证至少显示两个月
+        months = Math.abs(months) - 2;
+        if (months < 0) {
+            months = 0;
+        }
+        origin.add(Calendar.MONTH, -months);
+        while (origin.before(now)) {
+            sqlStringBuilder.append(", MAX(CASE months WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月销售' THEN vssm.amount ELSE 0 END) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月 ");
+            sqlStringBuilder.append(", MIN(CASE months WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月退货' THEN vssm.amount ELSE 0 END) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月退货 ");
+            sqlStringBuilder.append(", MIN( CASE vsr.months_received WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月收款' THEN vsr.amount_received ELSE 0 END ) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月收款 ");
+            // 加1个月
+            origin.add(Calendar.MONTH, 1);
+        }
+        // 多统计1个月
+        sqlStringBuilder.append(", MAX(CASE months WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月销售' THEN vssm.amount ELSE 0 END) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月 ");
+        sqlStringBuilder.append(", MIN(CASE months WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月退货' THEN vssm.amount ELSE 0 END) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月退货 ");
+        sqlStringBuilder.append(", MIN( CASE vsr.months_received WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月收款' THEN vsr.amount_received ELSE 0 END ) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月收款 ");
+        if (oneMore) {
+            sqlStringBuilder.append(", MAX(CASE months WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 2).append("月销售' THEN vssm.amount ELSE 0 END) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 2).append("月 ");
+            sqlStringBuilder.append(", MIN(CASE months WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 2).append("月退货' THEN vssm.amount ELSE 0 END) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 2).append("月退货 ");
+            sqlStringBuilder.append(", MIN( CASE vsr.months_received WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 2).append("月收款' THEN vsr.amount_received ELSE 0 END ) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 2).append("月收款 ");
+        }
+        sqlStringBuilder.append(" FROM yy_aa_partner_staff yap ");
+        sqlStringBuilder.append(" LEFT JOIN v_settlement_sales_months_v4 vssm ON yap.settlement_id = vssm.settlementId AND vssm.customer_service_staff = yap.customer_service_staff ");
+        sqlStringBuilder.append(" LEFT JOIN dept_staff ds ON ds.name = yap.customer_service_staff ");
+        sqlStringBuilder.append(" LEFT JOIN v_settlement_received_v2 vsr ON yap.id = vsr.settlementId AND vsr.customer_service_staff = vssm.customer_service_staff ");
+        sqlStringBuilder.append(" LEFT JOIN YY_AA_Partner yapp ON yapp.`code` = yap.parent_code ");
+        sqlStringBuilder.append(" WHERE yap.status = 0 ");
+        if (partner != null && StringUtils.isNotBlank(partner.getCode())) {
+            sqlStringBuilder.append(" AND yap.code = '" + partner.getCode() + "' ");
+        }
+        if (partner != null && StringUtils.isNotBlank(partner.getName())) {
+            sqlStringBuilder.append(" AND yap.name = '" + partner.getName() + "' ");
+        }
+        if (partner != null && StringUtils.isNotBlank(partner.getOnlyOverdue()) && partner.getOnlyOverdue().equals("true")) {
+            sqlStringBuilder.append(" AND yap.receivables > 0 ");
+        }
+        sqlStringBuilder.append(" GROUP BY ");
+        sqlStringBuilder.append("yap.id, ds.department, yap.customer_service_staff, yap.CODE, yap.parent_code, yap.payment_month, yap.payment_date, yap.NAME, yap.amount_delivery, yap.amount_collected, yap.opening_balance, yap.parent_name, yap.settlement_type, yap.receivables, yap.amount_refund");
+        if (partner != null) {
+            sqlStringBuilder.append(" ORDER BY yap.parent_code DESC, yap.name ASC LIMIT " + partner.getOffset() + ", " + partner.getLimit());
+        } else {
+            sqlStringBuilder.append(" ORDER BY yap.parent_code DESC, 账期日 ASC ");
+        }
+        Query query = entityManager.createNativeQuery(sqlStringBuilder.toString());
+        return query.getResultList();
+    }
+
+    /**
      * 逾期统计:数据总数量
      *
      * @param partner 逾期客户DTO
@@ -193,7 +258,7 @@ public class FinanceService {
     public BigInteger findOverdueCount(OverdueDTO partner) {
         StringBuilder sqlCountStringBuilder = new StringBuilder("SELECT COUNT(1) FROM ( SELECT 1 ");
         sqlCountStringBuilder.append(" FROM YY_AA_Partner yap ");
-        sqlCountStringBuilder.append(" LEFT JOIN v_settlement_sales_months vssm ON yap.id = vssm.settlementId ");
+        sqlCountStringBuilder.append(" LEFT JOIN v_settlement_sales_months_v3 vssm ON yap.id = vssm.settlementId ");
         sqlCountStringBuilder.append(" LEFT JOIN dept_staff ds ON yap.customer_service_staff = ds.name ");
         sqlCountStringBuilder.append(" WHERE yap.status = 0 ");
         if (partner != null && StringUtils.isNotBlank(partner.getCode())) {
@@ -218,12 +283,19 @@ public class FinanceService {
      * @param months  统计的月份
      * @param isZero  true - 未到账期显示0
      * @param oneMore 是否多统计1个月
-     * @param all   true - 导出全部，不进行删减
+     * @param all     true - 导出全部，不进行删减
+     * @param isStaff 是否是客服版，true - 是
      * @return 逾期列表
      */
-    public List<List<Object>> getOverdueList(OverdueDTO partner, int months, boolean isZero, boolean oneMore, boolean all) {
+    public List<List<Object>> getOverdueList(OverdueDTO partner, int months, boolean isZero, boolean oneMore, boolean all, boolean isStaff) {
         // 数据List
-        List<Object[]> overdueSalesList = findOverdue(partner, months, oneMore);
+        List<Object[]> overdueSalesList;
+        if (isStaff) {
+            overdueSalesList = findOverdueStaff(partner, months, oneMore);
+        } else {
+            overdueSalesList = findOverdue(partner, months, oneMore);
+        }
+
         // 数据结果列表
         List<List<Object>> rowsList = new ArrayList<>();
         for (Object[] dataRow : overdueSalesList) {

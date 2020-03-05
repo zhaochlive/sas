@@ -375,7 +375,7 @@ public class FinanceController {
         // 列名
         List<String> columnsList = financeService.findOverdueColumns(months, false);
         // 数据
-        List<List<Object>> objectRowsList = financeService.getOverdueList(partner, months, true, false, true);
+        List<List<Object>> objectRowsList = financeService.getOverdueList(partner, months, true, false, true, false);
         ArrayList<Map<String, Object>> rowsList = new ArrayList<>();
         for (List<Object> objectList : objectRowsList) {
             Map<String, Object> dataMap = new HashMap<>();
@@ -436,7 +436,7 @@ public class FinanceController {
         /*
          * 以下处理数据
          */
-        List<List<Object>> originalRowsList = financeService.getOverdueList(null, months, true, false, all);
+        List<List<Object>> originalRowsList = financeService.getOverdueList(null, months, true, false, all, false);
         /*
          * 20191226：关联客户最下面添加一行小计金额
          */
@@ -555,6 +555,63 @@ public class FinanceController {
         return columnMap;
     }
 
+    /**
+     * 客服版本逾期统计
+     *
+     * @param partner OverdueDTO
+     * @return Object
+     */
+    @ApiOperation(value = "客户逾期统计（客服版本）", notes = "数据来源：用友")
+    @PostMapping("/overdueStaff")
+    public Object overdueStaff(@Validated OverdueDTO partner) {
+        // 统计月数
+        int months = 4;
+        // 列名
+        List<String> columnsList = financeService.findOverdueColumns(months, true);
+        // 数据
+        List<List<Object>> objectRowsList = financeService.getOverdueList(partner, months, false, true, false, true);
+        ArrayList<Map<String, Object>> rowsList = new ArrayList<>();
+        for (List<Object> objectList : objectRowsList) {
+            Map<String, Object> dataMap = new HashMap<>();
+            // 设置数据列
+            // 前面固定部分和后面月份动态部门分别处理
+            for (int index = 0; index < 9; index++) {
+                dataMap.put(columnsList.get(index), objectList.get(index));
+            }
+            // 动态部分
+            for (int index = 1; index <= columnsList.size() - 9; index++) {
+                if (index > 4) {
+                    dataMap.put(columnsList.get(columnsList.size() - index), objectList.get(objectList.size() - index));
+                } else {
+                    // 按账期日，每5天划分一列，向后合并。例如：账期日7显示在10日列。
+                    // 为了对应bootstrap的列名，看不懂可以重新写，符合规则就行。
+                    int date = 0;
+                    if (StringUtils.isNumeric(dataMap.get("账期日").toString())) {
+                        date = Integer.parseInt(dataMap.get("账期日").toString());
+                    }
+                    if (date <= 5) {
+                        dataMap.put((5 - index) + "05", objectList.get(objectList.size() - index));
+                    } else if (date <= 10) {
+                        dataMap.put((5 - index) + "10", objectList.get(objectList.size() - index));
+                    } else if (date <= 15) {
+                        dataMap.put((5 - index) + "15", objectList.get(objectList.size() - index));
+                    } else if (date <= 20) {
+                        dataMap.put((5 - index) + "20", objectList.get(objectList.size() - index));
+                    } else if (date <= 25) {
+                        dataMap.put((5 - index) + "25", objectList.get(objectList.size() - index));
+                    } else {
+                        dataMap.put((5 - index) + "30", objectList.get(objectList.size() - index));
+                    }
+                }
+            }
+            rowsList.add(dataMap);
+        }
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("rows", rowsList);
+        result.put("total", financeService.findOverdueCount(partner));
+        return result;
+    }
+
     @ApiOperation(value = "客户逾期统计（销售版本）", notes = "数据来源：用友；数据截止日期：昨天")
     @PostMapping("/overdueSales")
     public Object overdueSales(@Validated OverdueDTO partner) {
@@ -563,7 +620,7 @@ public class FinanceController {
         // 列名
         List<String> columnsList = financeService.findOverdueColumns(months, true);
         // 数据
-        List<List<Object>> objectRowsList = financeService.getOverdueList(partner, months, false, true, false);
+        List<List<Object>> objectRowsList = financeService.getOverdueList(partner, months, false, true, false, false);
         ArrayList<Map<String, Object>> rowsList = new ArrayList<>();
         for (List<Object> objectList : objectRowsList) {
             Map<String, Object> dataMap = new HashMap<>();
@@ -671,7 +728,7 @@ public class FinanceController {
         /*
          * 以下处理数据
          */
-        List<List<Object>> originalRowsList = financeService.getOverdueList(null, months, false, true, false);
+        List<List<Object>> originalRowsList = financeService.getOverdueList(null, months, false, true, false, false);
         /*
          * 20191226：关联客户最下面添加一行小计金额
          */
