@@ -924,6 +924,267 @@ public class FinanceController {
         out.close();
     }
 
+    @ApiIgnore
+    @PostMapping("/exportOverdueStaff")
+    public void exportOverdueStaff(HttpServletResponse httpServletResponse) throws IOException {
+        // 统计月数
+        int months = 4;
+        String fileName = "逾期统计表";
+        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
+        List<String> columnsList = financeService.findOverdueColumns(months, true);
+        // 表单
+        Sheet sheet = new Sheet(1, 0);
+        sheet.setSheetName(fileName);
+        // 创建一个表格
+        Table table = new Table(1);
+        // 表头List
+        List<List<String>> headList = new ArrayList<>();
+        // 拼接表头
+        for (int index = 0; index < columnsList.size(); index++) {
+            if (index < 9) {
+                List<String> headTitle = new ArrayList<>();
+                headTitle.add(columnsList.get(index));
+                headTitle.add(columnsList.get(index));
+                headList.add(headTitle);
+            } else {
+                List<String> headTitle = new ArrayList<>();
+                headTitle.add(columnsList.get(index));
+                headTitle.add("05");
+                headList.add(headTitle);
+                headTitle = new ArrayList<>();
+                headTitle.add(columnsList.get(index));
+                headTitle.add("10");
+                headList.add(headTitle);
+                headTitle = new ArrayList<>();
+                headTitle.add(columnsList.get(index));
+                headTitle.add("15");
+                headList.add(headTitle);
+                headTitle = new ArrayList<>();
+                headTitle.add(columnsList.get(index));
+                headTitle.add("20");
+                headList.add(headTitle);
+                headTitle = new ArrayList<>();
+                headTitle.add(columnsList.get(index));
+                headTitle.add("25");
+                headList.add(headTitle);
+                headTitle = new ArrayList<>();
+                headTitle.add(columnsList.get(index));
+                headTitle.add("30");
+                headList.add(headTitle);
+            }
+        }
+        table.setHead(headList);
+        Sheet sheet1 = new Sheet(1, 0);
+        sheet1.setSheetName(fileName);
+        sheet1.setAutoWidth(Boolean.TRUE);
+        fileName = fileName + df.format(new Date());
+        ServletOutputStream out = httpServletResponse.getOutputStream();
+        httpServletResponse.setContentType("multipart/form-data");
+        httpServletResponse.setCharacterEncoding("utf-8");
+        httpServletResponse.setHeader("Content-Disposition", "attachment;filename*= UTF-8''" + URLEncoder.encode(fileName, "UTF-8") + ".xlsx");
+        // 设置列名
+        List<List<String>> list = new ArrayList<>();
+        columnsList.forEach(c -> list.add(Collections.singletonList(c)));
+        sheet1.setHead(list);
+        /*
+         * 以下处理数据
+         */
+        List<List<Object>> originalRowsList = financeService.getOverdueList(null, months, false, true, false, true);
+        /*
+         * 20191226：关联客户最下面添加一行小计金额
+         */
+        String lastParentName = "";
+        // 应收
+        BigDecimal totalReceivables = BigDecimal.ZERO;
+        // 逾期
+        BigDecimal totalOverdue = BigDecimal.ZERO;
+        // 期初应收
+        BigDecimal totalOpeningBalance = BigDecimal.ZERO;
+        // 四个月的小计金额
+        BigDecimal[] tatalAmountArray = new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
+        // 计数器
+        int num = 0;
+        // 小计合并行号List
+        List<Integer> mergeRowNumList = new ArrayList<>();
+        // 背景色行
+        List<Integer> backgroundColorList = new ArrayList<>();
+        backgroundColorList.add(0);
+        backgroundColorList.add(1);
+        // 加粗
+        List<Integer> boldList = new ArrayList<>();
+        boldList.add(0);
+        boldList.add(1);
+        for (int index = 0; index < originalRowsList.size(); index++) {
+            if (index == 0) {
+                lastParentName = originalRowsList.get(index).get(5).toString();
+            }
+            // 订货客户
+            if (lastParentName.equals(originalRowsList.get(index).get(5).toString())) {
+                totalReceivables = totalReceivables.add(new BigDecimal(originalRowsList.get(index).get(6).toString()));
+                totalOverdue = totalOverdue.add(new BigDecimal(originalRowsList.get(index).get(7).toString()));
+                totalOpeningBalance = totalOpeningBalance.add(new BigDecimal(originalRowsList.get(index).get(8).toString()));
+
+                int monthDataIndex = 1;
+
+                for (int dataIndex = 9; dataIndex < originalRowsList.get(0).size(); dataIndex++) {
+                    tatalAmountArray[monthDataIndex - 1] = tatalAmountArray[monthDataIndex - 1].add(new BigDecimal(originalRowsList.get(index).get(dataIndex).toString()));
+                    monthDataIndex++;
+                }
+                num++;
+            } else {
+                if (num > 1) {
+                    List<Object> innerDataList = new ArrayList<>();
+                    innerDataList.add(lastParentName + " 小计");
+                    innerDataList.add("");
+                    innerDataList.add("");
+                    innerDataList.add(originalRowsList.get(index - 1).get(3));
+                    innerDataList.add(originalRowsList.get(index - 1).get(4));
+                    innerDataList.add("");
+                    innerDataList.add(totalReceivables);
+                    innerDataList.add(totalOverdue);
+                    innerDataList.add(totalOpeningBalance);
+                    int monthDataIndex = 1;
+                    //
+                    for (int dataIndex = 9; dataIndex < originalRowsList.get(0).size(); dataIndex++) {
+                        innerDataList.add(tatalAmountArray[monthDataIndex - 1]);
+                        monthDataIndex++;
+                    }
+                    originalRowsList.add(index, innerDataList);
+                    totalReceivables = BigDecimal.ZERO;
+                    totalOverdue = BigDecimal.ZERO;
+                    totalOpeningBalance = BigDecimal.ZERO;
+                    tatalAmountArray = new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
+                    num = 0;
+                    // 需要合并的行号，加2因为有2行标题
+                    mergeRowNumList.add(index + 2);
+                    // 背景色，加2因为有2行标题
+                    backgroundColorList.add(index + 2);
+                } else {
+                    totalReceivables = BigDecimal.ZERO;
+                    totalOverdue = BigDecimal.ZERO;
+                    totalOpeningBalance = BigDecimal.ZERO;
+                    tatalAmountArray = new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
+                    totalReceivables = totalReceivables.add(new BigDecimal(originalRowsList.get(index).get(6).toString()));
+                    totalOverdue = totalOverdue.add(new BigDecimal(originalRowsList.get(index).get(7).toString()));
+                    totalOpeningBalance = totalOpeningBalance.add(new BigDecimal(originalRowsList.get(index).get(8).toString()));
+                    int monthDataIndex = 1;
+                    for (int dataIndex = 9; dataIndex < originalRowsList.get(0).size(); dataIndex++) {
+                        // 不等于-，说明是结算日
+                        if (!originalRowsList.get(index).get(dataIndex).toString().equals("-")) {
+                            tatalAmountArray[monthDataIndex - 1] = tatalAmountArray[monthDataIndex - 1].add(new BigDecimal(originalRowsList.get(index).get(dataIndex).toString()));
+                            monthDataIndex++;
+                        }
+                    }
+                    num = 1;
+                }
+                lastParentName = originalRowsList.get(index).get(5).toString();
+            }
+        }
+        List<List<Object>> rowsList = new ArrayList<>();
+        for (List<Object> dataList : originalRowsList) {
+            // 设置数据列
+            List<Object> resultList = new ArrayList<>();
+            // 前面固定部分和后面月份动态部门分别处理
+            for (int index = 0; index < 9; index++) {
+                resultList.add(dataList.get(index));
+            }
+            // 动态部分，4个月
+            for (int index = 4; index > 0; index--) {
+                // 按账期日补-
+                int date = 0;
+                if (StringUtils.isNumeric(dataList.get(4).toString())) {
+                    date = Integer.parseInt(dataList.get(4).toString());
+                }
+                List<Object> zeroList = new ArrayList<>();
+                if (date <= 5) {
+                    zeroList.add(dataList.get(dataList.size() - index));
+                    zeroList.add("-");
+                    zeroList.add("-");
+                    zeroList.add("-");
+                    zeroList.add("-");
+                    zeroList.add("-");
+                } else if (date <= 10) {
+                    zeroList.add("-");
+                    zeroList.add(dataList.get(dataList.size() - index));
+                    zeroList.add("-");
+                    zeroList.add("-");
+                    zeroList.add("-");
+                    zeroList.add("-");
+                } else if (date <= 15) {
+                    zeroList.add("-");
+                    zeroList.add("-");
+                    zeroList.add(dataList.get(dataList.size() - index));
+                    zeroList.add("-");
+                    zeroList.add("-");
+                    zeroList.add("-");
+                } else if (date <= 20) {
+                    zeroList.add("-");
+                    zeroList.add("-");
+                    zeroList.add("-");
+                    zeroList.add(dataList.get(dataList.size() - index));
+                    zeroList.add("-");
+                    zeroList.add("-");
+                } else if (date <= 25) {
+                    zeroList.add("-");
+                    zeroList.add("-");
+                    zeroList.add("-");
+                    zeroList.add("-");
+                    zeroList.add(dataList.get(dataList.size() - index));
+                    zeroList.add("-");
+                } else {
+                    zeroList.add("-");
+                    zeroList.add("-");
+                    zeroList.add("-");
+                    zeroList.add("-");
+                    zeroList.add("-");
+                    zeroList.add(dataList.get(dataList.size() - index));
+                }
+                resultList.addAll(zeroList);
+            }
+            rowsList.add(resultList);
+        }
+
+        // 财务要求空三行
+        rowsList.add(new ArrayList<>());
+        rowsList.add(new ArrayList<>());
+        rowsList.add(new ArrayList<>());
+
+        List<Object> remarkList = new ArrayList<>();
+        remarkList.add("1、逾期款即客户到期未付的货款，到期货款如为负数，则表示该客户有预收款，反之表示该客户有逾期款。应收总计和逾期款同时小于等于0的客户不在此表显示；");
+        rowsList.add(remarkList);
+        remarkList = new ArrayList<>();
+        remarkList.add("2、针对单一结算客户统计：客户在账期日前付款，且付款金额大于当期欠款金额时，逾期款显示0；");
+        rowsList.add(remarkList);
+        remarkList = new ArrayList<>();
+        remarkList.add("3、针对多结算客户统计：当期退货不减前期逾期款, 未有逾期款时以负数显示。");
+        rowsList.add(remarkList);
+        // 行高列
+        List<Integer> highList = new ArrayList<>();
+        // 最后的备注背景色，加行高
+        for (int index = 1; index <= 3; index++) {
+            // +2因为有标题行
+            backgroundColorList.add(rowsList.size() - index + 2);
+            highList.add(rowsList.size() - index + 2);
+        }
+        // excel样式
+        SalesOverdueStyleExcelHandler handler = new SalesOverdueStyleExcelHandler(backgroundColorList, boldList, highList);
+        // 写入数据
+        ExcelWriter writer = new ExcelWriter(null, out, ExcelTypeEnum.XLSX, true, handler);
+        writer.write1(rowsList, sheet, table);
+        // 合并“小计”行
+        for (int index : mergeRowNumList) {
+            writer.merge(index, index, 0, 5);
+        }
+        // 合并最后说明行
+        for (int index = 1; index <= 3; index++) {
+            writer.merge(rowsList.size() - index + 2, rowsList.size() - index + 2, 0, 32);
+        }
+
+        writer.finish();
+        out.flush();
+        out.close();
+    }
+
     /**
      * 查询用友线上供应商应付对账单
      *

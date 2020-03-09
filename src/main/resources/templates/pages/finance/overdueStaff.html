@@ -320,12 +320,10 @@
 
         // 导出按钮
         $("button[id='exportCredit']").click(function () {
-            $("#form1").attr('action', "/finance/exportOverdueSales");
+            $("#form1").attr('action', "/finance/exportOverdueStaff");
             $("#form1").attr('method', "POST");
             $("#form1").submit();
         });
-
-        var index = 1;
 
         // 刷新数据按钮
         $("button[id='refreshData']").click(function () {
