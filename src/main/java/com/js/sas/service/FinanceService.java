@@ -224,9 +224,9 @@ public class FinanceService {
             sqlStringBuilder.append(", MIN( CASE vsr.months_received WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 2).append("月收款' THEN vsr.amount_received ELSE 0 END ) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 2).append("月收款 ");
         }
         sqlStringBuilder.append(" FROM yy_aa_partner_staff yap ");
-        sqlStringBuilder.append(" LEFT JOIN v_settlement_sales_months_v4 vssm ON yap.settlement_id = vssm.settlementId AND vssm.customer_service_staff = yap.customer_service_staff ");
+        sqlStringBuilder.append(" LEFT JOIN v_settlement_sales_months_v4 vssm ON yap.settlement_id = vssm.settlementId AND vssm.customer_service_staff = yap.customer_service_staff AND yap.opening_data = 0 ");
         sqlStringBuilder.append(" LEFT JOIN dept_staff ds ON ds.name = yap.customer_service_staff ");
-        sqlStringBuilder.append(" LEFT JOIN v_settlement_received_v2 vsr ON yap.id = vsr.settlementId AND vsr.customer_service_staff = vssm.customer_service_staff ");
+        sqlStringBuilder.append(" LEFT JOIN v_settlement_received_v2 vsr ON yap.id = vsr.settlementId AND vsr.customer_service_staff = vssm.customer_service_staff AND yap.opening_data = 0 ");
         sqlStringBuilder.append(" LEFT JOIN YY_AA_Partner yapp ON yapp.`code` = yap.parent_code ");
         sqlStringBuilder.append(" WHERE yap.status = 0 ");
         if (partner != null && StringUtils.isNotBlank(partner.getCode())) {
