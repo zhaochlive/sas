@@ -140,6 +140,20 @@ public class FinanceController {
     }
 
     /**
+     * 更新逾期数据-客服版
+     * <p>
+     * 调用服务器的sh文件
+     * 数据基础是“逾期数据”
+     *
+     * @return result
+     */
+    @PostMapping("/refreshOverdueStaffData")
+    public Result<String> refreshOverdueStaffData() {
+        String result = new RemoteShellExecutor("192.168.8.164", 22, "root", "root", "sudo /usr/local/pentaho/cronjobs/006.sh").exec();
+        return Result.getResult(ResultCode.成功, result);
+    }
+
+    /**
      * 查询逾期数据更新时间
      *
      * @return 逾期数据更新时间
@@ -147,6 +161,21 @@ public class FinanceController {
     @PostMapping("/findeOverdueRefreshTime")
     public Result<String> findeOverdueRefreshTime() {
         List<Dictionary> dictionaryList = dictionaryService.findByCode("001");
+        if (!dictionaryList.isEmpty()) {
+            return Result.getResult(ResultCode.成功, dictionaryList.get(0).getValue());
+        } else {
+            return Result.getResult(ResultCode.系统异常);
+        }
+    }
+
+    /**
+     * 查询逾期数据(客服版)更新时间
+     *
+     * @return 逾期数据更新时间
+     */
+    @PostMapping("/findeOverdueStaffRefreshTime")
+    public Result<String> findeOverdueStaffRefreshTime() {
+        List<Dictionary> dictionaryList = dictionaryService.findByCode("006");
         if (!dictionaryList.isEmpty()) {
             return Result.getResult(ResultCode.成功, dictionaryList.get(0).getValue());
         } else {

@@ -292,7 +292,7 @@
         // 设置更新时间
         $.ajax({
             type: 'POST',
-            url: "/finance/findeOverdueRefreshTime",
+            url: "/finance/findeOverdueStaffRefreshTime",
             dataType: "json",
             success: function (result) {
                 $("#refreshTime").text("数据更新时间: " + result.data);
@@ -332,7 +332,7 @@
 
             $.ajax({
                 type: 'POST',
-                url: "/finance/refreshOverdueData",
+                url: "/finance/refreshOverdueStaffData",
                 dataType: "json",
                 success: function (result) {
                     toastr.success('数据刷新中，请稍后查看数据。');
@@ -340,7 +340,7 @@
                     var interval = setInterval(function () {
                         $.ajax({
                             type: 'POST',
-                            url: "/finance/findeOverdueRefreshTime",
+                            url: "/finance/findeOverdueStaffRefreshTime",
                             dataType: "json",
                             success: function (result) {
                                 if ($("#refreshTime").text() != ("数据更新时间: " + result.data)) {
