@@ -1575,7 +1575,7 @@ public class FinanceController {
      * <p>
      * 3. 直接读即可
      */
-    @PostMapping("upload")
+    @PostMapping("/upload")
     @ResponseBody
     public String upload(MultipartFile file) throws IOException {
         // 新版
@@ -1598,7 +1598,7 @@ public class FinanceController {
         return "success";
     }
 
-    @PostMapping("uploadSalesman")
+    @PostMapping("/uploadSalesman")
     @ResponseBody
     public String uploadSalesman(MultipartFile file) throws IOException {
         // 旧版
