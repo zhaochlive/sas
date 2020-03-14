@@ -1616,6 +1616,9 @@ public class FinanceController {
 //                System.out.println(r.getCell(0)+"==="+r.getCell(1)+"==="+r.getCell(2));
                 memberSalesman = new MemberSalesman();
                 String name = null;
+                if(r.getCell(0)==null||r.getCell(1)==null){
+                    continue;
+                }
                 switch (r.getCell(0).getCellTypeEnum()) {
                     case NUMERIC:
                         int numericCellValue = (int) r.getCell(0).getNumericCellValue();
