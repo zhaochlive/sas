@@ -243,7 +243,7 @@ public class FinanceService {
         if (partner != null) {
             sqlStringBuilder.append(" ORDER BY yap.parent_code DESC, yap.name ASC LIMIT " + partner.getOffset() + ", " + partner.getLimit());
         } else {
-            sqlStringBuilder.append(" ORDER BY yap.parent_code DESC, 账期日 ASC ");
+            sqlStringBuilder.append(" ORDER BY yap.parent_code DESC, 账期日, yap.name ASC ");
         }
         Query query = entityManager.createNativeQuery(sqlStringBuilder.toString());
         return query.getResultList();
@@ -290,9 +290,9 @@ public class FinanceService {
     public List<List<Object>> getOverdueList(OverdueDTO partner, int months, boolean isZero, boolean oneMore, boolean all, boolean isStaff) {
         // 数据List
         List<Object[]> overdueSalesList;
-        if (isStaff) {
+        if (isStaff) {  // 客服版
             overdueSalesList = findOverdueStaff(partner, months, oneMore);
-        } else {
+        } else { // 非客服版
             overdueSalesList = findOverdue(partner, months, oneMore);
         }
 
@@ -386,8 +386,8 @@ public class FinanceService {
                 if (overdue.compareTo(BigDecimal.ZERO) == 0 && receivables.compareTo(BigDecimal.ZERO) == 0) {
                     continue;
                 }
-                // 不是仓库的，去掉应收总计是0的
-                if (!warehouse && receivables.compareTo(BigDecimal.ZERO) < 1) {
+                // 不是仓库的，也不是客服版，去掉应收总计小于等于0的
+                if (!warehouse && !isStaff && receivables.compareTo(BigDecimal.ZERO) < 1) {
                     continue;
                 }
             }
