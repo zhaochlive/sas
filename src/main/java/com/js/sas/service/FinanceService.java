@@ -336,10 +336,11 @@ public class FinanceService {
             int nowDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
             // 如果当前日期小于27，账期月份需要+1
             if (nowDay <= 27) {
-                overdueMonths = overdueMonths + 2;
-            } else {
-                overdueMonths++;
+                overdueMonths = overdueMonths + 1;
             }
+//            else {
+//                overdueMonths++;
+//            }
             // 如果不需要多计算一个月，也就是oneMore是false，逾期计算月份减1
             if (!oneMore) {
                 overdueMonths--;
