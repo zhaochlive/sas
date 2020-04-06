@@ -22,9 +22,15 @@ import java.math.BigDecimal;
 @Entity
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class RegionalSalesDTO extends BaseRowModel implements  Serializable {
+public class RegionalSalesDTO extends BaseRowModel implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    private String level;
+
+    private String province;
+
+    private String city;
 
     @Id
     // 地区

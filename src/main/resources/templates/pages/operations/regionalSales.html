@@ -52,6 +52,9 @@
                                         <div class="box-footer">
                                             <input type="hidden" id="startCreateTime" name="startCreateTime" value=""/>
                                             <input type="hidden" id="endCreateTime" name="endCreateTime" value=""/>
+                                            <input type="hidden" id="province" name="province" value=""/>
+                                            <input type="hidden" id="city" name="city" value=""/>
+                                            <input type="hidden" id="level" name="level" value=""/>
                                             <button type="button" class="btn btn-primary pull-right" id="search"
                                                     style="margin-left:20px;">搜 索
                                             </button>
@@ -157,6 +160,64 @@
 
     });
 
+    // 动态统计
+    function city(area, level, province) {
+        const temp = {
+            startCreateTime: function () {
+                if (startCreateTime === "") {
+                    return "2018-01-01";
+                } else {
+                    return startCreateTime;
+                }
+            },
+            endCreateTime: function () {
+                if (endCreateTime === "") {
+                    return moment().format("YYYY-MM-DD");
+                } else {
+                    return endCreateTime;
+                }
+            }
+        };
+
+        var city = "";
+        let url = "/sales/getRegionalSales";
+        if (level === 'province') {
+            url = "/sales/getRegionalSalesCity";
+            province = area;
+            $("#province").val(area);
+            $("#city").val("");
+            $("#level").val(level);
+        } else if (level === 'city') {
+            url = "/sales/getRegionalSalesCounty";
+            city = area;
+            $("#province").val(province);
+            $("#city").val(area);
+            $("#level").val(level);
+        } else {
+            $("#province").val("");
+            $("#city").val("");
+            $("#level").val("");
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: url,
+            data: {
+                "province": province,
+                "city": city,
+                "startCreateTime": temp.startCreateTime,
+                "endCreateTime": temp.endCreateTime
+            },
+            dataType: "json",
+            async: false,
+            success: function (result) {
+                $("#dataTable table").bootstrapTable('load', result.rows)
+            }, error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+
     $(document).ready(function () {
         // 表单设置
         $("#dataTable table").bootstrapTable({
@@ -203,7 +264,12 @@
                 title: '地区',
                 align: 'center',
                 valign: 'middle',
-                width: '30%'
+                width: '30%',
+                formatter: function (value, row, index) {
+                    const actions = [];
+                    actions.push('<a class="btn btn-success" href="#" onclick="city(\'' + value + '\', \'' + row.level + '\', \'' + row.province + '\' )">' + value + '</a> ');
+                    return actions.join('');
+                }
             }, {
                 field: 'value',
                 title: '销售额（万元）',
@@ -250,12 +316,11 @@
             $("#form1").attr('method', "POST");
             $("#form1").submit();
         });
-
     });
 
     // 回车搜索
     $(document).on("keydown", function (event) {
-        var e = event || window.event || arguments.callee.caller.arguments[0];
+        const e = event || window.event || arguments.callee.caller.arguments[0];
         if (e && e.keyCode == 13) {
             $("#search").trigger("click");
         }

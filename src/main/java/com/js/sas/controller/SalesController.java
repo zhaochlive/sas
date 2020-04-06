@@ -23,6 +23,7 @@ import javax.persistence.Tuple;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotBlank;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -151,6 +152,8 @@ public class SalesController {
 
     /**
      * 区域销售额
+     * <p>
+     * 三个方法可以合并的，没时间处理了
      *
      * @return Result，区域销售额
      */
@@ -172,13 +175,63 @@ public class SalesController {
     }
 
     /**
+     * 市级区域销售额
+     *
+     * @param province 省
+     * @return Object
+     */
+    @PostMapping("/getRegionalSalesCity")
+    public Object getRegionalSalesCity(@NotBlank String province, @Validated RegionalSalesDTO regionalSalesDTO, BindingResult result) {
+        // 参数格式校验
+        if (result.hasErrors()) {
+            LinkedHashMap<String, String> errorMap = new LinkedHashMap<>();
+            for (FieldError fieldError : result.getFieldErrors()) {
+                errorMap.put(fieldError.getCode(), fieldError.getDefaultMessage());
+            }
+            return Result.getResult(ResultCode.参数错误, errorMap);
+        }
+        List<RegionalSalesDTO> regionalSales = salesService.getRegionalSalesCity(province, regionalSalesDTO.getStartCreateTime(), regionalSalesDTO.getEndCreateTime() + " 23:59:59");
+        HashMap<String, Object> resultHashMap = new HashMap<>();
+        resultHashMap.put("rows", regionalSales);
+        resultHashMap.put("total", 1);
+        return resultHashMap;
+    }
+
+    /**
+     * 区县级区域销售额
+     *
+     * @param province 省
+     * @param city     市
+     * @return Object
+     */
+    @PostMapping("/getRegionalSalesCounty")
+    public Object getRegionalSalesCounty(@NotBlank String province, @NotBlank String city, @Validated RegionalSalesDTO regionalSalesDTO, BindingResult result) {
+        // 参数格式校验
+        if (result.hasErrors()) {
+            LinkedHashMap<String, String> errorMap = new LinkedHashMap<>();
+            for (FieldError fieldError : result.getFieldErrors()) {
+                errorMap.put(fieldError.getCode(), fieldError.getDefaultMessage());
+            }
+            return Result.getResult(ResultCode.参数错误, errorMap);
+        }
+        List<RegionalSalesDTO> regionalSales = salesService.getRegionalSalesCounty(province, city, regionalSalesDTO.getStartCreateTime(), regionalSalesDTO.getEndCreateTime() + " 23:59:59");
+        HashMap<String, Object> resultHashMap = new HashMap<>();
+        resultHashMap.put("rows", regionalSales);
+        resultHashMap.put("total", 1);
+        return resultHashMap;
+    }
+
+    /**
      * 区域销售额导出
      *
+     * @param level               级别
+     * @param province            省
+     * @param city                市
      * @param regionalSalesDTO    区域销售额参数
      * @param httpServletResponse httpServletResponse
      */
     @PostMapping("/exportRegionalSales")
-    public void exportRegionalSales(RegionalSalesDTO regionalSalesDTO, HttpServletResponse httpServletResponse) {
+    public void exportRegionalSales(String level, String province, String city, RegionalSalesDTO regionalSalesDTO, HttpServletResponse httpServletResponse) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         if (StringUtils.isBlank(regionalSalesDTO.getStartCreateTime())) {
             regionalSalesDTO.setStartCreateTime("2018-01-01");
@@ -186,7 +239,15 @@ public class SalesController {
         if (StringUtils.isBlank(regionalSalesDTO.getEndCreateTime())) {
             regionalSalesDTO.setEndCreateTime(sdf.format(new Date()));
         }
-        List<RegionalSalesDTO> regionalSalesList = salesService.getRegionalSales(regionalSalesDTO.getStartCreateTime(), regionalSalesDTO.getEndCreateTime() + " 23:59:59");
+        List<RegionalSalesDTO> regionalSalesList;
+
+        if ("province".equals(level)) {
+            regionalSalesList = salesService.getRegionalSalesCity(province, regionalSalesDTO.getStartCreateTime(), regionalSalesDTO.getEndCreateTime() + " 23:59:59");
+        } else if ("city".equals(level)) {
+            regionalSalesList = salesService.getRegionalSalesCounty(province, city, regionalSalesDTO.getStartCreateTime(), regionalSalesDTO.getEndCreateTime() + " 23:59:59");
+        } else {
+            regionalSalesList = salesService.getRegionalSales(regionalSalesDTO.getStartCreateTime(), regionalSalesDTO.getEndCreateTime() + " 23:59:59");
+        }
         try {
             CommonUtils.export(httpServletResponse, regionalSalesList, "区域销售额", new RegionalSalesDTO());
         } catch (IOException e) {
