@@ -103,11 +103,11 @@ public class FinanceService {
         // 保证至少显示两个月
         months = Math.abs(months) - 2;
         // 如果是大于等于28日，则算下一个账期月
-        Calendar calendar = Calendar.getInstance();
-        int nowDate = calendar.get(Calendar.DAY_OF_MONTH);
-        if (nowDate >= 28) {
-            months = months - 1;
-        }
+//        Calendar calendar = Calendar.getInstance();
+//        int nowDate = calendar.get(Calendar.DAY_OF_MONTH);
+//        if (nowDate >= 28) {
+//            months = months - 1;
+//        }
         if (months < 0) {
             months = 0;
         }
@@ -145,11 +145,11 @@ public class FinanceService {
         // 保证至少显示两个月
         months = Math.abs(months) - 2;
         // 如果是大于等于28日，则算下一个账期月
-        Calendar calendar = Calendar.getInstance();
-        int nowDate = calendar.get(Calendar.DAY_OF_MONTH);
-        if (nowDate >= 28) {
-            months = months - 1;
-        }
+//        Calendar calendar = Calendar.getInstance();
+//        int nowDate = calendar.get(Calendar.DAY_OF_MONTH);
+//        if (nowDate >= 28) {
+//            months = months - 1;
+//        }
         if (months < 0) {
             months = 0;
         }
@@ -216,11 +216,11 @@ public class FinanceService {
         // 保证至少显示两个月
         months = Math.abs(months) - 2;
         // 如果是大于等于28日，则算下一个账期月
-        Calendar calendar = Calendar.getInstance();
-        int nowDate = calendar.get(Calendar.DAY_OF_MONTH);
-        if (nowDate >= 28) {
-            months = months - 1;
-        }
+//        Calendar calendar = Calendar.getInstance();
+//        int nowDate = calendar.get(Calendar.DAY_OF_MONTH);
+//        if (nowDate >= 28) {
+//            months = months - 1;
+//        }
         if (months < 0) {
             months = 0;
         }
