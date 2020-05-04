@@ -102,6 +102,12 @@ public class FinanceService {
         Calendar origin = Calendar.getInstance();
         // 保证至少显示两个月
         months = Math.abs(months) - 2;
+        // 如果是大于等于28日，则算下一个账期月
+//        Calendar calendar = Calendar.getInstance();
+//        int nowDate = calendar.get(Calendar.DAY_OF_MONTH);
+//        if (nowDate >= 28) {
+//            months = months - 1;
+//        }
         if (months < 0) {
             months = 0;
         }
@@ -138,6 +144,12 @@ public class FinanceService {
         Calendar origin = Calendar.getInstance();
         // 保证至少显示两个月
         months = Math.abs(months) - 2;
+        // 如果是大于等于28日，则算下一个账期月
+//        Calendar calendar = Calendar.getInstance();
+//        int nowDate = calendar.get(Calendar.DAY_OF_MONTH);
+//        if (nowDate >= 28) {
+//            months = months - 1;
+//        }
         if (months < 0) {
             months = 0;
         }
@@ -203,6 +215,12 @@ public class FinanceService {
         Calendar origin = Calendar.getInstance();
         // 保证至少显示两个月
         months = Math.abs(months) - 2;
+        // 如果是大于等于28日，则算下一个账期月
+//        Calendar calendar = Calendar.getInstance();
+//        int nowDate = calendar.get(Calendar.DAY_OF_MONTH);
+//        if (nowDate >= 28) {
+//            months = months - 1;
+//        }
         if (months < 0) {
             months = 0;
         }
@@ -243,7 +261,7 @@ public class FinanceService {
         if (partner != null) {
             sqlStringBuilder.append(" ORDER BY yap.parent_code DESC, yap.name ASC LIMIT " + partner.getOffset() + ", " + partner.getLimit());
         } else {
-            sqlStringBuilder.append(" ORDER BY yap.parent_code DESC, 账期日 ASC ");
+            sqlStringBuilder.append(" ORDER BY yap.parent_code DESC, 账期日, yap.name ASC ");
         }
         Query query = entityManager.createNativeQuery(sqlStringBuilder.toString());
         return query.getResultList();
@@ -290,9 +308,9 @@ public class FinanceService {
     public List<List<Object>> getOverdueList(OverdueDTO partner, int months, boolean isZero, boolean oneMore, boolean all, boolean isStaff) {
         // 数据List
         List<Object[]> overdueSalesList;
-        if (isStaff) {
+        if (isStaff) {  // 客服版
             overdueSalesList = findOverdueStaff(partner, months, oneMore);
-        } else {
+        } else { // 非客服版
             overdueSalesList = findOverdue(partner, months, oneMore);
         }
 
@@ -318,8 +336,11 @@ public class FinanceService {
             int nowDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
             // 如果当前日期小于27，账期月份需要+1
             if (nowDay <= 27) {
-                overdueMonths++;
+                overdueMonths = overdueMonths + 1;
             }
+//            else {
+//                overdueMonths++;
+//            }
             // 如果不需要多计算一个月，也就是oneMore是false，逾期计算月份减1
             if (!oneMore) {
                 overdueMonths--;
@@ -386,8 +407,8 @@ public class FinanceService {
                 if (overdue.compareTo(BigDecimal.ZERO) == 0 && receivables.compareTo(BigDecimal.ZERO) == 0) {
                     continue;
                 }
-                // 不是仓库的，去掉应收总计是0的
-                if (!warehouse && receivables.compareTo(BigDecimal.ZERO) < 1) {
+                // 不是仓库的，也不是客服版，去掉应收总计小于等于0的
+                if (!warehouse && !isStaff && receivables.compareTo(BigDecimal.ZERO) < 1) {
                     continue;
                 }
             }

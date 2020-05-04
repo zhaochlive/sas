@@ -402,9 +402,21 @@ public class FinanceController {
         // 统计月数
         int months = 12;
         // 列名
-        List<String> columnsList = financeService.findOverdueColumns(months, false);
+        List<String> columnsList;
+        Calendar calendar = Calendar.getInstance();
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        if (day < 28) {
+            columnsList = financeService.findOverdueColumns(months, false);
+        } else {
+            columnsList = financeService.findOverdueColumns(months, true);
+        }
         // 数据
-        List<List<Object>> objectRowsList = financeService.getOverdueList(partner, months, true, false, true, false);
+        List<List<Object>> objectRowsList;
+        if (day < 28) {
+            objectRowsList = financeService.getOverdueList(partner, months, true, false, true, false);
+        } else {
+            objectRowsList = financeService.getOverdueList(partner, months, true, true, true, false);
+        }
         ArrayList<Map<String, Object>> rowsList = new ArrayList<>();
         for (List<Object> objectList : objectRowsList) {
             Map<String, Object> dataMap = new HashMap<>();
@@ -434,7 +446,7 @@ public class FinanceController {
         int months = 12;
         String fileName = "逾期统计表";
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
-        List<String> columnsList = financeService.findOverdueColumns(months, false);
+        List<String> columnsList = financeService.findOverdueColumns(months, true);
         // 表单
         Sheet sheet = new Sheet(1, 0);
         sheet.setSheetName(fileName);
@@ -465,7 +477,7 @@ public class FinanceController {
         /*
          * 以下处理数据
          */
-        List<List<Object>> originalRowsList = financeService.getOverdueList(null, months, true, false, all, false);
+        List<List<Object>> originalRowsList = financeService.getOverdueList(null, months, true, true, all, false);
         /*
          * 20191226：关联客户最下面添加一行小计金额
          */
@@ -561,6 +573,16 @@ public class FinanceController {
                 lastParentName = originalRowsList.get(index).get(5).toString();
             }
         }
+
+        for (List<Object> objectList : originalRowsList) {
+            // 当前日期
+            int nowDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+            // 如果当前日期小于27，账期月份需要+1
+//            if (nowDay >= 28) {
+//                objectList.remove(objectList.size() - 1);
+//            }
+        }
+
         // excel样式
         SalesOverdueStyleExcelHandler handler = new SalesOverdueStyleExcelHandler(backgroundColorList, boldList, null);
         // 写入数据

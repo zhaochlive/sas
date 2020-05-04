@@ -43,12 +43,12 @@ public interface SaleAmountRepository extends JpaRepository<SaleAmountDTO, Integ
      * @return 月销售列表
      */
     @Query(nativeQuery = true, value = "SELECT @rownum \\:= @rownum +1 AS 'id', 0 AS 'days', 0 AS 'years'," +
-            " DATE_FORMAT( sasd.create_time, '%Y%m' ) AS 'months'," +
-            " COUNT( sasd.id ) AS 'counts'," +
-            " SUM( sasd.amount ) AS 'amount'" +
+            " concat(cast((case when ((dayofmonth(`yss`.`create_time`) > 27) and (month(`yss`.`create_time`) = 12)) then (year(`yss`.`create_time`) + 1) else year(`yss`.`create_time`) end) as char charset utf8mb4),cast((case when ((dayofmonth(`yss`.`create_time`) > 27) and (month(`yss`.`create_time`) < 12)) then (month(`yss`.`create_time`) + 1) when ((dayofmonth(`yss`.`create_time`) > 27) and (month(`yss`.`create_time`) = 12)) then 1 else month(`yss`.`create_time`) end) as char charset utf8mb4)) AS `months`," +
+            " COUNT( yss.id ) AS 'counts'," +
+            " SUM( yss.amount ) AS 'amount'" +
             " FROM" +
             " (SELECT @rownum \\:= 0) r," +
-            " YY_SA_SaleDelivery sasd" +
+            " YY_SA_SaleDelivery yss" +
             " GROUP BY" +
             " months" +
             " ORDER BY" +
