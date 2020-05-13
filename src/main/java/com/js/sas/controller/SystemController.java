@@ -111,6 +111,11 @@ public class SystemController {
         return "pages/finance/receiptList.html";
     }
 
+    @GetMapping("/facilitatorGolds")
+    public String facilitatorGolds() {
+        return "pages/sales/facilitatorGolds.html";
+    }
+
     @Autowired
     private CouponStrategyService couponStrategyService;
     //优惠策略
