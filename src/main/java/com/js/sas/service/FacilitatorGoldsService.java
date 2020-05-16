@@ -172,8 +172,11 @@ public class FacilitatorGoldsService {
        builder.append(" from orders o left JOIN orderproduct op on o.id = op.orderid");
        builder.append(" where o.memberid = "+facilitator);
        builder.append(" and o.orderstatus =5 ");
-       builder.append(" and o.shopname = '"+shopname +"'");
+       if ("aozhan".equals(params.get("goldType"))){
+           builder.append(" and op.gradeno in('304','316','304L','321','2205','2520','660') ");
+       }
        builder.append(" and o.createtime >= '"+signStarttime+"'");
+       builder.append(" and o.shopname = '"+shopname+"'");
        builder.append(" and o.createtime <= '"+signEndtime+"'");
        if (params.get("startDate") != null && StringUtils.isNotBlank(params.get("startDate"))) {
            builder.append(" and o.createtime >= '"+params.get("startDate")+"'");
