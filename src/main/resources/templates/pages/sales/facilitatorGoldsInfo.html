@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-cn">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -29,7 +30,7 @@
                 <div class="col-lg-12">
                     <div class="ibox">
                         <div class="ibox-title">
-                            <h5>服务商金币</h5>
+                            <h5>服务商金币详情</h5>
                             <div class="ibox-tools">
                                 <a class="collapse-link">
                                     <i class="fa fa-chevron-up"></i>
@@ -41,29 +42,36 @@
                                 <div class="box-body">
                                     <div class="row">
                                         <div class="form-group row col-sm-4">
-                                            <label class="col-sm-3 col-form-label">年份：</label>
+                                            <label class="col-sm-3 col-form-label">服务商：</label>
                                             <div class="col-sm-9">
-                                                <select id="years" name="years" placeholder="选择年份" class="form-control">
-                                                    <option value="2021" >2021</option>
-                                                    <option value="2020" selected>2020</option>
-                                                    <option value="2019" >2019</option>
-                                                    <option value="2018">2018</option>
+                                                <select id="facilitator" name="facilitator"  required lay-verify="required" class="form-control">
+                                                    <option th:each="item:${facilitators}"  th:value="${item.memberid}" th:text="${item.companyName}"
+                                                            th:selected="${facilitator eq item.memberid}" ></option>
                                                 </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row col-sm-4">
+                                            <label class="col-sm-3 col-form-label">时间周期：</label>
+                                            <div class="col-sm-9">
+                                                <input id="dateRange" name="dateRange" placeholder="选择时间周期"
+                                                       class="form-control" type="text"/>
                                             </div>
                                         </div>
                                         <div class="form-group row col-sm-4">
                                             <label class="col-sm-3 col-form-label">品牌：</label>
                                             <div class="col-sm-9">
                                                 <select id="goldType" name="years" placeholder="选择币种" class="form-control">
-                                                    <option value="jinshang" selected>紧商币</option>
-                                                    <option value="aozhan">奥展币</option>
+                                                    <option value="jinshang" th:selected="${goldType == 'jinshang'}">紧商币</option>
+                                                    <option value="aozhan" th:selected="${goldType == 'aozhan'}">奥展币</option>
                                                 </select>
+
                                             </div>
                                         </div>
                                         <div class="box-footer">
                                             <input type="hidden" id="startDate" name="startDate" value=""/>
                                             <input type="hidden" id="endDate" name="endDate" value=""/>
                                             <input type="hidden" id="limit" name="limit" value=""/>
+                                            <input type="hidden" id="memberid" name="limit" th:value="${facilitator}"/>
                                             <button type="button" class="btn btn-primary pull-right" id="search"
                                                     style="margin-left:20px;">搜 索
                                             </button>
@@ -108,6 +116,7 @@
 <script src="../../js/bootstrap-table-export.min.js"></script>
 <script src="../../js/bootstrap-table-zh-CN.min.js"></script>
 <script src="../../js/moment.min.js"></script>
+<script src="../../js/common.js"></script>
 <script src="../../js/daterangepicker.min.js"></script>
 <script src="../../js/typeahead.min.js"></script>
 <script src="../../js/searchOption.js"></script>
@@ -119,10 +128,11 @@
         $("#sales").addClass("active");
         $("#sales ul").addClass("in");
         $("#sales ul").attr("aria-expanded=\'true\'");
-        $("#facilitatorGolds").addClass("active");
+        $("#facilitatorGoldsInfo").addClass("active");
     });
     $('#header').load('header.html');
     $('#footer').load('footer.html');
+
 
     // 开始时间
     var startDate = "";
@@ -168,8 +178,13 @@
         });
 
     });
-
+    $("#facilitator").change(function () {
+        $("#memberid").val( $("#facilitator").val());
+    });
     $(document).ready(function () {
+        console.info($("#memberid").val());
+        $("#facilitator").val($("#memberid").val());
+
         // 表单设置
         $("#dataTable table").bootstrapTable({
             method: "POST",
@@ -189,11 +204,11 @@
             sidePagination: "server",
             sortName: "total",
             sortOrder: "desc",
-            url: "/facilitator/getFacilitatorGolds",
+            url: "/facilitator/getFacilitatorGoldInfo",
             queryParams: function (params) {
                 var temp = {
+                    facilitator: $("#memberid").val(),
                     goldType: $("#goldType").val(),
-                    year: $("#years").val(),
                     startDate: startDate,
                     endDate: endDate,
                     limit: params.limit,
@@ -208,91 +223,37 @@
                 return temp;
             },
             columns: [{
-                field: 'companyname',
-                title: '服务商单位',
+                field: 'orderno',
+                title: '订单ID',
                 align: 'right',
-                valign: 'middle',
-                formatter: function (value, row, index) {
-                    var companyname = row.companyname;
+                valign: 'middle'
+                ,formatter: function (value, row, index) {
+                    var orderno = row.orderno;
                     var goldType = $("#goldType").val();
-                    var facilitator = row.memberid;
-                    return '<a href="getFacilitatorGoldInfo?facilitator='+facilitator+'&goldType='+goldType+'">'+companyname+'</a>';
+                    if (goldType == 'aozhan'){
+                        return '<a href="facilitatorOrderInfo?orderNo='+orderno+'">'+orderno+'</a>';
+                    }else{
+                        return orderno;
+                    }
                 }
             }, {
-                field: 'total',
-                title: '合计数量',
+                field: 'createtime',
+                title: '订单创建日期',
+                align: 'right',
+                valign: 'middle',
+                sortable: 'true'
+                ,formatter: function (value, row, index) {
+                    return datePaseToString(value);
+                }
+            }, {
+                field: 'golds',
+                title: '返还金币',
                 align: 'right',
                 valign: 'middle',
                 sortable: 'true'
             }, {
-                field: '一月',
-                title: '一月份',
-                align: 'right',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '二月',
-                title: '二月份',
-                align: 'right',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '三月',
-                title: '三月份',
-                align: 'right',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '四月',
-                title: '四月份',
-                align: 'right',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '五月',
-                title: '五月份',
-                align: 'right',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '六月',
-                title: '六月份',
-                align: 'right',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '七月',
-                title: '七月份',
-                align: 'right',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '八月',
-                title: '八月份',
-                align: 'right',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '九月',
-                title: '九月份',
-                align: 'right',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '十月',
-                title: '十月份',
-                align: 'right',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '十一月',
-                title: '十一月份',
-                align: 'right',
-                valign: 'middle',
-                sortable: 'true'
-            }, {
-                field: '十二月',
-                title: '十二月份',
+                field: 'totalprice',
+                title: '订单金额',
                 align: 'right',
                 valign: 'middle',
                 sortable: 'true'
@@ -322,12 +283,6 @@
             endDate = "";
         });
 
-        // 导出按钮
-        // $("button[id='export']").click(function () {
-        //     $("#form1").attr('action', "/strand/download/excel");
-        //     $("#form1").attr('method', "POST");
-        //     $("#form1").submit();
-        // });
 
     });
 

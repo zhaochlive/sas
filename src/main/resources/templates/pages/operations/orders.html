@@ -236,17 +236,6 @@
                     return '<a href="unsentOrderDetail?startDate='+dat+'&endDate='+dat+'">'+(notsentnum/ordernum*100).toFixed(2)+'% </a>';
                 }
             }, {
-            //     field: 'splitnum',
-            //     title: '订单拆分比例',
-            //     align: 'left',
-            //     valign: 'middle',
-            //     formatter: function (value, row, index) {
-            //        var splitnum = row.splitnum;
-            //        var ordernum = row.ordernum;
-            //        var dat = row.d;
-            //        return '<a href="orderSplitDetail?startDate='+dat+'&endDate='+dat+'">'+(splitnum/ordernum*100).toFixed(2)+'% </a>';
-            //     }
-            // }, {
                 field: 'cancelnum',
                 title: '未付款超时取消订单比例',
                 align: 'center',

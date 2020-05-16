@@ -2,6 +2,7 @@ package com.js.sas.controller;
 
 import com.js.sas.entity.SystemUser;
 import com.js.sas.service.CouponStrategyService;
+import com.js.sas.service.FacilitatorGoldsService;
 import com.js.sas.service.SearchOptionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -26,6 +27,8 @@ public class SystemController {
 
     @Autowired
     private SearchOptionService searchOptionService;
+    @Autowired
+    private FacilitatorGoldsService facilitatorGoldsService;
     @GetMapping("/index")
     public String index() {
         return "index";
@@ -114,6 +117,19 @@ public class SystemController {
     @GetMapping("/facilitatorGolds")
     public String facilitatorGolds() {
         return "pages/sales/facilitatorGolds.html";
+    }
+
+    @GetMapping("/getFacilitatorGoldInfo")
+    public String facilitatorGoldsInfo(HttpServletRequest request, Model model) {
+        model.addAttribute("facilitators",facilitatorGoldsService.getFacilitator());
+        model.addAttribute("facilitator",request.getParameter("facilitator"));
+        model.addAttribute("goldType",request.getParameter("goldType"));
+        return "pages/sales/facilitatorGoldsInfo.html";
+    }
+    @GetMapping("/facilitatorOrderInfo")
+    public String facilitatorOrderInfo(HttpServletRequest request, Model model) {
+        model.addAttribute("orderNo",request.getParameter("orderNo"));
+        return "pages/sales/facilitatorOrderInfo.html";
     }
 
     @Autowired
