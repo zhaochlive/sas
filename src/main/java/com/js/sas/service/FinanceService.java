@@ -86,6 +86,8 @@ public class FinanceService {
      * @return 列名List
      */
     public List<String> findOverdueColumns(int months, boolean oneMore) {
+        // 因为包含当前月，所以先减1个月
+        months--;
         List<String> columnNameList = new ArrayList<>();
         columnNameList.add("部门");
         columnNameList.add("业务员");
@@ -100,14 +102,11 @@ public class FinanceService {
         Calendar now = Calendar.getInstance();
         // 开始时间 = 当前时间 - 统计的月数
         Calendar origin = Calendar.getInstance();
-        // 保证至少显示两个月
-        months = Math.abs(months) - 2;
         // 如果是大于等于28日，则算下一个账期月
-//        Calendar calendar = Calendar.getInstance();
-//        int nowDate = calendar.get(Calendar.DAY_OF_MONTH);
-//        if (nowDate >= 28) {
-//            months = months - 1;
-//        }
+        int nowDate = now.get(Calendar.DAY_OF_MONTH);
+        if (nowDate >= 28) {
+            months = months - 1;
+        }
         if (months < 0) {
             months = 0;
         }
@@ -119,6 +118,10 @@ public class FinanceService {
         }
         // 多计算1个月
         columnNameList.add(origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月");
+        // 如果大于等于28日，等于下个账期月
+        if (nowDate >= 28) {
+            columnNameList.add(origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 1) + "月");
+        }
         if (oneMore) {
             columnNameList.add(origin.get(Calendar.YEAR) + "年" + (origin.get(Calendar.MONTH) + 2) + "月");
         }
@@ -134,6 +137,8 @@ public class FinanceService {
      * @return 数据List
      */
     public List<Object[]> findOverdue(OverdueDTO partner, int months, boolean oneMore) {
+        // 因为包含当前月，所以先减1个月
+        months--;
         StringBuilder sqlStringBuilder = new StringBuilder("SELECT yap.parent_code, yap.amount_delivery, yap.amount_collected, IFNULL(ds.department,'-') AS 部门, " +
                 "IFNULL( yap.customer_service_staff, '-' ) AS 业务员, yap.name AS 往来单位名称, yap.payment_month AS 账期月, " +
                 "IF(yap.parent_name IS NULL OR (yap.parent_name = '' AND yap.settlement_type != '2') OR (yap.settlement_type = '1' AND yap.parent_code = '0'), '现款', yap.payment_date) AS 账期日, IF(yap.parent_name IS NULL OR yap.parent_name = '' OR (yap.settlement_type = '1' AND yap.parent_code = '0'), yap.NAME, yap.parent_name) AS 订货客户, yap.receivables AS 应收总计, " +
@@ -142,14 +147,11 @@ public class FinanceService {
         Calendar now = Calendar.getInstance();
         // 开始时间 = 当前时间 - 统计的月数
         Calendar origin = Calendar.getInstance();
-        // 保证至少显示两个月
-        months = Math.abs(months) - 2;
         // 如果是大于等于28日，则算下一个账期月
-//        Calendar calendar = Calendar.getInstance();
-//        int nowDate = calendar.get(Calendar.DAY_OF_MONTH);
-//        if (nowDate >= 28) {
-//            months = months - 1;
-//        }
+        int nowDate = now.get(Calendar.DAY_OF_MONTH);
+        if (nowDate >= 28) {
+            months = months - 1;
+        }
         if (months < 0) {
             months = 0;
         }
@@ -165,6 +167,12 @@ public class FinanceService {
         sqlStringBuilder.append(", MAX(CASE months WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月销售' THEN vssm.amount ELSE 0 END) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月 ");
         sqlStringBuilder.append(", MIN(CASE months WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月退货' THEN vssm.amount ELSE 0 END) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月退货 ");
         sqlStringBuilder.append(", MIN( CASE vsr.months_received WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月收款' THEN vsr.amount_received ELSE 0 END ) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月收款 ");
+        // 如果大于等于28日，等于下个账期月
+        if (nowDate >= 28) {
+            sqlStringBuilder.append(", MAX(CASE months WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月销售' THEN vssm.amount ELSE 0 END) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月 ");
+            sqlStringBuilder.append(", MIN(CASE months WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月退货' THEN vssm.amount ELSE 0 END) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月退货 ");
+            sqlStringBuilder.append(", MIN( CASE vsr.months_received WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月收款' THEN vsr.amount_received ELSE 0 END ) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月收款 ");
+        }
         if (oneMore) {
             sqlStringBuilder.append(", MAX(CASE months WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 2).append("月销售' THEN vssm.amount ELSE 0 END) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 2).append("月 ");
             sqlStringBuilder.append(", MIN(CASE months WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 2).append("月退货' THEN vssm.amount ELSE 0 END) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 2).append("月退货 ");
@@ -177,10 +185,10 @@ public class FinanceService {
         sqlStringBuilder.append(" LEFT JOIN dept_staff ds ON yap.customer_service_staff = ds.NAME ");
         sqlStringBuilder.append(" WHERE yap.status = 0 ");
         if (partner != null && StringUtils.isNotBlank(partner.getCode())) {
-            sqlStringBuilder.append(" AND yap.code = '" + partner.getCode() + "' ");
+            sqlStringBuilder.append(" AND yap.code = '").append(partner.getCode()).append("' ");
         }
         if (partner != null && StringUtils.isNotBlank(partner.getName())) {
-            sqlStringBuilder.append(" AND yap.name = '" + partner.getName() + "' ");
+            sqlStringBuilder.append(" AND yap.name = '").append(partner.getName()).append("' ");
         }
         if (partner != null && StringUtils.isNotBlank(partner.getOnlyOverdue()) && partner.getOnlyOverdue().equals("true")) {
             sqlStringBuilder.append(" AND yap.receivables > 0 ");
@@ -188,7 +196,7 @@ public class FinanceService {
         sqlStringBuilder.append(" GROUP BY ");
         sqlStringBuilder.append(" yap.id, ds.department, yapp.customer_service_staff, yap.code, yap.parent_code, yap.payment_month, yap.payment_date, yap.name, yap.amount_delivery, yap.amount_collected, yap.opening_balance ");
         if (partner != null) {
-            sqlStringBuilder.append(" ORDER BY yap.parent_code DESC, yap.name ASC LIMIT " + partner.getOffset() + ", " + partner.getLimit());
+            sqlStringBuilder.append(" ORDER BY yap.parent_code DESC, yap.name ASC LIMIT ").append(partner.getOffset()).append(", ").append(partner.getLimit());
         } else {
             sqlStringBuilder.append(" ORDER BY yap.parent_code DESC, 账期日 ASC ");
         }
@@ -205,6 +213,8 @@ public class FinanceService {
      * @return 数据List
      */
     public List<Object[]> findOverdueStaff(OverdueDTO partner, int months, boolean oneMore) {
+        // 因为包含当前月，所以先减1个月
+        months--;
         StringBuilder sqlStringBuilder = new StringBuilder("SELECT yap.parent_code, yap.amount_delivery, yap.amount_collected, IFNULL( ds.department, '-' ) AS 部门, " +
                 "yap.customer_service_staff AS 业务员, yap.NAME AS 往来单位名称, yap.payment_month AS 账期月, " +
                 "IF(yap.parent_name IS NULL OR ( yap.parent_name = '' AND yap.settlement_type != '2' ) OR ( yap.settlement_type = '1' AND yap.parent_code = '0' ), '现款', yap.payment_date) AS 账期日, IF ( yap.parent_name IS NULL OR yap.parent_name = '' OR ( yap.settlement_type = '1' AND yap.parent_code = '0' ), yap.NAME, yap.parent_name) AS 订货客户, " +
@@ -213,14 +223,11 @@ public class FinanceService {
         Calendar now = Calendar.getInstance();
         // 开始时间 = 当前时间 - 统计的月数
         Calendar origin = Calendar.getInstance();
-        // 保证至少显示两个月
-        months = Math.abs(months) - 2;
         // 如果是大于等于28日，则算下一个账期月
-//        Calendar calendar = Calendar.getInstance();
-//        int nowDate = calendar.get(Calendar.DAY_OF_MONTH);
-//        if (nowDate >= 28) {
-//            months = months - 1;
-//        }
+        int nowDate = now.get(Calendar.DAY_OF_MONTH);
+        if (nowDate >= 28) {
+            months = months - 1;
+        }
         if (months < 0) {
             months = 0;
         }
@@ -236,6 +243,12 @@ public class FinanceService {
         sqlStringBuilder.append(", MAX(CASE months WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月销售' THEN vssm.amount ELSE 0 END) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月 ");
         sqlStringBuilder.append(", MIN(CASE months WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月退货' THEN vssm.amount ELSE 0 END) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月退货 ");
         sqlStringBuilder.append(", MIN( CASE vsr.months_received WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月收款' THEN vsr.amount_received ELSE 0 END ) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月收款 ");
+        // 如果大于等于28日，等于下个账期月
+        if (nowDate >= 28) {
+            sqlStringBuilder.append(", MAX(CASE months WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月销售' THEN vssm.amount ELSE 0 END) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月 ");
+            sqlStringBuilder.append(", MIN(CASE months WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月退货' THEN vssm.amount ELSE 0 END) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月退货 ");
+            sqlStringBuilder.append(", MIN( CASE vsr.months_received WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月收款' THEN vsr.amount_received ELSE 0 END ) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 1).append("月收款 ");
+        }
         if (oneMore) {
             sqlStringBuilder.append(", MAX(CASE months WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 2).append("月销售' THEN vssm.amount ELSE 0 END) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 2).append("月 ");
             sqlStringBuilder.append(", MIN(CASE months WHEN '").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 2).append("月退货' THEN vssm.amount ELSE 0 END) AS ").append(origin.get(Calendar.YEAR)).append("年").append(origin.get(Calendar.MONTH) + 2).append("月退货 ");
@@ -248,10 +261,10 @@ public class FinanceService {
         sqlStringBuilder.append(" LEFT JOIN YY_AA_Partner yapp ON yapp.`code` = yap.parent_code ");
         sqlStringBuilder.append(" WHERE yap.status = 0 ");
         if (partner != null && StringUtils.isNotBlank(partner.getCode())) {
-            sqlStringBuilder.append(" AND yap.code = '" + partner.getCode() + "' ");
+            sqlStringBuilder.append(" AND yap.code = '").append(partner.getCode()).append("' ");
         }
         if (partner != null && StringUtils.isNotBlank(partner.getName())) {
-            sqlStringBuilder.append(" AND yap.name = '" + partner.getName() + "' ");
+            sqlStringBuilder.append(" AND yap.name = '").append(partner.getName()).append("' ");
         }
         if (partner != null && StringUtils.isNotBlank(partner.getOnlyOverdue()) && partner.getOnlyOverdue().equals("true")) {
             sqlStringBuilder.append(" AND yap.receivables > 0 ");
@@ -259,7 +272,7 @@ public class FinanceService {
         sqlStringBuilder.append(" GROUP BY ");
         sqlStringBuilder.append("yap.id, ds.department, yap.customer_service_staff, yap.CODE, yap.parent_code, yap.payment_month, yap.payment_date, yap.NAME, yap.amount_delivery, yap.amount_collected, yap.opening_balance, yap.parent_name, yap.settlement_type, yap.receivables, yap.amount_refund");
         if (partner != null) {
-            sqlStringBuilder.append(" ORDER BY yap.parent_code DESC, yap.name ASC LIMIT " + partner.getOffset() + ", " + partner.getLimit());
+            sqlStringBuilder.append(" ORDER BY yap.parent_code DESC, yap.name ASC LIMIT ").append(partner.getOffset()).append(", ").append(partner.getLimit());
         } else {
             sqlStringBuilder.append(" ORDER BY yap.parent_code DESC, 账期日, yap.name ASC ");
         }
@@ -280,7 +293,7 @@ public class FinanceService {
         sqlCountStringBuilder.append(" LEFT JOIN dept_staff ds ON yap.customer_service_staff = ds.name ");
         sqlCountStringBuilder.append(" WHERE yap.status = 0 ");
         if (partner != null && StringUtils.isNotBlank(partner.getCode())) {
-            sqlCountStringBuilder.append(" AND yap.code = '" + partner.getCode() + "' ");
+            sqlCountStringBuilder.append(" AND yap.code = '").append(partner.getCode()).append("' ");
         }
         if (partner != null && StringUtils.isNotBlank(partner.getName())) {
             sqlCountStringBuilder.append(" AND yap.name = '" + partner.getName() + "' ");
@@ -313,7 +326,6 @@ public class FinanceService {
         } else { // 非客服版
             overdueSalesList = findOverdue(partner, months, oneMore);
         }
-
         // 数据结果列表
         List<List<Object>> rowsList = new ArrayList<>();
         for (Object[] dataRow : overdueSalesList) {
@@ -332,19 +344,6 @@ public class FinanceService {
             }
             // 应减去的结算周期数
             int overdueMonths = CommonUtils.overdueMonth(month, day);
-            // 当前日期
-            int nowDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
-            // 如果当前日期小于27，账期月份需要+1
-            if (nowDay <= 27) {
-                overdueMonths = overdueMonths + 1;
-            }
-//            else {
-//                overdueMonths++;
-//            }
-            // 如果不需要多计算一个月，也就是oneMore是false，逾期计算月份减1
-            if (!oneMore) {
-                overdueMonths--;
-            }
             // 仓库标记
             boolean warehouse = false;
             // 关联code不是零是仓库特殊客户
