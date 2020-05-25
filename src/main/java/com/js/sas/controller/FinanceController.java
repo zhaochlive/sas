@@ -403,20 +403,10 @@ public class FinanceController {
         int months = 12;
         // 列名
         List<String> columnsList;
-        Calendar calendar = Calendar.getInstance();
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-        if (day < 28) {
-            columnsList = financeService.findOverdueColumns(months, false);
-        } else {
-            columnsList = financeService.findOverdueColumns(months, true);
-        }
+        columnsList = financeService.findOverdueColumns(months, false);
         // 数据
         List<List<Object>> objectRowsList;
-        if (day < 28) {
-            objectRowsList = financeService.getOverdueList(partner, months, true, false, true, false);
-        } else {
-            objectRowsList = financeService.getOverdueList(partner, months, true, true, true, false);
-        }
+        objectRowsList = financeService.getOverdueList(partner, months, true, false, true, false);
         ArrayList<Map<String, Object>> rowsList = new ArrayList<>();
         for (List<Object> objectList : objectRowsList) {
             Map<String, Object> dataMap = new HashMap<>();
@@ -446,7 +436,7 @@ public class FinanceController {
         int months = 12;
         String fileName = "逾期统计表";
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
-        List<String> columnsList = financeService.findOverdueColumns(months, true);
+        List<String> columnsList = financeService.findOverdueColumns(months, false);
         // 表单
         Sheet sheet = new Sheet(1, 0);
         sheet.setSheetName(fileName);
@@ -477,7 +467,7 @@ public class FinanceController {
         /*
          * 以下处理数据
          */
-        List<List<Object>> originalRowsList = financeService.getOverdueList(null, months, true, true, all, false);
+        List<List<Object>> originalRowsList = financeService.getOverdueList(null, months, true, false, all, false);
         /*
          * 20191226：关联客户最下面添加一行小计金额
          */
@@ -489,7 +479,7 @@ public class FinanceController {
         // 期初应收
         BigDecimal totalOpeningBalance = BigDecimal.ZERO;
         // 各月小计金额数组
-        BigDecimal[] tatalAmountArray = new BigDecimal[months];
+        BigDecimal[] tatalAmountArray = new BigDecimal[months + 2];
         // 初始化为0
         Arrays.fill(tatalAmountArray, BigDecimal.ZERO);
         // 计数器
@@ -542,7 +532,7 @@ public class FinanceController {
                     totalReceivables = BigDecimal.ZERO;
                     totalOverdue = BigDecimal.ZERO;
                     totalOpeningBalance = BigDecimal.ZERO;
-                    tatalAmountArray = new BigDecimal[months];
+                    tatalAmountArray = new BigDecimal[months + 2];
                     // 初始化为0
                     Arrays.fill(tatalAmountArray, BigDecimal.ZERO);
                     num = 0;
@@ -554,7 +544,7 @@ public class FinanceController {
                     totalReceivables = BigDecimal.ZERO;
                     totalOverdue = BigDecimal.ZERO;
                     totalOpeningBalance = BigDecimal.ZERO;
-                    tatalAmountArray = new BigDecimal[months];
+                    tatalAmountArray = new BigDecimal[months + 2];
                     // 初始化为0
                     Arrays.fill(tatalAmountArray, BigDecimal.ZERO);
                     totalReceivables = totalReceivables.add(new BigDecimal(originalRowsList.get(index).get(6).toString()));
@@ -601,7 +591,7 @@ public class FinanceController {
     @PostMapping("/overdueSalesColumns")
     public Object overdueSalesColumns() {
         Map<String, List<String>> columnMap = new HashMap<>();
-        List<String> columnList = financeService.findOverdueColumns(4, true);
+        List<String> columnList = financeService.findOverdueColumns(4, false);
         columnMap.put("columns", columnList);
         return columnMap;
     }
@@ -618,9 +608,9 @@ public class FinanceController {
         // 统计月数
         int months = 4;
         // 列名
-        List<String> columnsList = financeService.findOverdueColumns(months, true);
+        List<String> columnsList = financeService.findOverdueColumns(months, false);
         // 数据
-        List<List<Object>> objectRowsList = financeService.getOverdueList(partner, months, false, true, false, true);
+        List<List<Object>> objectRowsList = financeService.getOverdueList(partner, months, false, false, false, true);
         ArrayList<Map<String, Object>> rowsList = new ArrayList<>();
         for (List<Object> objectList : objectRowsList) {
             Map<String, Object> dataMap = new HashMap<>();
@@ -669,9 +659,9 @@ public class FinanceController {
         // 统计月数
         int months = 4;
         // 列名
-        List<String> columnsList = financeService.findOverdueColumns(months, true);
+        List<String> columnsList = financeService.findOverdueColumns(months, false);
         // 数据
-        List<List<Object>> objectRowsList = financeService.getOverdueList(partner, months, false, true, false, false);
+        List<List<Object>> objectRowsList = financeService.getOverdueList(partner, months, false, false, false, false);
         ArrayList<Map<String, Object>> rowsList = new ArrayList<>();
         for (List<Object> objectList : objectRowsList) {
             Map<String, Object> dataMap = new HashMap<>();
@@ -721,7 +711,7 @@ public class FinanceController {
         int months = 4;
         String fileName = "逾期统计表";
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
-        List<String> columnsList = financeService.findOverdueColumns(months, true);
+        List<String> columnsList = financeService.findOverdueColumns(months, false);
         // 表单
         Sheet sheet = new Sheet(1, 0);
         sheet.setSheetName(fileName);
@@ -779,7 +769,7 @@ public class FinanceController {
         /*
          * 以下处理数据
          */
-        List<List<Object>> originalRowsList = financeService.getOverdueList(null, months, false, true, false, false);
+        List<List<Object>> originalRowsList = financeService.getOverdueList(null, months, false, false, false, false);
         /*
          * 20191226：关联客户最下面添加一行小计金额
          */
@@ -791,7 +781,7 @@ public class FinanceController {
         // 期初应收
         BigDecimal totalOpeningBalance = BigDecimal.ZERO;
         // 四个月的小计金额
-        BigDecimal[] tatalAmountArray = new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
+        BigDecimal[] tatalAmountArray = new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
         // 计数器
         int num = 0;
         // 小计合并行号List
@@ -843,7 +833,7 @@ public class FinanceController {
                     totalReceivables = BigDecimal.ZERO;
                     totalOverdue = BigDecimal.ZERO;
                     totalOpeningBalance = BigDecimal.ZERO;
-                    tatalAmountArray = new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
+                    tatalAmountArray = new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
                     num = 0;
                     // 需要合并的行号，加2因为有2行标题
                     mergeRowNumList.add(index + 2);
@@ -853,7 +843,7 @@ public class FinanceController {
                     totalReceivables = BigDecimal.ZERO;
                     totalOverdue = BigDecimal.ZERO;
                     totalOpeningBalance = BigDecimal.ZERO;
-                    tatalAmountArray = new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
+                    tatalAmountArray = new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
                     totalReceivables = totalReceivables.add(new BigDecimal(originalRowsList.get(index).get(6).toString()));
                     totalOverdue = totalOverdue.add(new BigDecimal(originalRowsList.get(index).get(7).toString()));
                     totalOpeningBalance = totalOpeningBalance.add(new BigDecimal(originalRowsList.get(index).get(8).toString()));
@@ -982,7 +972,7 @@ public class FinanceController {
         int months = 4;
         String fileName = "逾期统计表";
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
-        List<String> columnsList = financeService.findOverdueColumns(months, true);
+        List<String> columnsList = financeService.findOverdueColumns(months, false);
         // 表单
         Sheet sheet = new Sheet(1, 0);
         sheet.setSheetName(fileName);
@@ -1040,7 +1030,7 @@ public class FinanceController {
         /*
          * 以下处理数据
          */
-        List<List<Object>> originalRowsList = financeService.getOverdueList(null, months, false, true, false, true);
+        List<List<Object>> originalRowsList = financeService.getOverdueList(null, months, false, false, false, true);
         /*
          * 20191226：关联客户最下面添加一行小计金额
          */
@@ -1052,7 +1042,7 @@ public class FinanceController {
         // 期初应收
         BigDecimal totalOpeningBalance = BigDecimal.ZERO;
         // 四个月的小计金额
-        BigDecimal[] tatalAmountArray = new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
+        BigDecimal[] tatalAmountArray = new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
         // 计数器
         int num = 0;
         // 小计合并行号List
@@ -1104,7 +1094,7 @@ public class FinanceController {
                     totalReceivables = BigDecimal.ZERO;
                     totalOverdue = BigDecimal.ZERO;
                     totalOpeningBalance = BigDecimal.ZERO;
-                    tatalAmountArray = new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
+                    tatalAmountArray = new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
                     num = 0;
                     // 需要合并的行号，加2因为有2行标题
                     mergeRowNumList.add(index + 2);
@@ -1114,7 +1104,7 @@ public class FinanceController {
                     totalReceivables = BigDecimal.ZERO;
                     totalOverdue = BigDecimal.ZERO;
                     totalOpeningBalance = BigDecimal.ZERO;
-                    tatalAmountArray = new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
+                    tatalAmountArray = new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
                     totalReceivables = totalReceivables.add(new BigDecimal(originalRowsList.get(index).get(6).toString()));
                     totalOverdue = totalOverdue.add(new BigDecimal(originalRowsList.get(index).get(7).toString()));
                     totalOpeningBalance = totalOpeningBalance.add(new BigDecimal(originalRowsList.get(index).get(8).toString()));
