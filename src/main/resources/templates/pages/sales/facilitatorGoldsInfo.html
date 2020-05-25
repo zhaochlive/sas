@@ -58,9 +58,9 @@
                                             </div>
                                         </div>
                                         <div class="form-group row col-sm-4">
-                                            <label class="col-sm-3 col-form-label">品牌：</label>
+                                            <label class="col-sm-3 col-form-label">币种：</label>
                                             <div class="col-sm-9">
-                                                <select id="goldType" name="years" placeholder="选择币种" class="form-control">
+                                                <select id="goldType" name="goldType" placeholder="选择币种" class="form-control">
                                                     <option value="jinshang" th:selected="${goldType == 'jinshang'}">紧商币</option>
                                                     <option value="aozhan" th:selected="${goldType == 'aozhan'}">奥展币</option>
                                                 </select>
@@ -224,7 +224,7 @@
             },
             columns: [{
                 field: 'orderno',
-                title: '订单ID',
+                title: '订单编号',
                 align: 'right',
                 valign: 'middle'
                 ,formatter: function (value, row, index) {
@@ -282,7 +282,12 @@
             startDate = "";
             endDate = "";
         });
-
+        //导出按钮
+        $("button[id='export']").click(function () {
+            $("#form1").attr('action', "/facilitator/excel/facilitatorInfo");
+            $("#form1").attr('method', "POST");
+            $("#form1").submit();
+        });
 
     });
 

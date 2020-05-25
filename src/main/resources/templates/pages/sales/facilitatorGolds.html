@@ -52,18 +52,15 @@
                                             </div>
                                         </div>
                                         <div class="form-group row col-sm-4">
-                                            <label class="col-sm-3 col-form-label">品牌：</label>
+                                            <label class="col-sm-3 col-form-label">币种：</label>
                                             <div class="col-sm-9">
-                                                <select id="goldType" name="years" placeholder="选择币种" class="form-control">
+                                                <select id="goldTypes" name="goldTypes" placeholder="选择币种" class="form-control">
                                                     <option value="jinshang" selected>紧商币</option>
                                                     <option value="aozhan">奥展币</option>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="box-footer">
-                                            <input type="hidden" id="startDate" name="startDate" value=""/>
-                                            <input type="hidden" id="endDate" name="endDate" value=""/>
-                                            <input type="hidden" id="limit" name="limit" value=""/>
                                             <button type="button" class="btn btn-primary pull-right" id="search"
                                                     style="margin-left:20px;">搜 索
                                             </button>
@@ -192,7 +189,7 @@
             url: "/facilitator/getFacilitatorGolds",
             queryParams: function (params) {
                 var temp = {
-                    goldType: $("#goldType").val(),
+                    goldType: $("#goldTypes").val(),
                     year: $("#years").val(),
                     startDate: startDate,
                     endDate: endDate,
@@ -214,7 +211,7 @@
                 valign: 'middle',
                 formatter: function (value, row, index) {
                     var companyname = row.companyname;
-                    var goldType = $("#goldType").val();
+                    var goldType = $("#goldTypes").val();
                     var facilitator = row.memberid;
                     return '<a href="getFacilitatorGoldInfo?facilitator='+facilitator+'&goldType='+goldType+'">'+companyname+'</a>';
                 }
@@ -322,12 +319,12 @@
             endDate = "";
         });
 
-        // 导出按钮
-        // $("button[id='export']").click(function () {
-        //     $("#form1").attr('action', "/strand/download/excel");
-        //     $("#form1").attr('method', "POST");
-        //     $("#form1").submit();
-        // });
+        //导出按钮
+        $("button[id='export']").click(function () {
+            $("#form1").attr('action', "/facilitator/excel/facilitator");
+            $("#form1").attr('method', "POST");
+            $("#form1").submit();
+        });
 
     });
 

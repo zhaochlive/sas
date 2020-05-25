@@ -58,7 +58,7 @@ public class StoreDetailController {
         if (StringUtils.isNotBlank(request.getParameter("limit"))) {
             requestMap.put("limit", request.getParameter("limit"));
         } else {
-            return null;
+            requestMap.put("limit", "20");
         }
         if (StringUtils.isNotBlank(request.getParameter("offset"))) {
             requestMap.put("offset", request.getParameter("offset"));
@@ -66,6 +66,8 @@ public class StoreDetailController {
             requestMap.put("offset", "0");
         }
         List<Map<String, Object>> page = storeDetailService.getPage(requestMap);
+
+
         Map<String, Object> count = storeDetailService.getTotal(requestMap);
         result.putAll(count);
         result.put("rows", page);
