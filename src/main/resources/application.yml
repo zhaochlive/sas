@@ -8,23 +8,10 @@ spring:
     username: sas
     password: QM7yfgiFu
     driver-class-name: com.mysql.cj.jdbc.Driver
-    hikari:
-      minimum-idle: 5
-      # 空闲连接存活最大时间，默认600000（10分钟）
-      idle-timeout: 180000
-      # 连接池最大连接数，默认是10
-      maximum-pool-size: 20
-      # 此属性控制从池返回的连接的默认自动提交行为,默认值：true
-      auto-commit: true
-      # 连接池名称
-      pool-name: MyHikariCP
-      # 此属性控制池中连接的最长生命周期，值0表示无限生命周期，默认1800000即30分钟
-      max-lifetime: 1800000
-      # 数据库连接超时时间,默认30秒，即30000
-      connection-timeout: 30000
-      connection-test-query: SELECT 1
   second:
+#    url: jdbc:postgresql://47.98.46.0:5432/jinshang
     url: jdbc:postgresql://121.196.200.218:5432/jinshang
+#    url: jdbc:postgresql://47.111.178.117:5432/jinshang_dev7
     username: admin_jinshang_dev
     password: admin04131
     driver-class-name: org.postgresql.Driver
@@ -32,16 +19,16 @@ spring:
     url: jdbc:sqlserver://47.111.169.100:1433;DatabaseName=UFTData449729_000005
     username: sa
     password: jinshang9988@#
-    #    type: com.alibaba.druid.pool.DruidDataSource
+#    type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-    # Hikari 连接池配置
-    # 最小空闲连接数量
   jpa:
     show-sql: true
     hibernate:
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-
 yongyou:
   url:  http://47.111.167.68:8000/api/Report/AccountsReceivable
 
+rate:
+  jinshang: 2
+  aozhan: 0.8
