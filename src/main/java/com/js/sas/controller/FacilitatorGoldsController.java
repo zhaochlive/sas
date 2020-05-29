@@ -1,9 +1,14 @@
 package com.js.sas.controller;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.js.sas.entity.Facilitator;
 import com.js.sas.entity.dto.CustomerOfOrder;
 import com.js.sas.service.FacilitatorGoldsService;
 import com.js.sas.utils.CommonUtils;
+import com.js.sas.utils.DateTimeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -22,73 +27,75 @@ import java.util.*;
 @RequestMapping("/facilitator")
 public class FacilitatorGoldsController {
 
-
     @Autowired
     private FacilitatorGoldsService facilitatorGoldsService;
-
 
     @ResponseBody
     @RequestMapping(value = "getFacilitatorGolds",method = RequestMethod.POST)
     public Object getFacilitatorGolds(HttpServletRequest request){
-        Map<String, String> params = new HashMap<>();
         Map<String, Object> result = new HashMap<>();
-        if (StringUtils.isNotBlank(request.getParameter("goldType"))){
-            params.put("goldType",request.getParameter("goldType").trim());
+        List<Map> list = new ArrayList<>();
+        for (Facilitator facilitator : FacilitatorGoldsService.facilitator) {
+            if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
+                Date startDate = DateTimeUtils.convert(request.getParameter("startDate"));
+                if (startDate.getTime() > facilitator.getStartTime().getTime()){
+                    facilitator.setStartTime(startDate);
+                }
+            }
+            if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
+                Date endDate = DateTimeUtils.convert(request.getParameter("endDate"));
+                if (endDate.getTime() < facilitator.getEndTime().getTime()){
+                    facilitator.setEndTime(endDate);
+                }
+            }
+            Map map = facilitatorGoldsService.getFacilitatorGoldsInfoTotal(facilitator);
+            list.add(map);
         }
-        if (StringUtils.isNotBlank(request.getParameter("year"))) {
-            params.put("year", request.getParameter("year"));
-        }
-        if (StringUtils.isNotBlank(request.getParameter("limit"))) {
-            params.put("limit", request.getParameter("limit"));
-        } else {
-            params.put("limit", "10");
-        }
-        if (StringUtils.isNotBlank(request.getParameter("offset"))){
-            params.put("offset", request.getParameter("offset"));
-        }else{
-            params.put("offset", "0");
-        }
-        if ("jinshang".equals(request.getParameter("goldType").trim())){
-            result.put("rows",facilitatorGoldsService.getFacilitatorGoldsForJinShang(params));
-        }else if ("aozhan".equals(request.getParameter("goldType").trim())){
-            result.put("rows",facilitatorGoldsService.getFacilitatorGoldsForAoZhan(params));
-        }
-        result.put("total",facilitatorGoldsService.getFacilitatorCount(params));
+        result.put("rows",list);
+        result.put("total",FacilitatorGoldsService.facilitator.size());
         return result;
     }
+
     @ResponseBody
     @RequestMapping(value = "getFacilitatorGoldInfo",method = RequestMethod.POST)
     public Object getFacilitatorGoldInfo(HttpServletRequest request){
-        Map<String, String> params = new HashMap<>();
+
+        Integer limit = 20;
+        Integer offset = 0;
         Map<String, Object> result = new HashMap<>();
-        if (StringUtils.isNotBlank(request.getParameter("goldType"))){
-            params.put("goldType",request.getParameter("goldType").trim());
-        }else return null;
+        Facilitator facilitator = null;
         if (StringUtils.isNotBlank(request.getParameter("facilitator"))) {
-            params.put("facilitator", request.getParameter("facilitator"));
-        }else return null;
-        if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
-            params.put("startDate", request.getParameter("startDate"));
+            for (Facilitator facilitator1 : FacilitatorGoldsService.facilitator) {
+                if (request.getParameter("facilitator").equals(facilitator1.getName())){
+                    facilitator = facilitator1;
+                };
+            }
         }
-        if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
-            params.put("endDate", request.getParameter("endDate"));
+        if (facilitator==null){
+            facilitator = FacilitatorGoldsService.facilitator.get(0);
         }
         if (StringUtils.isNotBlank(request.getParameter("limit"))) {
-            params.put("limit", request.getParameter("limit"));
-        } else {
-            params.put("limit", "20");
+            limit = Integer.parseInt(request.getParameter("limit"));
         }
         if (StringUtils.isNotBlank(request.getParameter("offset"))){
-            params.put("offset", request.getParameter("offset"));
-        }else{
-            params.put("offset", "0");
+            offset = Integer.parseInt(request.getParameter("offset"));
         }
-        if ("jinshang".equals(request.getParameter("goldType").trim())){
-            result.put("rows",facilitatorGoldsService.getFacilitatorGoldsInfoForJinShang(params));
-        }else if ("aozhan".equals(request.getParameter("goldType").trim())){
-            result.put("rows",facilitatorGoldsService.getFacilitatorGoldsInfoForAoZhan(params));
+        //保证在服务期内
+        if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
+            Date startDate = DateTimeUtils.convert(request.getParameter("startDate"));
+            if (startDate.getTime() > facilitator.getStartTime().getTime()){
+                facilitator.setStartTime(startDate);
+            }
         }
-        result.put("total",facilitatorGoldsService.getFacilitatorGoldsInfoCount(params));
+        if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
+            Date endDate = DateTimeUtils.convert(request.getParameter("endDate"));
+            if (endDate.getTime() < facilitator.getEndTime().getTime()){
+                facilitator.setEndTime(endDate);
+            }
+        }
+
+        result.put("total",facilitatorGoldsService.getFacilitatorGoldsInfoCount(facilitator));
+        result.put("rows",facilitatorGoldsService.getFacilitatorGoldInfo(facilitator, offset, limit));
         return result;
     }
 

@@ -1,14 +1,20 @@
 package com.js.sas.service;
 
+import com.github.pagehelper.PageHelper;
+import com.js.sas.entity.Facilitator;
 import com.js.sas.utils.DateTimeUtils;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -18,13 +24,46 @@ import java.util.*;
  * @Description:
  */
 @Service
+@Slf4j
 public class FacilitatorGoldsService {
 
     @Autowired
     @Qualifier(value = "secodJdbcTemplate")
     private JdbcTemplate jdbcTemplate;
+    @Autowired
+    @Qualifier(value = "sqlServerJdbcTemplate")
+    private JdbcTemplate sqlServerJdbcTemplate;
 
     private static final String jinshangRate = "2";
+
+    public static List<Facilitator> facilitator = new ArrayList<>();
+
+    @PostConstruct
+    public void loadFacilitator(){
+        List<Facilitator> list = getFacilitatorCompany();
+        facilitator.addAll(list);
+        log.info("加载服务商"+ Arrays.toString(facilitator.toArray()));
+    }
+
+    public List<Facilitator> getFacilitatorCompany(){
+        String sql ="select fa.memberid,bc.companyname,sign_starttime,sign_endtime from facilitator fa " +
+                "left join buyercompanyinfo bc on fa.memberid = bc.memberid " +
+                "where fa.state =0";
+        List<Map<String, Object>> maps = jdbcTemplate.queryForList(sql);
+        List<Facilitator> facilitators = new ArrayList<>();
+        if (maps==null || maps.size()==0){
+            throw new RuntimeException("加载服务商失败");
+        }
+        for (Map<String, Object> map : maps) {
+            Facilitator facilitator = new Facilitator();
+            facilitator.setMemberid(Long.parseLong(map.get("memberid").toString()));
+            facilitator.setName(map.get("companyname").toString());
+            facilitator.setStartTime((Date)map.get("sign_starttime"));
+            facilitator.setEndTime((Date)map.get("sign_endtime"));
+            facilitators.add(facilitator);
+        }
+        return facilitators;
+    }
 
     /**
      * 获取所有的服务商
@@ -38,6 +77,59 @@ public class FacilitatorGoldsService {
     private Map<String, Object>getFacilitator(Long memberId){
         String sql ="select * from facilitator where memberid = ? order by sign_starttime desc  limit 1 ";
         return jdbcTemplate.queryForMap(sql,memberId);
+    }
+
+    /**
+     * 返金币计算详情
+     * @param facilitator
+     * @return
+     */
+    public List<Map<String, Object>> getFacilitatorGoldInfo(Facilitator facilitator,Integer offset,Integer limit){
+        ArrayList<Object> list = new ArrayList<>();
+        StringBuilder builder = new StringBuilder("select top "+limit+" sab.id,sa.code,sa.createdtime,aa.productInfo,sab.taxAmount," +
+                " sab.taxAmount*0.01 返利,");
+        builder.append(" CASE WHEN aa.productInfo = 70200 THEN sab.taxAmount*0.02 END 紧商币,");
+        builder.append(" aa.name,aa.specification,aa.priuserdefnvc1,aa.priuserdefnvc2,aa.priuserdefnvc3,aa.priuserdefnvc10,");
+        builder.append(" sum(CASE when aa.productInfo = 70201 and aa.priuserdefnvc2 = '304' THEN sab.taxAmount*0.008");
+        builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '316' THEN sab.taxAmount*0.008");
+        builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '304L' THEN sab.taxAmount*0.018");
+        builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '321' THEN sab.taxAmount*0.028");
+        builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '2205' THEN sab.taxAmount*0.028");
+        builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '2520' THEN sab.taxAmount*0.028");
+        builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '660' THEN sab.taxAmount*0.028 END ) 奥展币,aa.priuserdefnvc2,");
+        builder.append(" (CASE when aa.productInfo = 70201 and aa.priuserdefnvc2 = '304' THEN '0.008'");
+        builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '316' THEN '0.8%'");
+        builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '304L' THEN '1.8%'");
+        builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '321' THEN '2.8%'");
+        builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '2205' THEN '2.8%'");
+        builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '2520' THEN '2.8%'");
+        builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '660' THEN '2.8%' END ) rate");
+        builder.append(" from SA_SaleDelivery sa ");
+        builder.append(" left join SA_SaleDelivery_b sab on sa.id =sab.idSaleDeliveryDTO ");
+        builder.append(" left join AA_Inventory aa on sab.IDInventory = aa.id ");
+        builder.append(" left join AA_Partner aap on sa.IDCustomer = aap.id ");
+        builder.append(" where sa.pubuserdefnvc1 not in ('线上','限时购') ");
+        builder.append(" and sa.createdtime >= ?");
+        list.add(facilitator.getStartTime());
+        builder.append(" and sa.createdtime <= ?");
+        list.add(facilitator.getEndTime());
+        builder.append(" and aap.name = ?");
+        list.add(facilitator.getName());
+        builder.append(" and sab.id not in (select top "+offset+" sab.id from SA_SaleDelivery sa ");
+        builder.append(" left join SA_SaleDelivery_b sab on sa.id =sab.idSaleDeliveryDTO ");
+        builder.append(" left join AA_Inventory aa on sab.IDInventory = aa.id ");
+        builder.append(" left join AA_Partner aap on sa.IDCustomer = aap.id where sa.pubuserdefnvc1 not in ('线上','限时购') ");
+        builder.append(" and sa.createdtime >= ?");
+        list.add(facilitator.getStartTime());
+        builder.append(" and sa.createdtime <= ?");
+        list.add(facilitator.getEndTime());
+        builder.append(" and aap.name = ?");
+        list.add(facilitator.getName());
+        builder.append(" GROUP BY sab.taxAmount,sab.id");
+        builder.append(" ORDER BY sab.id desc )");
+        builder.append(" GROUP BY sab.taxAmount,sab.id,sa.code,sa.createdtime,aa.priuserdefnvc2,aa.productInfo,aa.name,aa.specification,aa.priuserdefnvc1,aa.priuserdefnvc2,aa.priuserdefnvc3,aa.priuserdefnvc10");
+        builder.append(" ORDER BY sab.id desc ");
+        return sqlServerJdbcTemplate.queryForList(builder.toString(),list.toArray());
     }
 
     public List<Map<String, Object>> getFacilitatorGoldsForJinShang(Map<String, String> params) {
@@ -155,37 +247,49 @@ public class FacilitatorGoldsService {
         return jdbcTemplate.queryForObject(sql,Integer.class);
     }
 
-   public Long getFacilitatorGoldsInfoCount(Map<String, String> params){
-       String shopname ;
-       if ("jinshang".equals(params.get("goldType"))){
-           shopname ="紧商科技紧固件自营";
-       }else if ("aozhan".equals(params.get("goldType"))){
-           shopname ="奥展实业";
-       }else {
-           return -1L;
-       }
-       String facilitator = params.get("facilitator");
-       Map<String, Object> maps = getFacilitator(Long.parseLong(facilitator));
-       String signStarttime = maps.get("sign_starttime").toString();
-       String signEndtime = maps.get("sign_endtime").toString();
-       StringBuilder builder = new StringBuilder("select count(1) from ( select o.orderno ");
-       builder.append(" from orders o left JOIN orderproduct op on o.id = op.orderid");
-       builder.append(" where o.memberid = "+facilitator);
-       builder.append(" and o.orderstatus =5 ");
-       if ("aozhan".equals(params.get("goldType"))){
-           builder.append(" and op.gradeno in('304','316','304L','321','2205','2520','660') ");
-       }
-       builder.append(" and o.createtime >= '"+signStarttime+"'");
-       builder.append(" and o.shopname = '"+shopname+"'");
-       builder.append(" and o.createtime <= '"+signEndtime+"'");
-       if (params.get("startDate") != null && StringUtils.isNotBlank(params.get("startDate"))) {
-           builder.append(" and o.createtime >= '"+params.get("startDate")+"'");
-       }
-       if (params.get("endDate") != null && StringUtils.isNotBlank(params.get("endDate"))) {
-           builder.append(" and o.createtime <= '"+params.get("endDate")+"'");
-       }
-       builder.append(" GROUP BY o.id ) tb");
-       return jdbcTemplate.queryForObject(builder.toString(),Long.class);
+   public Map getFacilitatorGoldsInfoTotal(Facilitator facilita) throws EmptyResultDataAccessException {
+//       System.err.println(facilita);
+       ArrayList<Object> list = new ArrayList<>();
+       StringBuilder builder = new StringBuilder("select top 1 * from(select null 返利,0 紧商币,0 奥展币,0 订单总金额,'"+facilita.getName()+"' name");
+       builder.append(" UNION select sum(返利) 返利,sum(紧商币) 紧商币,sum(奥展币) 奥展币, sum(taxAmount) 订单总金额,name from (");
+       builder.append(" select sab.taxAmount, sab.taxAmount*0.01 返利,aap.name name,");
+       builder.append(" CASE WHEN aa.productInfo = 70200 THEN sab.taxAmount*0.02 END 紧商币, ");
+       builder.append(" sum(CASE when aa.productInfo = 70201 and aa.priuserdefnvc2 = '304' THEN sab.taxAmount*0.008 ");
+       builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '316' THEN sab.taxAmount*0.008");
+       builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '304L' THEN sab.taxAmount*0.018");
+       builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '321' THEN sab.taxAmount*0.028");
+       builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '2205' THEN sab.taxAmount*0.028");
+       builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '2520' THEN sab.taxAmount*0.028");
+       builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '660' THEN sab.taxAmount*0.028 END ) 奥展币");
+       builder.append(" from SA_SaleDelivery sa  left join SA_SaleDelivery_b sab on sa.id =sab.idSaleDeliveryDTO ");
+       builder.append(" left join AA_Inventory aa on sab.IDInventory = aa.id ");
+       builder.append(" left join AA_Partner aap on sa.IDCustomer = aap.id ");
+       builder.append(" where sa.pubuserdefnvc1 not in ('线上','限时购') ");
+       builder.append(" and sa.createdtime >= ?");
+       list.add(facilita.getStartTime());
+       builder.append(" and sa.createdtime <= ?");
+       list.add(facilita.getEndTime());
+       builder.append(" and aap.name = ?");
+       list.add(facilita.getName());
+       builder.append(" GROUP BY sab.taxAmount,aa.productInfo,aap.name ) ss  GROUP BY name)dd order by 返利 desc");
+
+       return sqlServerJdbcTemplate.queryForMap(builder.toString(),list.toArray());
+   }
+   public Long getFacilitatorGoldsInfoCount(Facilitator facilitator){
+       List<Object> list = new ArrayList<>();
+       StringBuilder builder = new StringBuilder("select count(1)");
+       builder.append(" from SA_SaleDelivery sa ");
+       builder.append(" left join SA_SaleDelivery_b sab on sa.id =sab.idSaleDeliveryDTO");
+       builder.append(" left join AA_Inventory aa on sab.IDInventory = aa.id");
+       builder.append(" left join AA_Partner aap on sa.IDCustomer = aap.id");
+       builder.append(" where sa.pubuserdefnvc1 not in ('线上','限时购')");
+       builder.append(" and aap.name =?");
+       list.add(facilitator.getName());
+       builder.append(" and sa.createdtime >=?");
+       list.add(facilitator.getStartTime());
+       builder.append(" and sa.createdtime <=?");
+       list.add(facilitator.getEndTime());
+       return sqlServerJdbcTemplate.queryForObject(builder.toString(), list.toArray(), Long.class);
    }
 
     public List<Map<String ,Object>> getFacilitatorGoldsInfoForJinShang(Map<String, String> params) {

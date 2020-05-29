@@ -31,7 +31,7 @@ public class CustomerController {
         if (StringUtils.isNotBlank(request.getParameter("limit"))) {
             map.put("limit", request.getParameter("limit"));
         } else {
-            return null;
+            map.put("limit", "20");
         }
         if (StringUtils.isNotBlank(request.getParameter("offset"))) {
             map.put("offset", request.getParameter("offset"));

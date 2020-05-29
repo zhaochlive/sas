@@ -115,21 +115,18 @@ public class SystemController {
     }
 
     @GetMapping("/facilitatorGolds")
-    public String facilitatorGolds() {
+    public String facilitatorGolds(HttpServletRequest request, Model model) {
+//        model.addAttribute("facilitators",facilitatorGoldsService.facilitator);
+//        model.addAttribute("facilitator",request.getParameter("facilitator"));
         return "pages/sales/facilitatorGolds.html";
     }
 
     @GetMapping("/getFacilitatorGoldInfo")
     public String facilitatorGoldsInfo(HttpServletRequest request, Model model) {
-        model.addAttribute("facilitators",facilitatorGoldsService.getFacilitator());
+        model.addAttribute("facilitators",facilitatorGoldsService.facilitator);
+
         model.addAttribute("facilitator",request.getParameter("facilitator"));
-        model.addAttribute("goldType",request.getParameter("goldType"));
         return "pages/sales/facilitatorGoldsInfo.html";
-    }
-    @GetMapping("/facilitatorOrderInfo")
-    public String facilitatorOrderInfo(HttpServletRequest request, Model model) {
-        model.addAttribute("orderNo",request.getParameter("orderNo"));
-        return "pages/sales/facilitatorOrderInfo.html";
     }
 
     @Autowired

@@ -45,8 +45,8 @@
                                             <label class="col-sm-3 col-form-label">服务商：</label>
                                             <div class="col-sm-9">
                                                 <select id="facilitator" name="facilitator"  required lay-verify="required" class="form-control">
-                                                    <option th:each="item:${facilitators}"  th:value="${item.memberid}" th:text="${item.companyName}"
-                                                            th:selected="${facilitator eq item.memberid}" ></option>
+                                                    <option th:each="item:${facilitators}"  th:value="${item.name}" th:text="${item.name}"
+                                                            th:selected="${facilitator eq item.name}"></option>
                                                 </select>
                                             </div>
                                         </div>
@@ -57,21 +57,11 @@
                                                        class="form-control" type="text"/>
                                             </div>
                                         </div>
-                                        <div class="form-group row col-sm-4">
-                                            <label class="col-sm-3 col-form-label">币种：</label>
-                                            <div class="col-sm-9">
-                                                <select id="goldType" name="goldType" placeholder="选择币种" class="form-control">
-                                                    <option value="jinshang" th:selected="${goldType == 'jinshang'}">紧商币</option>
-                                                    <option value="aozhan" th:selected="${goldType == 'aozhan'}">奥展币</option>
-                                                </select>
-
-                                            </div>
-                                        </div>
                                         <div class="box-footer">
                                             <input type="hidden" id="startDate" name="startDate" value=""/>
                                             <input type="hidden" id="endDate" name="endDate" value=""/>
                                             <input type="hidden" id="limit" name="limit" value=""/>
-                                            <input type="hidden" id="memberid" name="limit" th:value="${facilitator}"/>
+                                            <input type="hidden" id="name" name="name" value=""/>
                                             <button type="button" class="btn btn-primary pull-right" id="search"
                                                     style="margin-left:20px;">搜 索
                                             </button>
@@ -179,11 +169,11 @@
 
     });
     $("#facilitator").change(function () {
-        $("#memberid").val( $("#facilitator").val());
+        $("#name").val( $("#facilitator").val());
     });
     $(document).ready(function () {
-        console.info($("#memberid").val());
-        $("#facilitator").val($("#memberid").val());
+        console.info($("#name").val());
+        $("#facilitator").val($("#name").val());
 
         // 表单设置
         $("#dataTable table").bootstrapTable({
@@ -207,14 +197,11 @@
             url: "/facilitator/getFacilitatorGoldInfo",
             queryParams: function (params) {
                 var temp = {
-                    facilitator: $("#memberid").val(),
-                    goldType: $("#goldType").val(),
+                    facilitator:$("#name").val(),
                     startDate: startDate,
                     endDate: endDate,
                     limit: params.limit,
-                    offset: params.offset,
-                    sort: params.sort,
-                    sortOrder: params.order
+                    offset: params.offset
                 };
                 // 设置开始时间
                 $("#startDate").val(temp.startDate);
@@ -223,21 +210,43 @@
                 return temp;
             },
             columns: [{
-                field: 'orderno',
+                field: 'code',
                 title: '订单编号',
                 align: 'right',
                 valign: 'middle'
-                ,formatter: function (value, row, index) {
-                    var orderno = row.orderno;
-                    var goldType = $("#goldType").val();
-                    if (goldType == 'aozhan'){
-                        return '<a href="facilitatorOrderInfo?orderNo='+orderno+'">'+orderno+'</a>';
-                    }else{
-                        return orderno;
-                    }
-                }
             }, {
-                field: 'createtime',
+                field: 'name',
+                title: '商品名称',
+                align: 'right',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: 'specification',
+                title: '规格',
+                align: 'right',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: 'priuserdefnvc1',
+                title: '材质',
+                align: 'right',
+                valign: 'middle',
+                sortable: 'true'
+
+            }, {
+                field: 'priuserdefnvc3',
+                title: '表面处理',
+                align: 'right',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: 'priuserdefnvc10',
+                title: '标准',
+                align: 'right',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: 'createdtime',
                 title: '订单创建日期',
                 align: 'right',
                 valign: 'middle',
@@ -246,17 +255,43 @@
                     return datePaseToString(value);
                 }
             }, {
-                field: 'golds',
-                title: '返还金币',
+                field: '返利',
+                title: '返利',
                 align: 'right',
                 valign: 'middle',
                 sortable: 'true'
             }, {
-                field: 'totalprice',
+
+                field: '紧商币',
+                title: '紧商币',
+                align: 'right',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: 'priuserdefnvc2',
+                title: '牌号',
+                align: 'right',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: 'rate',
+                title: '奥展产品比例',
+                align: 'right',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: '奥展币',
+                title: '奥展币',
+                align: 'right',
+                valign: 'middle',
+                sortable: 'true'
+            }, {
+                field: 'taxAmount',
                 title: '订单金额',
                 align: 'right',
                 valign: 'middle',
                 sortable: 'true'
+
             }],
             onLoadSuccess: function (result) {
 
