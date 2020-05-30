@@ -402,8 +402,7 @@ public class FinanceController {
         // 统计月数
         int months = 12;
         // 列名
-        List<String> columnsList;
-        columnsList = financeService.findOverdueColumns(months, false);
+        List<String> columnsList = financeService.findOverdueColumns(months, false);
         // 数据
         List<List<Object>> objectRowsList;
         objectRowsList = financeService.getOverdueList(partner, months, true, false, true, false);
@@ -1627,7 +1626,7 @@ public class FinanceController {
 //                System.out.println(r.getCell(0)+"==="+r.getCell(1)+"==="+r.getCell(2));
                 memberSalesman = new MemberSalesman();
                 String name = null;
-                if(r.getCell(0)==null||r.getCell(1)==null){
+                if (r.getCell(0) == null || r.getCell(1) == null) {
                     continue;
                 }
                 switch (r.getCell(0).getCellTypeEnum()) {
