@@ -590,7 +590,7 @@ public class FinanceController {
     @PostMapping("/overdueSalesColumns")
     public Object overdueSalesColumns() {
         Map<String, List<String>> columnMap = new HashMap<>();
-        List<String> columnList = financeService.findOverdueColumns(4, true);
+        List<String> columnList = financeService.findOverdueColumns(4, false);
         columnMap.put("columns", columnList);
         return columnMap;
     }
@@ -710,7 +710,7 @@ public class FinanceController {
         int months = 4;
         String fileName = "逾期统计表";
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
-        List<String> columnsList = financeService.findOverdueColumns(months, true);
+        List<String> columnsList = financeService.findOverdueColumns(months, false);
         // 表单
         Sheet sheet = new Sheet(1, 0);
         sheet.setSheetName(fileName);
@@ -971,7 +971,7 @@ public class FinanceController {
         int months = 4;
         String fileName = "逾期统计表";
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
-        List<String> columnsList = financeService.findOverdueColumns(months, true);
+        List<String> columnsList = financeService.findOverdueColumns(months, false);
         // 表单
         Sheet sheet = new Sheet(1, 0);
         sheet.setSheetName(fileName);
