@@ -35,7 +35,8 @@ public class FacilitatorGoldsController {
     public Object getFacilitatorGolds(HttpServletRequest request){
         Map<String, Object> result = new HashMap<>();
         List<Map> list = new ArrayList<>();
-        for (Facilitator facilitator : FacilitatorGoldsService.facilitator) {
+        List<Facilitator> facilitatorCompany = facilitatorGoldsService.getFacilitatorCompany();
+        for (Facilitator facilitator : facilitatorGoldsService.getFacilitatorCompany()) {
             if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
                 Date startDate = DateTimeUtils.convert(request.getParameter("startDate"));
                 if (startDate.getTime() > facilitator.getStartTime().getTime()){
@@ -52,7 +53,7 @@ public class FacilitatorGoldsController {
             list.add(map);
         }
         result.put("rows",list);
-        result.put("total",FacilitatorGoldsService.facilitator.size());
+        result.put("total",facilitatorCompany.size());
         return result;
     }
 
@@ -64,15 +65,16 @@ public class FacilitatorGoldsController {
         Integer offset = 0;
         Map<String, Object> result = new HashMap<>();
         Facilitator facilitator = null;
+        List<Facilitator> facilitatorCompany = facilitatorGoldsService.getFacilitatorCompany();
         if (StringUtils.isNotBlank(request.getParameter("facilitator"))) {
-            for (Facilitator facilitator1 : FacilitatorGoldsService.facilitator) {
+            for (Facilitator facilitator1 : facilitatorCompany) {
                 if (request.getParameter("facilitator").equals(facilitator1.getName())){
                     facilitator = facilitator1;
                 };
             }
         }
         if (facilitator==null){
-            facilitator = FacilitatorGoldsService.facilitator.get(0);
+            facilitator = facilitatorCompany.get(0);
         }
         if (StringUtils.isNotBlank(request.getParameter("limit"))) {
             limit = Integer.parseInt(request.getParameter("limit"));
@@ -120,58 +122,45 @@ public class FacilitatorGoldsController {
         Map<String, String> map = new HashMap<>();
         map.put("limit", "9999999999");
         map.put("offset", "0");
-        if (StringUtils.isNotBlank(request.getParameter("goldTypes"))) {
-            map.put("goldType", request.getParameter("goldTypes"));
+        List<Map<String, Object>> mapList =new ArrayList<>();
+        List<Facilitator> facilitatorCompany = facilitatorGoldsService.getFacilitatorCompany();
+        for (Facilitator facilitator : facilitatorCompany) {
+            if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
+                Date startDate = DateTimeUtils.convert(request.getParameter("startDate"));
+                if (startDate.getTime() > facilitator.getStartTime().getTime()){
+                    facilitator.setStartTime(startDate);
+                }
+            }
+            if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
+                Date endDate = DateTimeUtils.convert(request.getParameter("endDate"));
+                if (endDate.getTime() < facilitator.getEndTime().getTime()){
+                    facilitator.setEndTime(endDate);
+                }
+            }
+            Map total = facilitatorGoldsService.getFacilitatorGoldsInfoTotal(facilitator);
+            mapList.add(total);
         }
-        if (StringUtils.isNotBlank(request.getParameter("year"))) {
-            map.put("year", request.getParameter("year"));
-        }
-        List<Map<String, Object>> mapList =null;
-        String fileName=null;
-        if ("jinshang".equals(request.getParameter("goldTypes").trim())){
-            mapList = facilitatorGoldsService.getFacilitatorGoldsForJinShang(map);
-            fileName="紧商金币汇总";
-        }else if ("aozhan".equals(request.getParameter("goldTypes").trim())){
-            fileName="奥展金币汇总";
-            mapList = facilitatorGoldsService.getFacilitatorGoldsForAoZhan(map);
-        }
+
         List<String > columnNameList = new ArrayList<>();
         columnNameList.add("服务商单位");
-        columnNameList.add("合计数量");
-        columnNameList.add("一月份");
-        columnNameList.add("二月份");
-        columnNameList.add("三月份");
-        columnNameList.add("四月份");
-        columnNameList.add("五月份");
-        columnNameList.add("六月份");
-        columnNameList.add("七月份");
-        columnNameList.add("八月份");
-        columnNameList.add("九月份");
-        columnNameList.add("十月份");
-        columnNameList.add("十一月份");
-        columnNameList.add("十二月份");
+        columnNameList.add("奥展币");
+        columnNameList.add("紧商币");
+        columnNameList.add("订单总金额");
+        columnNameList.add("返利");
+
         try {
             List<List<Object>> result = new ArrayList<>();
             List<Object> objects ;
             for (Map<String ,Object> item : mapList) {
                 objects = new ArrayList<>();
-                objects.add(item.get("companyName"));
-                objects.add(item.get("total"));
-                objects.add(item.get("一月"));
-                objects.add(item.get("二月"));
-                objects.add(item.get("三月"));
-                objects.add(item.get("四月"));
-                objects.add(item.get("五月"));
-                objects.add(item.get("六月"));
-                objects.add(item.get("七月"));
-                objects.add(item.get("八月"));
-                objects.add(item.get("九月"));
-                objects.add(item.get("十月"));
-                objects.add(item.get("十一月"));
-                objects.add(item.get("十二月"));
+                objects.add(item.get("name"));
+                objects.add(item.get("奥展币"));
+                objects.add(item.get("紧商币"));
+                objects.add(item.get("订单总金额"));
+                objects.add(item.get("返利"));
                 result.add(objects);
             }
-            CommonUtils.exportByList(response, columnNameList, result, fileName);
+            CommonUtils.exportByList(response, columnNameList, result, "线下服务商返利汇总");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -179,42 +168,56 @@ public class FacilitatorGoldsController {
 
     @PostMapping(value = "/excel/facilitatorInfo")
     public void facilitatorInfo(HttpServletResponse response, HttpServletRequest request) {
-        Map<String, String> map = new HashMap<>();
-        map.put("limit", "9999999999");
-        map.put("offset", "0");
+
+        Facilitator facilitator = null;
+        List<Facilitator> facilitatorCompany = facilitatorGoldsService.getFacilitatorCompany();
         if (StringUtils.isNotBlank(request.getParameter("facilitator"))) {
-            map.put("facilitator", request.getParameter("facilitator"));
+            for (Facilitator facilitator1 : facilitatorCompany) {
+                if (request.getParameter("facilitator").equals(facilitator1.getName())){
+                    facilitator = facilitator1;
+                };
+            }
         }
-        if (StringUtils.isNotBlank(request.getParameter("goldType"))) {
-            map.put("goldType", request.getParameter("goldType"));
+        if (facilitator==null){
+            return;
         }
-        List<Map<String, Object>> mapList =null;
-        String fileName=null;
-        if ("jinshang".equals(request.getParameter("goldType").trim())){
-            mapList = facilitatorGoldsService.getFacilitatorGoldsInfoForJinShang(map);
-            fileName="紧商金币汇总";
-        }else if ("aozhan".equals(request.getParameter("goldType").trim())){
-            fileName="奥展金币汇总";
-            mapList = facilitatorGoldsService.getFacilitatorGoldsInfoForAoZhan(map);
-        }
+        List<Map<String, Object>> facilitatorGoldInfo = facilitatorGoldsService.getFacilitatorGoldInfo(facilitator, 0, 999999999);
 
         List<String > columnNameList = new ArrayList<>();
         columnNameList.add("订单编号");
+        columnNameList.add("商品名称");
+        columnNameList.add("规格");
+        columnNameList.add("材质");
+        columnNameList.add("表面处理");
+        columnNameList.add("标准");
         columnNameList.add("订单创建日期");
-        columnNameList.add("返还金币");
+        columnNameList.add("返利");
+        columnNameList.add("紧商币");
+        columnNameList.add("牌号");
+        columnNameList.add("奥展产品比例");
+        columnNameList.add("奥展币");
         columnNameList.add("订单金额");
         try {
             List<List<Object>> result = new ArrayList<>();
             List<Object> objects ;
-            for (Map<String ,Object> item : mapList) {
+            for (Map<String ,Object> item : facilitatorGoldInfo) {
                 objects = new ArrayList<>();
-                objects.add(item.get("orderno"));
-                objects.add(item.get("createtime"));
-                objects.add(item.get("golds"));
-                objects.add(item.get("totalprice"));
+                objects.add(item.get("code"));
+                objects.add(item.get("name"));
+                objects.add(item.get("specification"));
+                objects.add(item.get("priuserdefnvc1"));
+                objects.add(item.get("priuserdefnvc3"));
+                objects.add(item.get("priuserdefnvc10"));
+                objects.add(item.get("createdtime"));
+                objects.add(item.get("返利"));
+                objects.add(item.get("紧商币"));
+                objects.add(item.get("priuserdefnvc2"));
+                objects.add(item.get("rate"));
+                objects.add(item.get("奥展币"));
+                objects.add(item.get("taxAmount"));
                 result.add(objects);
             }
-            CommonUtils.exportByList(response, columnNameList, result, fileName);
+            CommonUtils.exportByList(response, columnNameList, result, facilitator.getName()+"线下返利明细");
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -1,8 +1,6 @@
 package com.js.sas.task;
 
-import com.js.sas.entity.Facilitator;
 import com.js.sas.entity.OrderProductBackInfo;
-import com.js.sas.service.FacilitatorGoldsService;
 import com.js.sas.service.OrderProductBackInfoService;
 import com.js.sas.utils.DateTimeUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +16,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.*;
 
-import static com.js.sas.service.FacilitatorGoldsService.facilitator;
 
 /**
  * @Author: daniel
@@ -31,25 +28,10 @@ public class ScheduledTask {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
-    @Autowired
-    private FacilitatorGoldsService facilitatorGoldsService;
 
     @Autowired
     @Qualifier(value = "secodJdbcTemplate")
     private JdbcTemplate jinshangJdbcTemplate;
-
-
-
-    /**
-     * 加载服务商 每两小时重新加载一次
-     */
-    @Scheduled(cron = "0 0 0/2 * * ?")
-    public void initFacilitator(){
-        facilitator.clear();
-        List<Facilitator> facilitatorCompany = facilitatorGoldsService.getFacilitatorCompany();
-        facilitator.addAll(facilitatorCompany);
-    }
-
 
     @Autowired
     private OrderProductBackInfoService orderProductBackInfoService;

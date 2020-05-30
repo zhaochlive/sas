@@ -123,7 +123,7 @@ public class SystemController {
 
     @GetMapping("/getFacilitatorGoldInfo")
     public String facilitatorGoldsInfo(HttpServletRequest request, Model model) {
-        model.addAttribute("facilitators",facilitatorGoldsService.facilitator);
+        model.addAttribute("facilitators",facilitatorGoldsService.getFacilitatorCompany());
 
         model.addAttribute("facilitator",request.getParameter("facilitator"));
         return "pages/sales/facilitatorGoldsInfo.html";

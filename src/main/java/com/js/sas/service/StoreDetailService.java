@@ -144,6 +144,7 @@ public class StoreDetailService {
             } else {
                 sb.append(" offset 0 ;");
             }
+            System.out.println(sb.toString());
             List<Map<String, Object>> maps = jdbcTemplate.queryForList(sb.toString(),list.toArray());
             return maps;
         }
@@ -285,7 +286,7 @@ public class StoreDetailService {
 
             sb.append(" GROUP BY ss.shopname,Lastmonth.下单人数,Lastyear.下单人数,Lastmonth.下单金额,Lastyear.下单金额,mi.首次下单人数,mi.首次下单金额 ");
             sb.append(" ORDER BY 付款订单数量 DESC )total; ");
-
+            System.out.println(sb.toString());
             Map<String, Object> maps = jdbcTemplate.queryForMap(sb.toString());
             Map<String, Object> result = new HashMap<>();
             result.put("allPayedOrders", maps.get("总订单"));
