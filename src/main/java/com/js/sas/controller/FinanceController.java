@@ -710,7 +710,7 @@ public class FinanceController {
         int months = 4;
         String fileName = "逾期统计表";
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
-        List<String> columnsList = financeService.findOverdueColumns(months, false);
+        List<String> columnsList = financeService.findOverdueColumns(months, true);
         // 表单
         Sheet sheet = new Sheet(1, 0);
         sheet.setSheetName(fileName);
@@ -971,7 +971,7 @@ public class FinanceController {
         int months = 4;
         String fileName = "逾期统计表";
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
-        List<String> columnsList = financeService.findOverdueColumns(months, false);
+        List<String> columnsList = financeService.findOverdueColumns(months, true);
         // 表单
         Sheet sheet = new Sheet(1, 0);
         sheet.setSheetName(fileName);
