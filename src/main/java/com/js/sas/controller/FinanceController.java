@@ -590,7 +590,7 @@ public class FinanceController {
     @PostMapping("/overdueSalesColumns")
     public Object overdueSalesColumns() {
         Map<String, List<String>> columnMap = new HashMap<>();
-        List<String> columnList = financeService.findOverdueColumns(4, false);
+        List<String> columnList = financeService.findOverdueColumns(4, true);
         columnMap.put("columns", columnList);
         return columnMap;
     }
