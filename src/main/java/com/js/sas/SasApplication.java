@@ -6,7 +6,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.util.TimeZone;
 
-@EnableScheduling
+//@EnableScheduling
 @SpringBootApplication
 public class SasApplication {
 
