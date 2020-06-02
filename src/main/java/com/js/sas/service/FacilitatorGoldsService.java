@@ -91,7 +91,7 @@ public class FacilitatorGoldsService {
         builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '2205' THEN sab.taxAmount*0.028");
         builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '2520' THEN sab.taxAmount*0.028");
         builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '660' THEN sab.taxAmount*0.028 END ) 奥展币,aa.priuserdefnvc2,");
-        builder.append(" (CASE when aa.productInfo = 70201 and aa.priuserdefnvc2 = '304' THEN '0.008'");
+        builder.append(" (CASE when aa.productInfo = 70201 and aa.priuserdefnvc2 = '304' THEN '0.8%'");
         builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '316' THEN '0.8%'");
         builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '304L' THEN '1.8%'");
         builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '321' THEN '2.8%'");
