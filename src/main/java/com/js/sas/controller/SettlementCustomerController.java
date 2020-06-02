@@ -95,7 +95,7 @@ public class SettlementCustomerController {
         params.put("sort", "total");
         params.put("sortOrder", "desc");
         List<String > columnNameList = new ArrayList<>();
-        columnNameList.add("品牌");
+        columnNameList.add("结算单位");
         columnNameList.add("总计");
         columnNameList.add("一月份");
         columnNameList.add("二月份");
@@ -119,7 +119,7 @@ public class SettlementCustomerController {
             List<Object> objects =null;
             for (Map<String,Object> order : data) {
                 objects = new ArrayList<>();
-                objects.add(order.get("clerkname"));
+                objects.add(order.get("invoiceheadup"));
                 objects.add(order.get("total"));
                 objects.add(order.get("一月"));
                 objects.add(order.get("二月"));

@@ -39,15 +39,15 @@ public class FacilitatorGoldsController {
         for (Facilitator facilitator : facilitatorGoldsService.getFacilitatorCompany()) {
             if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
                 Date startDate = DateTimeUtils.convert(request.getParameter("startDate"));
-                if (startDate.getTime() > facilitator.getStartTime().getTime()){
+//                if (startDate.getTime() > facilitator.getStartTime().getTime()){
                     facilitator.setStartTime(startDate);
-                }
+//                }
             }
             if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
                 Date endDate = DateTimeUtils.convert(request.getParameter("endDate"));
-                if (endDate.getTime() < facilitator.getEndTime().getTime()){
+//                if (endDate.getTime() < facilitator.getEndTime().getTime()){
                     facilitator.setEndTime(endDate);
-                }
+//                }
             }
             Map map = facilitatorGoldsService.getFacilitatorGoldsInfoTotal(facilitator);
             list.add(map);
@@ -85,17 +85,17 @@ public class FacilitatorGoldsController {
         //保证在服务期内
         if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
             Date startDate = DateTimeUtils.convert(request.getParameter("startDate"));
-            if (startDate.getTime() > facilitator.getStartTime().getTime()){
+//            if (startDate.getTime() > facilitator.getStartTime().getTime()){
                 facilitator.setStartTime(startDate);
-            }
+//            }
         }
         if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
             Date endDate = DateTimeUtils.convert(request.getParameter("endDate"));
-            if (endDate.getTime() < facilitator.getEndTime().getTime()){
+//            if (endDate.getTime() < facilitator.getEndTime().getTime()){
                 facilitator.setEndTime(endDate);
-            }
+//            }
         }
-
+        System.out.println(facilitator);
         result.put("total",facilitatorGoldsService.getFacilitatorGoldsInfoCount(facilitator));
         result.put("rows",facilitatorGoldsService.getFacilitatorGoldInfo(facilitator, offset, limit));
         return result;
@@ -127,15 +127,15 @@ public class FacilitatorGoldsController {
         for (Facilitator facilitator : facilitatorCompany) {
             if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
                 Date startDate = DateTimeUtils.convert(request.getParameter("startDate"));
-                if (startDate.getTime() > facilitator.getStartTime().getTime()){
+//                if (startDate.getTime() > facilitator.getStartTime().getTime()){
                     facilitator.setStartTime(startDate);
-                }
+//                }
             }
             if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
                 Date endDate = DateTimeUtils.convert(request.getParameter("endDate"));
-                if (endDate.getTime() < facilitator.getEndTime().getTime()){
+//                if (endDate.getTime() < facilitator.getEndTime().getTime()){
                     facilitator.setEndTime(endDate);
-                }
+//                }
             }
             Map total = facilitatorGoldsService.getFacilitatorGoldsInfoTotal(facilitator);
             mapList.add(total);
@@ -176,6 +176,18 @@ public class FacilitatorGoldsController {
                 if (request.getParameter("facilitator").equals(facilitator1.getName())){
                     facilitator = facilitator1;
                 };
+            }
+            if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
+                Date startDate = DateTimeUtils.convert(request.getParameter("startDate"));
+//                if (startDate.getTime() > facilitator.getStartTime().getTime()){
+                facilitator.setStartTime(startDate);
+//                }
+            }
+            if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
+                Date endDate = DateTimeUtils.convert(request.getParameter("endDate"));
+//                if (endDate.getTime() < facilitator.getEndTime().getTime()){
+                facilitator.setEndTime(endDate);
+//                }
             }
         }
         if (facilitator==null){
