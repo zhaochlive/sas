@@ -506,15 +506,14 @@ public class BuyerCapitalService {
         builder.append(" WHEN bc.capitaltype = 2 AND bc.paytype NOT IN ( 0, 1, 2 ) THEN if (bc.scattered = 1 ,- (bc.capital+bc.scatteredcapital) ,- bc.capital )");
         builder.append(" WHEN bc.capitaltype = 1 AND bc.rechargestate = 1 THEN if (bc.scattered = 1 ,- (bc.capital+bc.scatteredcapital) ,- bc.capital)");
         builder.append(" WHEN bc.capitaltype = 3 AND bc.rechargestate = 1 THEN if (bc.scattered = 1 , (bc.capital+bc.scatteredcapital) , bc.capital)");
-        builder.append(" WHEN bc.capitaltype = 6 THEN IF(( SELECT COUNT(1) FROM order_product_back_info WHERE orderno = bc.orderno ) > 0, 0, ");
+        builder.append(" WHEN bc.capitaltype = 6 THEN IF(( SELECT COUNT(1) FROM order_product_back_info WHERE orderno = bc.orderno ) > 0,0,");
         builder.append(" if (bc.scattered = 1 ,bc.capital +bc.scatteredcapital,bc.capital)) ");
-        builder.append(" WHEN bc.capitaltype = 10 THEN if (bc.scattered = 1 , (bc.capital +bc.scatteredcapital), bc.capital) ");
-        builder.append(" END ) AS Receivableaccount, SUM(CASE WHEN bc.capitaltype = 0 AND bc.paytype IN (0,1,2,3,4) THEN if(bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital)");
-        //批注：调整
+        builder.append(" WHEN bc.capitaltype = 10 THEN if (bc.scattered = 1 , (bc.capital +bc.scatteredcapital), bc.capital) END ) AS Receivableaccount, ");
+        builder.append(" SUM(CASE WHEN bc.capitaltype = 0 AND bc.paytype IN (0,1,2,3,4) THEN if(bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital)");
         builder.append(" WHEN bc.capitaltype = 6  THEN IF(( SELECT COUNT( 1 ) FROM order_product_back_info WHERE orderno = bc.orderno ) > 0,0, -if(bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital))");
         builder.append(" WHEN bc.capitaltype = 2 THEN -if(bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital) END) AS InvoiceBalance ,");
         builder.append(" SUM(case WHEN bc.capitaltype =0 "+start+" and bc.paytype IN (0,1,2,3,4) THEN if (bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital ) ");
-        builder.append(" WHEN bc.capitaltype = 6 "+start+" THEN IF(( SELECT COUNT(1) FROM order_product_back_info WHERE orderno = bc.orderno ) > 0,0, -if(bc.scattered = 1 ,bc.capital +bc.scatteredcapital,bc.capital))");
+//        builder.append(" WHEN bc.capitaltype = 6 "+start+" THEN IF(( SELECT COUNT(1) FROM order_product_back_info WHERE orderno = bc.orderno ) > 0,0, -if(bc.scattered = 1 ,bc.capital +bc.scatteredcapital,bc.capital))");
         builder.append(" WHEN bc.capitaltype = 2 "+start+"  THEN -if(bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital ) end) Deliveryamount,");
         builder.append(" SUM(CASE WHEN bc.capitaltype = 0 "+start+" AND bc.paytype IN (0,1,2)  THEN if (bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital )");
         builder.append(" WHEN bc.capitaltype = 1 "+start+" AND bc.rechargestate = 1  THEN if (bc.scattered = 1 ,bc.capital+bc.scatteredcapital ,bc.capital )");

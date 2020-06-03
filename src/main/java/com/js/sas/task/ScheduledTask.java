@@ -87,10 +87,12 @@ public class ScheduledTask {
     public int[] update(){
         int[] ints = new int[0];
         try {
-            String sql = "update buyer_capital bb inner join ( " +
-                    " select bc.id bid,ca.id cid,ca.capital from buyer_capital ca " +
-                    " inner JOIN (select * from buyer_capital WHERE capitaltype not in (15,16)) bc  " +
-                    " WHERE ca.capitaltype in (15,16) and ca.tradeno = bc.tradeno and ca.orderno = bc.orderno and bc.tradetime = ca.tradetime " +
+            String sql = "update buyer_capital bb inner join ( "+
+                    " select bc.id bid,ca.capital from buyer_capital ca " +
+                    " left JOIN (select id,tradeno,orderno,tradetime,capitaltype from buyer_capital WHERE id in (" +
+                    " select min(id)id from buyer_capital WHERE capitaltype not in (15,16)  GROUP BY capitaltype,orderno)" +
+                    " ) bc on ca.tradeno = bc.tradeno and ca.orderno = bc.orderno " +
+                    " WHERE ca.capitaltype in (15,16)"+
                     " ) aa on aa.bid = bb.id set bb.scattered = 1 , bb.scatteredcapital = aa.capital ;";
             ints = jdbcTemplate.batchUpdate(sql);
         } catch (DataAccessException e) {
