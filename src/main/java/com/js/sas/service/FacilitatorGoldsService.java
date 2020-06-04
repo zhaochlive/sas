@@ -73,12 +73,16 @@ public class FacilitatorGoldsService {
         builder.append(" aa.name,aa.specification,aa.priuserdefnvc1,aa.priuserdefnvc2,aa.priuserdefnvc3,aa.priuserdefnvc10,");
         builder.append(" sum(CASE when aa.productInfo = 70201 and aa.priuserdefnvc2 = '304' THEN sab.taxAmount*0.008");
         builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '316' THEN sab.taxAmount*0.008");
+        builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '316L' THEN sab.taxAmount*0.008 ");
+        builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = 'A480' THEN sab.taxAmount*0.008 ");
         builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '304L' THEN sab.taxAmount*0.018");
         builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '321' THEN sab.taxAmount*0.028");
         builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '2205' THEN sab.taxAmount*0.028");
         builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '2520' THEN sab.taxAmount*0.028");
         builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '660' THEN sab.taxAmount*0.028 END ) 奥展币,aa.priuserdefnvc2,");
         builder.append(" (CASE when aa.productInfo = 70201 and aa.priuserdefnvc2 = '304' THEN '0.8%'");
+        builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '316L' THEN '0.8%");
+        builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = 'A480' THEN '0.8%");
         builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '316' THEN '0.8%'");
         builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '304L' THEN '1.8%'");
         builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '321' THEN '2.8%'");
@@ -241,6 +245,8 @@ public class FacilitatorGoldsService {
        builder.append(" CASE WHEN aa.productInfo = 70200 THEN sab.taxAmount*0.02 END 紧商币,");
        builder.append(" sum(CASE when aa.productInfo = 70201 and aa.priuserdefnvc2 = '304' THEN sab.taxAmount*0.008 ");
        builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '316' THEN sab.taxAmount*0.008 ");
+       builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '316L' THEN sab.taxAmount*0.008 ");
+       builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = 'A480' THEN sab.taxAmount*0.008 ");
        builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '304L' THEN sab.taxAmount*0.018");
        builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '321' THEN sab.taxAmount*0.028 ");
        builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '2205' THEN sab.taxAmount*0.028");
