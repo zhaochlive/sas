@@ -182,7 +182,7 @@
             cache: false,
             clickToSelect: true,
             pagination: true,
-            sortable: true,
+            sortable: false,
             pageNumber: 1,
             pageSize: 100,
             pageList: [10, 20, 50, 100],
@@ -210,6 +210,11 @@
                 return temp;
             },
             columns: [{
+                field: 'facilitator',
+                title: '服务商',
+                align: 'right',
+                valign: 'middle'
+            }, {
                 field: 'code',
                 title: '订单编号',
                 align: 'right',
@@ -232,7 +237,12 @@
                 align: 'right',
                 valign: 'middle',
                 sortable: 'true'
-
+            }, {
+                field: '品牌',
+                title: '品牌',
+                align: 'right',
+                valign: 'middle',
+                sortable: 'true'
             }, {
                 field: 'priuserdefnvc3',
                 title: '表面处理',

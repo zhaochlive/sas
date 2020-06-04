@@ -39,15 +39,11 @@ public class FacilitatorGoldsController {
         for (Facilitator facilitator : facilitatorGoldsService.getFacilitatorCompany()) {
             if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
                 Date startDate = DateTimeUtils.convert(request.getParameter("startDate"));
-//                if (startDate.getTime() > facilitator.getStartTime().getTime()){
-                    facilitator.setStartTime(startDate);
-//                }
+                facilitator.setStartTime(startDate);
             }
             if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
                 Date endDate = DateTimeUtils.convert(request.getParameter("endDate"));
-//                if (endDate.getTime() < facilitator.getEndTime().getTime()){
-                    facilitator.setEndTime(endDate);
-//                }
+                facilitator.setEndTime(endDate);
             }
             Map map = facilitatorGoldsService.getFacilitatorGoldsInfoTotal(facilitator);
             list.add(map);
@@ -85,15 +81,11 @@ public class FacilitatorGoldsController {
         //保证在服务期内
         if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
             Date startDate = DateTimeUtils.convert(request.getParameter("startDate"));
-//            if (startDate.getTime() > facilitator.getStartTime().getTime()){
                 facilitator.setStartTime(startDate);
-//            }
         }
         if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
             Date endDate = DateTimeUtils.convert(request.getParameter("endDate"));
-//            if (endDate.getTime() < facilitator.getEndTime().getTime()){
                 facilitator.setEndTime(endDate);
-//            }
         }
         System.out.println(facilitator);
         result.put("total",facilitatorGoldsService.getFacilitatorGoldsInfoCount(facilitator));
@@ -127,15 +119,11 @@ public class FacilitatorGoldsController {
         for (Facilitator facilitator : facilitatorCompany) {
             if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
                 Date startDate = DateTimeUtils.convert(request.getParameter("startDate"));
-//                if (startDate.getTime() > facilitator.getStartTime().getTime()){
                     facilitator.setStartTime(startDate);
-//                }
             }
             if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
                 Date endDate = DateTimeUtils.convert(request.getParameter("endDate"));
-//                if (endDate.getTime() < facilitator.getEndTime().getTime()){
                     facilitator.setEndTime(endDate);
-//                }
             }
             Map total = facilitatorGoldsService.getFacilitatorGoldsInfoTotal(facilitator);
             mapList.add(total);
@@ -169,67 +157,71 @@ public class FacilitatorGoldsController {
     @PostMapping(value = "/excel/facilitatorInfo")
     public void facilitatorInfo(HttpServletResponse response, HttpServletRequest request) {
 
-        Facilitator facilitator = null;
+
         List<Facilitator> facilitatorCompany = facilitatorGoldsService.getFacilitatorCompany();
+        List<Facilitator> facilitators = new ArrayList<>();
         if (StringUtils.isNotBlank(request.getParameter("facilitator"))) {
             for (Facilitator facilitator1 : facilitatorCompany) {
                 if (request.getParameter("facilitator").equals(facilitator1.getName())){
-                    facilitator = facilitator1;
+                    facilitators.add(facilitator1);
+                    break;
                 };
             }
+        }else {
+            facilitators = facilitatorCompany;
+        }
+        List<Map<String, Object>> facilitatorGoldInfo = new ArrayList<>();
+        for (Facilitator facilitator1 : facilitators) {
             if (StringUtils.isNotBlank(request.getParameter("startDate"))) {
                 Date startDate = DateTimeUtils.convert(request.getParameter("startDate"));
-//                if (startDate.getTime() > facilitator.getStartTime().getTime()){
-                facilitator.setStartTime(startDate);
-//                }
+                facilitator1.setStartTime(startDate);
             }
             if (StringUtils.isNotBlank(request.getParameter("endDate"))) {
                 Date endDate = DateTimeUtils.convert(request.getParameter("endDate"));
-//                if (endDate.getTime() < facilitator.getEndTime().getTime()){
-                facilitator.setEndTime(endDate);
-//                }
+                facilitator1.setEndTime(endDate);
             }
+            facilitatorGoldInfo.addAll(facilitatorGoldsService.getFacilitatorGoldInfo(facilitator1, 0, 999999999)) ;
         }
-        if (facilitator==null){
-            return;
-        }
-        List<Map<String, Object>> facilitatorGoldInfo = facilitatorGoldsService.getFacilitatorGoldInfo(facilitator, 0, 999999999);
 
         List<String > columnNameList = new ArrayList<>();
+        columnNameList.add("服务商");
         columnNameList.add("订单编号");
         columnNameList.add("商品名称");
         columnNameList.add("规格");
         columnNameList.add("材质");
+        columnNameList.add("品牌");
         columnNameList.add("表面处理");
         columnNameList.add("标准");
-        columnNameList.add("订单创建日期");
+        columnNameList.add("订单金额");
         columnNameList.add("返利");
-        columnNameList.add("紧商币");
         columnNameList.add("牌号");
         columnNameList.add("奥展产品比例");
         columnNameList.add("奥展币");
-        columnNameList.add("订单金额");
+        columnNameList.add("紧商币");
+        columnNameList.add("订单创建日期");
         try {
             List<List<Object>> result = new ArrayList<>();
             List<Object> objects ;
             for (Map<String ,Object> item : facilitatorGoldInfo) {
                 objects = new ArrayList<>();
+                objects.add(item.get("facilitator"));
                 objects.add(item.get("code"));
                 objects.add(item.get("name"));
                 objects.add(item.get("specification"));
                 objects.add(item.get("priuserdefnvc1"));
+                objects.add(item.get("品牌"));
                 objects.add(item.get("priuserdefnvc3"));
                 objects.add(item.get("priuserdefnvc10"));
-                objects.add(item.get("createdtime"));
+                objects.add(item.get("taxAmount"));
                 objects.add(item.get("返利"));
-                objects.add(item.get("紧商币"));
                 objects.add(item.get("priuserdefnvc2"));
                 objects.add(item.get("rate"));
                 objects.add(item.get("奥展币"));
-                objects.add(item.get("taxAmount"));
+                objects.add(item.get("紧商币"));
+                objects.add(item.get("createdtime"));
                 result.add(objects);
             }
-            CommonUtils.exportByList(response, columnNameList, result, facilitator.getName()+"线下返利明细");
+            CommonUtils.exportByList(response, columnNameList, result, "线下服务商返利明细");
         } catch (Exception e) {
             e.printStackTrace();
         }

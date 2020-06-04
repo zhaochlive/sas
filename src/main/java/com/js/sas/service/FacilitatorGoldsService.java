@@ -57,32 +57,19 @@ public class FacilitatorGoldsService {
     }
 
     /**
-     * 获取所有的服务商
-     * @return
-     */
-    public List<Map<String, Object>>getFacilitator(){
-        String sql ="select memberid,member_company_name companyName from facilitator";
-        return jdbcTemplate.queryForList(sql);
-    }
-
-    private Map<String, Object>getFacilitator(Long memberId){
-        String sql ="select * from facilitator where memberid = ? order by sign_starttime desc  limit 1 ";
-        return jdbcTemplate.queryForMap(sql,memberId);
-    }
-
-    /**
      * 返金币计算详情
      * @param facilitator
      * @return
      */
     public List<Map<String, Object>> getFacilitatorGoldInfo(Facilitator facilitator,Integer offset,Integer limit){
         ArrayList<Object> list = new ArrayList<>();
-        StringBuilder builder = new StringBuilder("select top "+limit+" sab.id,sa.code,sa.createdtime,aa.productInfo,sab.taxAmount," );
+        StringBuilder builder = new StringBuilder("select top "+limit+" aap.name facilitator,sab.id,sa.code,sa.createdtime,aa.productInfo,sab.taxAmount," );
         builder.append(" case when aa.IDInventoryClass in (3,4) then sab.taxAmount*0.003 ");
         builder.append(" when aa.IDInventoryClass in (9,10,11,12,13,14,15,16) then sab.taxAmount*0.03");
         builder.append(" when aa.IDInventoryClass in (5,1,2) then sab.taxAmount*0.01");
         builder.append(" when aa.IDInventoryClass in (23,24,25,26,27,28,29,30,31,32,33,34,35,36) then sab.taxAmount*0.01 end 返利," );
         builder.append(" CASE WHEN aa.productInfo = 70200 THEN sab.taxAmount*0.02 END 紧商币,");
+        builder.append(" CASE WHEN aa.productInfo = 70200 THEN '紧商' when aa.productInfo = 70201 then '奥展' END 品牌,");
         builder.append(" aa.name,aa.specification,aa.priuserdefnvc1,aa.priuserdefnvc2,aa.priuserdefnvc3,aa.priuserdefnvc10,");
         builder.append(" sum(CASE when aa.productInfo = 70201 and aa.priuserdefnvc2 = '304' THEN sab.taxAmount*0.008");
         builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '316' THEN sab.taxAmount*0.008");
@@ -121,12 +108,13 @@ public class FacilitatorGoldsService {
         list.add(facilitator.getName());
         builder.append(" GROUP BY sab.taxAmount,sab.id");
         builder.append(" ORDER BY sab.id desc )");
-        builder.append(" GROUP BY sab.taxAmount,sab.id,sa.code,sa.createdtime,aa.priuserdefnvc2,aa.productInfo," +
+        builder.append(" GROUP BY aap.name,sab.taxAmount,sab.id,sa.code,sa.createdtime,aa.priuserdefnvc2,aa.productInfo," +
                 "aa.idinventoryclass,aa.name,aa.specification,aa.priuserdefnvc1,aa.priuserdefnvc2,aa.priuserdefnvc3,aa.priuserdefnvc10");
         builder.append(" ORDER BY sab.id desc ");
+//        System.out.println(builder.toString());
         return sqlServerJdbcTemplate.queryForList(builder.toString(),list.toArray());
     }
-
+/*
     public List<Map<String, Object>> getFacilitatorGoldsForJinShang(Map<String, String> params) {
         List<Object> list = new ArrayList<>();
         String rate = jinshangRate;
@@ -240,40 +228,45 @@ public class FacilitatorGoldsService {
             " where o.shopname = '"+shopname +"'"+
             " GROUP BY fa.id)tb";
         return jdbcTemplate.queryForObject(sql,Integer.class);
-    }
+    }*/
 
    public Map getFacilitatorGoldsInfoTotal(Facilitator facilita) throws EmptyResultDataAccessException {
-//       System.err.println(facilita);
        ArrayList<Object> list = new ArrayList<>();
-       StringBuilder builder = new StringBuilder("select top 1 * from(select null 返利,0 紧商币,0 奥展币,0 订单总金额,'"+facilita.getName()+"' name");
-       builder.append(" UNION select sum(返利) 返利,sum(紧商币) 紧商币,sum(奥展币) 奥展币, sum(taxAmount) 订单总金额,name from (");
-       builder.append(" select sab.taxAmount,aap.name ,");
-       builder.append(" case when aa.IDInventoryClass in (3,4) then sab.taxAmount*0.003 ");
-       builder.append(" when aa.IDInventoryClass in (9,10,11,12,13,14,15,16) then sab.taxAmount*0.03");
-       builder.append(" when aa.IDInventoryClass in (5,1,2) then sab.taxAmount*0.01");
-       builder.append(" when aa.IDInventoryClass in (23,24,25,26,27,28,29,30,31,32,33,34,35,36) then sab.taxAmount*0.01 end 返利," );
-       builder.append(" CASE WHEN aa.productInfo = 70200 THEN sab.taxAmount*0.02 END 紧商币, ");
-       builder.append(" sum(CASE when aa.productInfo = 70201 and aa.priuserdefnvc2 = '304'  THEN sab.taxAmount*0.008 ");
-       builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '316' THEN sab.taxAmount*0.008");
+       StringBuilder builder = new StringBuilder("select top 1 * from(select null 返利,0 紧商币,0 奥展币,0 订单总金额,'"+facilita.getName()+"' name UNION");
+       builder.append(" select sum(taxAmount) 订单总金额,sum(紧商币)紧商币,sum(奥展币)奥展币,sum(返利)返利,name from (");
+       builder.append(" select aap.name,sab.taxAmount,case when aa.IDInventoryClass in (3,4) then sab.taxAmount*0.003");
+       builder.append(" when aa.IDInventoryClass in (9,10,11,12,13,14,15,16) then sab.taxAmount*0.03 ");
+       builder.append(" when aa.IDInventoryClass in (5,1,2) then sab.taxAmount*0.01 ");
+       builder.append(" when aa.IDInventoryClass in (23,24,25,26,27,28,29,30,31,32,33,34,35,36) then sab.taxAmount*0.01 end 返利,");
+       builder.append(" CASE WHEN aa.productInfo = 70200 THEN sab.taxAmount*0.02 END 紧商币,");
+       builder.append(" sum(CASE when aa.productInfo = 70201 and aa.priuserdefnvc2 = '304' THEN sab.taxAmount*0.008 ");
+       builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '316' THEN sab.taxAmount*0.008 ");
        builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '304L' THEN sab.taxAmount*0.018");
-       builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '321' THEN sab.taxAmount*0.028");
+       builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '321' THEN sab.taxAmount*0.028 ");
        builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '2205' THEN sab.taxAmount*0.028");
        builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '2520' THEN sab.taxAmount*0.028");
        builder.append(" when aa.productInfo = 70201 and aa.priuserdefnvc2 = '660' THEN sab.taxAmount*0.028 END ) 奥展币");
-       builder.append(" from SA_SaleDelivery sa  left join SA_SaleDelivery_b sab on sa.id =sab.idSaleDeliveryDTO ");
-       builder.append(" left join AA_Inventory aa on sab.IDInventory = aa.id ");
-       builder.append(" left join AA_Partner aap on sa.IDCustomer = aap.id ");
-       builder.append(" where sa.pubuserdefnvc1 not in ('线上','限时购') ");
+       builder.append(" from SA_SaleDelivery sa ");
+       builder.append(" left join SA_SaleDelivery_b sab on sa.id =sab.idSaleDeliveryDTO");
+       builder.append(" left join AA_Inventory aa on sab.IDInventory = aa.id");
+       builder.append(" left join AA_Partner aap on sa.idcustomer  = aap.id");
+       builder.append(" where sa.pubuserdefnvc1 not in ('线上','限时购') and aap.name = ?");
+       list.add(facilita.getName());
+       builder.append(" and sab.id not in (select top 0 sab.id from SA_SaleDelivery sa  left join SA_SaleDelivery_b sab on sa.id =sab.idSaleDeliveryDTO");
+       builder.append(" left join AA_Inventory aa on sab.IDInventory = aa.id  left join AA_Partner aap on sa.IDCustomer = aap.id");
+       builder.append(" where sa.pubuserdefnvc1 not in ('线上','限时购') and aap.name = ?");
+       list.add(facilita.getName());
+       builder.append(" GROUP BY sab.taxAmount,sab.id ORDER BY sab.id desc ) ");
        builder.append(" and sa.createdtime >= ?");
        list.add(facilita.getStartTime());
        builder.append(" and sa.createdtime <= ?");
        list.add(facilita.getEndTime());
        builder.append(" and aap.name = ?");
        list.add(facilita.getName());
-       builder.append(" GROUP BY sab.taxAmount,aa.productInfo,aap.name,aa.idinventoryclass) ss  GROUP BY name)dd order by 返利 desc");
-
+       builder.append(" GROUP BY aap.name,sab.taxAmount,aa.idinventoryclass,aa.productinfo,sab.id ) ss GROUP BY name )dd order by 返利 desc");
        return sqlServerJdbcTemplate.queryForMap(builder.toString(),list.toArray());
    }
+
    public Long getFacilitatorGoldsInfoCount(Facilitator facilitator){
        List<Object> list = new ArrayList<>();
        StringBuilder builder = new StringBuilder("select count(1)");
@@ -290,6 +283,7 @@ public class FacilitatorGoldsService {
        list.add(facilitator.getEndTime());
        return sqlServerJdbcTemplate.queryForObject(builder.toString(), list.toArray(), Long.class);
    }
+/*
 
     public List<Map<String ,Object>> getFacilitatorGoldsInfoForJinShang(Map<String, String> params) {
         List<Object> list = new ArrayList<>();
@@ -371,6 +365,7 @@ public class FacilitatorGoldsService {
         }
         return jdbcTemplate.queryForList(builder.toString(),list.toArray());
     }
+*/
 
     public List<Map<String ,Object>> facilitatorOrderInfo(String orderNo) {
         StringBuilder builder = new StringBuilder("select o.orderno,o.createtime,op.gradeno,op.actualpayment,(CASE ");
