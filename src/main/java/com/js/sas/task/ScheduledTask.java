@@ -87,13 +87,14 @@ public class ScheduledTask {
     public int[] update(){
         int[] ints = new int[0];
         try {
-            String sql = "update buyer_capital bb inner join ( "+
-                    " select bc.id bid,ca.capital from buyer_capital ca " +
-                    " left JOIN (select id,tradeno,orderno,tradetime,capitaltype from buyer_capital WHERE id in (" +
-                    " select min(id)id from buyer_capital WHERE capitaltype not in (15,16)  GROUP BY capitaltype,orderno)" +
-                    " ) bc on ca.tradeno = bc.tradeno and ca.orderno = bc.orderno " +
-                    " WHERE ca.capitaltype in (15,16)"+
-                    " ) aa on aa.bid = bb.id set bb.scattered = 1 , bb.scatteredcapital = aa.capital ;";
+            String sql = "update buyer_capital bb inner join( "+
+                    " select bc.id bid,bc.tradeno,bc.orderno,bc.tradetime,ca.id cid,ca.capital from buyer_capital ca " +
+                    " left JOIN (select ba.id,ba.tradeno,ba.orderno,ba.tradetime from buyer_capital ba " +
+                    " LEFT JOIN(select min(id)id from buyer_capital  GROUP BY capitaltype,orderno) da" +
+                    " on da.id = ba.id  WHERE ba.capitaltype not in (15,16) and da.id is not null and ba.orderno is not null" +
+                    " ) bc on ca.tradeno = bc.tradeno and ca.orderno = bc.orderno and bc.tradetime = ca.tradetime"+
+                    " WHERE ca.capitaltype in (15,16) and bc.id is not null and bc.orderno is not null"+
+                    " )as aa on aa.bid = bb.id set bb.scattered = 1,bb.scatteredcapital = aa.capital;";
             ints = jdbcTemplate.batchUpdate(sql);
         } catch (DataAccessException e) {
             log.info("执行更新拆零费/违约金异常");
