@@ -310,7 +310,7 @@ public class BuyerCapitalService {
             sb.append(" ) bc ");
 
         }
-        log.info("returnCapitalAccount.getBeforeSql :{}",sb.toString());
+//        log.info("returnCapitalAccount.getBeforeSql :{}",sb.toString());
         return sb.toString();
     }
 
@@ -408,7 +408,7 @@ public class BuyerCapitalService {
         }else{
             sb.append(" Order By ca.tradetime limit 0,20 ) bc " );
         }
-        log.info("returnCapitalAccount.getAfterSql :{}",sb.toString());
+//        log.info("returnCapitalAccount.getAfterSql :{}",sb.toString());
         return sb.toString();
     }
 
@@ -546,7 +546,7 @@ public class BuyerCapitalService {
         }else{
             builder.append(" Order By ca.tradetime  ) bc " );
         }
-        log.info("returnCapitalAccount.getSettlementSql :{}",builder.toString());
+//        log.info("returnCapitalAccount.getSettlementSql :{}",builder.toString());
 
         return  builder.toString();
     }
