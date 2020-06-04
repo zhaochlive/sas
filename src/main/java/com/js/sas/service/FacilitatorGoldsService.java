@@ -232,7 +232,7 @@ public class FacilitatorGoldsService {
 
    public Map getFacilitatorGoldsInfoTotal(Facilitator facilita) throws EmptyResultDataAccessException {
        ArrayList<Object> list = new ArrayList<>();
-       StringBuilder builder = new StringBuilder("select top 1 * from(select null 返利,0 紧商币,0 奥展币,0 订单总金额,'"+facilita.getName()+"' name UNION");
+       StringBuilder builder = new StringBuilder("select top 1 * from(select null 订单总金额,0 紧商币,0 奥展币,0 返利,'"+facilita.getName()+"' name UNION");
        builder.append(" select sum(taxAmount) 订单总金额,sum(紧商币)紧商币,sum(奥展币)奥展币,sum(返利)返利,name from (");
        builder.append(" select aap.name,sab.taxAmount,case when aa.IDInventoryClass in (3,4) then sab.taxAmount*0.003");
        builder.append(" when aa.IDInventoryClass in (9,10,11,12,13,14,15,16) then sab.taxAmount*0.03 ");
