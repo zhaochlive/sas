@@ -4,7 +4,7 @@ spring:
   profiles:
     active: prod
   datasource:
-    url: jdbc:mysql://192.168.8.164:3306/sas?useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://192.168.9.164:3306/sas?useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
     username: sas
     password: QM7yfgiFu
     driver-class-name: com.mysql.cj.jdbc.Driver
